@@ -27,6 +27,6 @@ main = do
                     putStrLn (showRegisters $ registers finalState)  -- Print the final register values
                     putStrLn (showStatusFlags $ flags finalState)    -- Print the final status flags
                     print (programCounter finalState)
-                Nothing -> putStrLn "Error assembling the program."
+                Nothing -> do
+                    putStrLn "Error assembling the program."
         _ -> putStrLn "Usage: ./main <filename>"  -- Handle incorrect number of arguments
-    
