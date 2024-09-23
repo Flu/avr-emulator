@@ -50,12 +50,10 @@ extra-doc-files:    CHANGELOG.md
 -- Extra source files to be distributed with the package, such as examples, or a tutorial module.
 -- extra-source-files:
 
-common warnings
-    ghc-options: -O2
-
 executable avr-emulator
     -- Import common warning flags.
-    import:           warnings
+    ghc-options:
+        -O2
 
     -- .hs or .lhs file containing the Main module.
     main-is:          Main.hs
