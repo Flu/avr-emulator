@@ -1,3 +1,4 @@
+    LD R16, -X
     LDI R16, 0x10
     LDI R17, 0x20
     LDI R18, 0x30
