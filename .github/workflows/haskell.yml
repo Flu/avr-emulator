@@ -2,9 +2,9 @@ name: Haskell CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "github-actions"]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "github-actions" ]
 
 permissions:
   contents: read
