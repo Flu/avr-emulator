@@ -24,6 +24,7 @@ main = do
                 Just instructions -> do
                     --mapM_ print (replaceLabels instructions)
                     let finalState = run instructions
+                    print (memory finalState)
                     putStrLn (showRegisters $ registers finalState)  -- Print the final register values
                     putStrLn (showStatusFlags $ flags finalState)    -- Print the final status flags
                     print (programCounter finalState)

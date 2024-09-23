@@ -29,6 +29,22 @@ pWord8 = do
             else fail "Hexadecimal value out of range for Word8"
         _ -> fail "Invalid hexadecimal format"
 
+pWord16 :: Parser Word16
+pWord16 = do
+    string "0x"
+    hexDigits <- many1 pHexDigit
+    case readHex hexDigits of
+        [(value, "")] -> 
+            if 0 <= value && value <= 0xFFFF
+                then return (fromInteger value)
+            else fail "Hexadecimal value out of range for Word8"
+        _ -> fail "Invalid hexadecimal format"
+
+pXRegister :: Parser String
+pXRegister = do
+    value <- choice [ try (string "-X"), try(string "X+"), try(string "X") ]
+    return value
+
 pDecimal :: Parser Word8
 pDecimal = do
     digits <- many1 digit
@@ -88,6 +104,12 @@ pBREQ = do
     label <- many1 (letter <|> digit <|> char '_')
     return (BREQ label)
 
+pBRLO :: Parser Instruction
+pBRLO = do
+    string "BRLO" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRLO label)
+
 pBRNE :: Parser Instruction
 pBRNE = do
     string "BRNE" >> spaces
@@ -145,12 +167,26 @@ pJMP = do
     label <- many1 (letter <|> digit <|> char '_')
     return (JMP label)
 
+pLD :: Parser Instruction
+pLD = do
+    string "LD" >> spaces
+    rd <- pRegister
+    pComma
+    LD rd <$> pXRegister
+
 pLDI :: Parser Instruction
 pLDI = do
     string "LDI" >> spaces
     rd <- pRegister
     pComma
     LDI rd <$> pWord8
+
+pLDS :: Parser Instruction
+pLDS = do
+    string "LDS" >> spaces
+    rd <- pRegister
+    pComma
+    LDS rd <$> pWord16
 
 pLSL :: Parser Instruction
 pLSL = do
@@ -216,6 +252,20 @@ pSBRS = do
     pComma
     SBRS rd <$> pDecimal
 
+pST :: Parser Instruction
+pST = do
+    string "ST" >> spaces
+    x <- pXRegister
+    pComma
+    ST x <$> pRegister
+
+pSTS :: Parser Instruction
+pSTS = do
+    string "STS" >> spaces
+    k <- pWord16
+    pComma
+    STS k <$> pRegister
+
 pSUB :: Parser Instruction
 pSUB = do
     string "SUB" >> spaces
@@ -243,6 +293,7 @@ pInstruction = do
         try (Just <$> pAND),
         try (Just <$> pANDI),
         try (Just <$> pBREQ),
+        try (Just <$> pBRLO),
         try (Just <$> pBRNE),
         try (Just <$> pCP),
         try (Just <$> pCPC),
@@ -252,8 +303,10 @@ pInstruction = do
         try (Just <$> pEOR),
         try (Just <$> pINC),
         try (Just <$> pJMP),
+        try (Just <$> pLD),
         try (Just <$> pLabel),
         try (Just <$> pLDI),
+        try (Just <$> pLDS),
         try (Just <$> pLSL),
         try (Just <$> pLSR),
         try (Just <$> pMOV),
@@ -264,6 +317,8 @@ pInstruction = do
         try (Just <$> pORI),
         try (Just <$> pSBRC),
         try (Just <$> pSBRS),
+        try (Just <$> pST),
+        try (Just <$> pSTS),
         try (Just <$> pSUB),
         try (Just <$> pSUBI),
         try (char ';' >> manyTill anyChar newline) >> return Nothing -- Ignore comments
