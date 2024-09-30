@@ -110,6 +110,12 @@ pBRLO = do
     label <- many1 (letter <|> digit <|> char '_')
     return (BRLO label)
 
+pBRMI :: Parser Instruction
+pBRMI = do
+    string "BRMI" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRMI label)
+
 pBRNE :: Parser Instruction
 pBRNE = do
     string "BRNE" >> spaces
@@ -238,6 +244,16 @@ pORI = do
     pComma
     ORI rd <$> pWord8
 
+pPOP :: Parser Instruction
+pPOP = do
+    string "POP" >> spaces
+    POP <$> pRegister
+
+pPUSH :: Parser Instruction
+pPUSH = do
+    string "PUSH" >> spaces
+    PUSH <$> pRegister
+
 pSBRC :: Parser Instruction
 pSBRC = do
     string "SBRC" >> spaces
@@ -294,6 +310,7 @@ pInstruction = do
         try (Just <$> pANDI),
         try (Just <$> pBREQ),
         try (Just <$> pBRLO),
+        try (Just <$> pBRMI),
         try (Just <$> pBRNE),
         try (Just <$> pCP),
         try (Just <$> pCPC),
@@ -315,6 +332,8 @@ pInstruction = do
         try (Just <$> pNOP),
         try (Just <$> pOR),
         try (Just <$> pORI),
+        try (Just <$> pPOP),
+        try (Just <$> pPUSH),
         try (Just <$> pSBRC),
         try (Just <$> pSBRS),
         try (Just <$> pST),

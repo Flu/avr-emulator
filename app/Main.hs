@@ -22,7 +22,7 @@ main = do
             print maybeInstructions
             case maybeInstructions of
                 Just instructions -> do
-                    --mapM_ print (replaceLabels instructions)
+                    mapM_ print (replaceLabels instructions)
                     let finalState = run instructions
                     print (memory finalState)
                     putStrLn (showRegisters $ registers finalState)  -- Print the final register values
