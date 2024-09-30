@@ -34,6 +34,7 @@ You can find test assembly programs in the `tests/` directory. These files provi
 
 ## Features
 - **Memory**: 2KB starting from `0x0000`.
+- **Stack**: Starts from the last memory address and grows towards lower addresses
 - **Supported Instructions**:
   - `ADC` – Add with carry between two registers.
   - `ADD` – Add two register values and store the result in one of the registers.
@@ -42,6 +43,7 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `ANDI` – Perform a bitwise AND between a register and an immediate value.
   - `BREQ` – Branch if equal to zero.
   - `BRLO` – Branch if lower (unsigned).
+  - `BRMI` - Brach if minus.
   - `BRNE` – Branch if not equal to zero.
   - `CP` – Compare two registers.
   - `CPC` – Compare with carry between two registers.
@@ -62,9 +64,20 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `NOP` – No operation.
   - `OR` – Perform a bitwise OR between two registers.
   - `ORI` – Perform a bitwise OR between a register and an immediate value.
+  - `POP` - Pops an element from the stack into a register.
+  - `PUSH` - Pushes an element from a register onto the stack.
   - `SBRC` – Skip if bit in register is cleared.
   - `SBRS` – Skip if bit in register is set.
   - `ST` – Store indirect to data space using an indirect address.
   - `STS` – Store direct to data space.
   - `SUB` – Subtract one register value from another.
   - `SUBI` – Subtract an immediate value from a register.
+
+## Roadmap
+  - Configurable memory size through command line arguments.
+  - `CALL` and `RET` instructions.
+  - Registers should be mapped to the first 32 memory locations.
+  - Fix Parser returning an error when last line of input file is an empty line or a comment.
+  - Implementing step by step emulation of instructions.
+  - Implement Parser support for lowercase instructions.
+  - Implementing `ADIW`.
