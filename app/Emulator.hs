@@ -72,6 +72,8 @@ data Instruction
     | BRNER Int
     | BRMI Label
     | BRMIR Int
+    | CALL Label
+    | CALLR Int
     | CP Register Register
     | CPC Register Register
     | CPI Register Word8
@@ -95,6 +97,7 @@ data Instruction
     | ORI Register Word8
     | POP Register
     | PUSH Register
+    | RET
     | SBRC Register Word8
     | SBRS Register Word8
     | ST String Register
@@ -209,6 +212,13 @@ brne oldStatus registers sp memory relAddress =
     let shouldJump = zeroFlag oldStatus
         jumpAddress = if shouldJump then 0 else relAddress
     in (registers, oldStatus, jumpAddress, sp, memory)
+
+call :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> Word16 -> (Registers, StatusFlags, Int, StackPointer, Memory)
+call oldStatus registers sp memory relAddress returnAddress =
+    let (high, low) = (fromIntegral (returnAddress `shiftR` 8), fromIntegral (returnAddress .&. 0xFF))
+        updatedMemory = memory // [(fromIntegral sp, high),(fromIntegral (sp - 1), low)]
+        newSp = sp - 2
+        in (registers, oldStatus, relAddress, newSp, updatedMemory)
 
 cp :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 cp oldStatus registers sp memory op1 op2 =
@@ -533,6 +543,15 @@ push oldStatus registers sp memory op1 =
         newSp = sp - 1
     in (registers, oldStatus, 0, newSp, updatedMemory)
 
+ret ::  StatusFlags -> Registers -> StackPointer -> Memory -> ProgramCounter -> (Registers, StatusFlags, Int, StackPointer, Memory)
+ret oldStatus registers sp memory pc =
+    let
+        newSp = sp + 2
+        returnAddress = ((memory ! (fromIntegral newSp)) `shiftL` 8) .|. (memory ! ((fromIntegral newSp) - 1))
+        relativeAddress = (fromIntegral returnAddress :: Int) - (fromIntegral pc :: Int)
+    in (registers, oldStatus, relativeAddress, newSp, memory)
+
+
 sbrc :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
 sbrc oldStatus registers sp memory op1 immediate =
     let rdIndex = fromIntegral op1
@@ -642,6 +661,7 @@ executeInstruction instruction state =
             BRLOR relativeAddress -> brlo (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRMIR relativeAddress -> brmi (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRNER relativeAddress -> brne (flags state) (registers state) (sp state) (memory state) relativeAddress
+            CALLR relativeAddress -> call (flags state) (registers state) (sp state) (memory state) relativeAddress (programCounter state)
             CP rd rr -> cp (flags state) (registers state) (sp state) (memory state) rd rr
             CPC rd rr -> cpc (flags state) (registers state) (sp state) (memory state) rd rr
             CPI rd k -> cpi (flags state) (registers state) (sp state) (memory state) rd k
@@ -664,6 +684,7 @@ executeInstruction instruction state =
             ORI rd k -> ori (flags state) (registers state) (sp state) (memory state) rd k
             POP rd -> pop (flags state) (registers state) (sp state) (memory state) rd
             PUSH rr -> push (flags state) (registers state) (sp state) (memory state) rr
+            RET -> ret (flags state) (registers state) (sp state) (memory state) (programCounter state)
             SBRC rd b -> sbrc (flags state) (registers state) (sp state) (memory state) rd b
             SBRS rd b -> sbrs (flags state) (registers state) (sp state) (memory state) rd b
             ST xregister rr -> st (flags state) (registers state) (sp state) (memory state) xregister rr
@@ -708,6 +729,11 @@ resolveLabels labelMap (address, BRNE label)
 resolveLabels labelMap (address, BRMI label)
    | relAddress > 0 = Just (BRMIR (relAddress -1))
    | otherwise = Just (BRMIR relAddress)
+   where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, CALL label)
+   | relAddress > 0 = Just (CALLR (relAddress -1))
+   | otherwise = Just (CALLR relAddress)
    where relAddress = Map.findWithDefault 0 label labelMap - address
 
 resolveLabels _labelMap (_, LABEL label) = Just (LABEL label)

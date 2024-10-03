@@ -122,6 +122,12 @@ pBRNE = do
     label <- many1 (letter <|> digit <|> char '_')
     return (BRNE label)
 
+pCALL :: Parser Instruction
+pCALL = do
+    string "CALL" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (CALL label)
+
 pCP :: Parser Instruction
 pCP = do
     string "CP" >> spaces
@@ -254,6 +260,11 @@ pPUSH = do
     string "PUSH" >> spaces
     PUSH <$> pRegister
 
+pRET :: Parser Instruction
+pRET = do
+    string "RET" >> spaces
+    return (RET)
+
 pSBRC :: Parser Instruction
 pSBRC = do
     string "SBRC" >> spaces
@@ -312,6 +323,7 @@ pInstruction = do
         try (Just <$> pBRLO),
         try (Just <$> pBRMI),
         try (Just <$> pBRNE),
+        try (Just <$> pCALL),
         try (Just <$> pCP),
         try (Just <$> pCPC),
         try (Just <$> pCPI),
@@ -334,6 +346,7 @@ pInstruction = do
         try (Just <$> pORI),
         try (Just <$> pPOP),
         try (Just <$> pPUSH),
+        try (Just <$> pRET),
         try (Just <$> pSBRC),
         try (Just <$> pSBRS),
         try (Just <$> pST),
