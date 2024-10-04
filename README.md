@@ -41,10 +41,25 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `ADIW` – Add an immediate word to a register pair.
   - `AND` – Perform a bitwise AND between two registers.
   - `ANDI` – Perform a bitwise AND between a register and an immediate value.
+  - `BRCC` – Branch if carry flag is cleared.
+  - `BRCS` – Branch if carry flag is set.
   - `BREQ` – Branch if equal to zero.
+  - `BRGE` – Branch if greater (signed).
+  - `BRHC` – Branch if half carry flag is cleared.
+  - `BRHS` – Branch if half carry flag is set.
+  - `BRID` – Branch if global interrupt flag is cleared.
+  - `BRIE` – Branch if global interrupt flag is set.
   - `BRLO` – Branch if lower (unsigned).
-  - `BRMI` - Brach if minus.
+  - `BRLT` – Branch if less than (signed).
+  - `BRMI` – Branch if minus.
   - `BRNE` – Branch if not equal to zero.
+  - `BRPL` – Branch if positive.
+  - `BRSH` – Branch if same or higher (unsigned).
+  - `BRTC` – Branch if T flag is cleared.
+  - `BRTS` – Branch if T flag is set.
+  - `BRVC` – Branch if overflow flag is cleared.
+  - `BRVS` – Branch if overflow flag is set.
+  - `CALL` – Direct call to a subroutine with the return address pushed on the stack.
   - `CP` – Compare two registers.
   - `CPC` – Compare with carry between two registers.
   - `CPI` – Compare a register with an immediate value.
@@ -64,20 +79,23 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `NOP` – No operation.
   - `OR` – Perform a bitwise OR between two registers.
   - `ORI` – Perform a bitwise OR between a register and an immediate value.
-  - `POP` - Pops an element from the stack into a register.
-  - `PUSH` - Pushes an element from a register onto the stack.
-  - `SBRC` – Skip if bit in register is cleared.
-  - `SBRS` – Skip if bit in register is set.
+  - `POP` – Pops an element from the stack into a register.
+  - `PUSH` – Pushes an element from a register onto the stack.
+  - `RET` – Return from subroutine.
+  - `SBRC` – Skip next instruction if bit in register is cleared.
+  - `SBRS` – Skip next instruction if bit in register is set.
   - `ST` – Store indirect to data space using an indirect address.
   - `STS` – Store direct to data space.
   - `SUB` – Subtract one register value from another.
   - `SUBI` – Subtract an immediate value from a register.
 
 ## Roadmap
-  - Configurable memory size through command line arguments.
-  - `CALL` and `RET` instructions.
-  - Registers should be mapped to the first 32 memory locations.
-  - Fix Parser returning an error when last line of input file is an empty line or a comment.
-  - Implementing step by step emulation of instructions.
-  - Implement Parser support for lowercase instructions.
-  - Implementing `ADIW`.
+  - [ ] Configurable memory size through command line arguments.
+  - [x] Implement in-memory stack with `PUSH` and `POP` instructions.
+  - [x] `CALL` and `RET` instructions.
+  - [ ] Registers should be mapped to the first 32 memory locations.
+  - [ ] Fix Parser returning an error when last line of input file is an empty line or a comment.
+  - [ ] Implementing step by step emulation of instructions.
+  - [ ] Implement Parser support for lowercase instructions.
+  - [ ] Implementing `ADIW`.
+  - [ ] Buy Grolsch beer when this is all done :tada: :beer:
