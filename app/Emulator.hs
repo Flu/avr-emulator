@@ -64,14 +64,42 @@ data Instruction
     | ADIW Register Register Word8
     | AND Register Register
     | ANDI Register Word8
+    | BRCC Label
+    | BRCCR Int
+    | BRCS Label
+    | BRCSR Int
     | BREQ Label
     | BREQR Int
+    | BRGE Label
+    | BRGER Int
+    | BRHC Label
+    | BRHCR Int
+    | BRHS Label
+    | BRHSR Int
+    | BRID Label
+    | BRIDR Int
+    | BRIE Label
+    | BRIER Int
     | BRLO Label
     | BRLOR Int
-    | BRNE Label
-    | BRNER Int
+    | BRLT Label
+    | BRLTR Int
     | BRMI Label
     | BRMIR Int
+    | BRNE Label
+    | BRNER Int
+    | BRPL Label
+    | BRPLR Int
+    | BRSH Label
+    | BRSHR Int
+    | BRTC Label
+    | BRTCR Int
+    | BRTS Label
+    | BRTSR Int
+    | BRVC Label
+    | BRVCR Int
+    | BRVS Label
+    | BRVSR Int
     | CALL Label
     | CALLR Int
     | CP Register Register
@@ -189,15 +217,63 @@ andi oldStatus registers sp memory op1 immediate =
         }
     in (updatedRegisters, updatedFlags, 0, sp, memory)
 
+brcc :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brcc oldStatus registers sp memory relAddress =
+    let shouldJump = not (carryFlag oldStatus)
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
+brcs :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brcs oldStatus registers sp memory relAddress =
+    let shouldJump = carryFlag oldStatus
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
 breq :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
 breq oldStatus registers sp memory relAddress =
     let shouldJump = zeroFlag oldStatus
         jumpAddress = if shouldJump then relAddress else 0
     in (registers, oldStatus, jumpAddress, sp, memory)
 
+brge :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brge oldStatus registers sp memory relAddress =
+    let shouldJump = not (signFlag oldStatus)
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
+brhc :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brhc oldStatus registers sp memory relAddress =
+    let shouldJump = not (halfCarryFlag oldStatus)
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
+brhs :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brhs oldStatus registers sp memory relAddress =
+    let shouldJump = halfCarryFlag oldStatus
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
+brid :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brid oldStatus registers sp memory relAddress =
+    let shouldJump = interruptFlag oldStatus
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
+brie :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brie oldStatus registers sp memory relAddress =
+    let shouldJump = not (interruptFlag oldStatus)
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
 brlo :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
 brlo oldStatus registers sp memory relAddress =
     let shouldJump = carryFlag oldStatus
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
+brlt :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brlt oldStatus registers sp memory relAddress =
+    let shouldJump = signFlag oldStatus
         jumpAddress = if shouldJump then relAddress else 0
     in (registers, oldStatus, jumpAddress, sp, memory)
 
@@ -211,6 +287,42 @@ brne :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers,
 brne oldStatus registers sp memory relAddress =
     let shouldJump = zeroFlag oldStatus
         jumpAddress = if shouldJump then 0 else relAddress
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
+brpl :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brpl oldStatus registers sp memory relAddress =
+    let shouldJump = not (negativeFlag oldStatus)
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
+brsh :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brsh oldStatus registers sp memory relAddress =
+    let shouldJump = not (carryFlag oldStatus)
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
+brtc :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brtc oldStatus registers sp memory relAddress =
+    let shouldJump = not (tFlag oldStatus)
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
+brts :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brts oldStatus registers sp memory relAddress =
+    let shouldJump = tFlag oldStatus
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
+brvc :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brvc oldStatus registers sp memory relAddress =
+    let shouldJump = not (overflowFlag oldStatus)
+        jumpAddress = if shouldJump then relAddress else 0
+    in (registers, oldStatus, jumpAddress, sp, memory)
+
+brvs :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+brvs oldStatus registers sp memory relAddress =
+    let shouldJump = overflowFlag oldStatus
+        jumpAddress = if shouldJump then relAddress else 0
     in (registers, oldStatus, jumpAddress, sp, memory)
 
 call :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> Word16 -> (Registers, StatusFlags, Int, StackPointer, Memory)
@@ -657,10 +769,24 @@ executeInstruction instruction state =
             ADIW rdh rdl immediate -> (registers state, flags state, 0, sp state, memory state)
             AND rd rr -> andInstr (flags state) (registers state) (sp state) (memory state) rd rr
             ANDI rd k -> andi (flags state) (registers state) (sp state) (memory state) rd k
+            BRCCR relativeAddress -> brcc (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRCSR relativeAddress -> brcs (flags state) (registers state) (sp state) (memory state) relativeAddress
             BREQR relativeAddress -> breq (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRGER relativeAddress -> brge (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRHCR relativeAddress -> brhc (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRHSR relativeAddress -> brhs (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRIDR relativeAddress -> brid (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRIER relativeAddress -> brie (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRLOR relativeAddress -> brlo (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRLTR relativeAddress -> brlt (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRMIR relativeAddress -> brmi (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRNER relativeAddress -> brne (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRPLR relativeAddress -> brpl (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRSHR relativeAddress -> brsh (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRTCR relativeAddress -> brtc (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRTSR relativeAddress -> brts (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRVCR relativeAddress -> brvc (flags state) (registers state) (sp state) (memory state) relativeAddress
+            BRVSR relativeAddress -> brvs (flags state) (registers state) (sp state) (memory state) relativeAddress
             CALLR relativeAddress -> call (flags state) (registers state) (sp state) (memory state) relativeAddress (programCounter state)
             CP rd rr -> cp (flags state) (registers state) (sp state) (memory state) rd rr
             CPC rd rr -> cpc (flags state) (registers state) (sp state) (memory state) rd rr
@@ -711,9 +837,44 @@ resolveLabels labelMap (address, JMP label)
     | otherwise = Just (JMPR relAddress)
     where relAddress = Map.findWithDefault 0 label labelMap - address
 
+resolveLabels labelMap (address, BRCC label)
+    | relAddress > 0 = Just (BRCCR (relAddress - 1))
+    | otherwise = Just (BRCCR relAddress)
+    where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRCS label)
+    | relAddress > 0 = Just (BRCSR (relAddress - 1))
+    | otherwise = Just (BRCSR relAddress)
+    where relAddress = Map.findWithDefault 0 label labelMap - address
+
 resolveLabels labelMap (address, BREQ label)
     | relAddress > 0 = Just (BREQR (relAddress - 1))
     | otherwise = Just (BREQR relAddress)
+    where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRGE label)
+    | relAddress > 0 = Just (BRGER (relAddress - 1))
+    | otherwise = Just (BRGER relAddress)
+    where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRHC label)
+    | relAddress > 0 = Just (BRHCR (relAddress - 1))
+    | otherwise = Just (BRHCR relAddress)
+    where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRHS label)
+    | relAddress > 0 = Just (BRHSR (relAddress - 1))
+    | otherwise = Just (BRHSR relAddress)
+    where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRID label)
+    | relAddress > 0 = Just (BRIDR (relAddress - 1))
+    | otherwise = Just (BRIDR relAddress)
+    where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRIE label)
+    | relAddress > 0 = Just (BRIER (relAddress - 1))
+    | otherwise = Just (BRIER relAddress)
     where relAddress = Map.findWithDefault 0 label labelMap - address
 
 resolveLabels labelMap (address, BRLO label)
@@ -721,14 +882,49 @@ resolveLabels labelMap (address, BRLO label)
     | otherwise = Just (BRLOR relAddress)
     where relAddress = Map.findWithDefault 0 label labelMap - address
 
-resolveLabels labelMap (address, BRNE label)
-    | relAddress > 0 = Just (BRNER (relAddress - 1))
-    | otherwise = Just (BRNER relAddress)
+resolveLabels labelMap (address, BRLT label)
+    | relAddress > 0 = Just (BRLTR (relAddress - 1))
+    | otherwise = Just (BRLTR relAddress)
     where relAddress = Map.findWithDefault 0 label labelMap - address
 
 resolveLabels labelMap (address, BRMI label)
    | relAddress > 0 = Just (BRMIR (relAddress -1))
    | otherwise = Just (BRMIR relAddress)
+   where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRNE label)
+    | relAddress > 0 = Just (BRNER (relAddress - 1))
+    | otherwise = Just (BRNER relAddress)
+    where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRPL label)
+   | relAddress > 0 = Just (BRPLR (relAddress -1))
+   | otherwise = Just (BRPLR relAddress)
+   where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRSH label)
+   | relAddress > 0 = Just (BRSHR (relAddress -1))
+   | otherwise = Just (BRSHR relAddress)
+   where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRTC label)
+   | relAddress > 0 = Just (BRTCR (relAddress -1))
+   | otherwise = Just (BRTCR relAddress)
+   where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRTS label)
+   | relAddress > 0 = Just (BRTSR (relAddress -1))
+   | otherwise = Just (BRTSR relAddress)
+   where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRVC label)
+   | relAddress > 0 = Just (BRVCR (relAddress -1))
+   | otherwise = Just (BRVCR relAddress)
+   where relAddress = Map.findWithDefault 0 label labelMap - address
+
+resolveLabels labelMap (address, BRVS label)
+   | relAddress > 0 = Just (BRVSR (relAddress -1))
+   | otherwise = Just (BRVSR relAddress)
    where relAddress = Map.findWithDefault 0 label labelMap - address
 
 resolveLabels labelMap (address, CALL label)

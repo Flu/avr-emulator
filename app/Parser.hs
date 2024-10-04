@@ -98,17 +98,65 @@ pANDI = do
     pComma
     ANDI rd <$> pWord8
 
+pBRCC :: Parser Instruction
+pBRCC = do
+    string "BRCC" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRCC label)
+
+pBRCS :: Parser Instruction
+pBRCS = do
+    string "BRCS" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRCS label)
+
 pBREQ :: Parser Instruction
 pBREQ = do
     string "BREQ" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BREQ label)
 
+pBRGE :: Parser Instruction
+pBRGE = do
+    string "BRGE" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRGE label)
+
+pBRHC :: Parser Instruction
+pBRHC = do
+    string "BRHC" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRHC label)
+
+pBRHS :: Parser Instruction
+pBRHS = do
+    string "BRHS" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRHS label)
+
+pBRID :: Parser Instruction
+pBRID = do
+    string "BRID" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRID label)
+
+pBRIE :: Parser Instruction
+pBRIE = do
+    string "BRIE" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRIE label)
+
 pBRLO :: Parser Instruction
 pBRLO = do
     string "BRLO" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRLO label)
+
+pBRLT :: Parser Instruction
+pBRLT = do
+    string "BRLT" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRLT label)
 
 pBRMI :: Parser Instruction
 pBRMI = do
@@ -121,6 +169,42 @@ pBRNE = do
     string "BRNE" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRNE label)
+
+pBRPL :: Parser Instruction
+pBRPL = do
+    string "BRPL" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRPL label)
+
+pBRSH :: Parser Instruction
+pBRSH = do
+    string "BRSH" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRSH label)
+
+pBRTC :: Parser Instruction
+pBRTC = do
+    string "BRTC" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRTC label)
+
+pBRTS :: Parser Instruction
+pBRTS = do
+    string "BRTS" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRTS label)
+
+pBRVC :: Parser Instruction
+pBRVC = do
+    string "BRVC" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRVC label)
+
+pBRVS :: Parser Instruction
+pBRVS = do
+    string "BRVS" >> spaces
+    label <- many1 (letter <|> digit <|> char '_')
+    return (BRVS label)
 
 pCALL :: Parser Instruction
 pCALL = do
@@ -319,10 +403,24 @@ pInstruction = do
         try (Just <$> pADIW),
         try (Just <$> pAND),
         try (Just <$> pANDI),
+        try (Just <$> pBRCC),
+        try (Just <$> pBRCS),
         try (Just <$> pBREQ),
+        try (Just <$> pBRGE),
+        try (Just <$> pBRHC),
+        try (Just <$> pBRHS),
+        try (Just <$> pBRID),
+        try (Just <$> pBRIE),
         try (Just <$> pBRLO),
+        try (Just <$> pBRLT),
         try (Just <$> pBRMI),
         try (Just <$> pBRNE),
+        try (Just <$> pBRPL),
+        try (Just <$> pBRSH),
+        try (Just <$> pBRTC),
+        try (Just <$> pBRTS),
+        try (Just <$> pBRVC),
+        try (Just <$> pBRVS),
         try (Just <$> pCALL),
         try (Just <$> pCP),
         try (Just <$> pCPC),
