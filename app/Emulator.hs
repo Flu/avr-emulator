@@ -9,6 +9,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (catMaybes)
 import Data.Array
+import Debug.Trace (trace)
 
 data EmulatorState = EmulatorState {
     registers :: Registers,
@@ -735,7 +736,9 @@ ret ::  StatusFlags -> Registers -> StackPointer -> Memory -> ProgramCounter -> 
 ret oldStatus registers sp memory pc =
     let
         newSp = sp + 2
-        returnAddress = ((memory ! (fromIntegral newSp)) `shiftL` 8) .|. (memory ! ((fromIntegral newSp) - 1))
+        returnAddressHigh = memory ! (fromIntegral newSp)
+        returnAddressLow = memory ! ((fromIntegral newSp) - 1)
+        returnAddress = ((fromIntegral returnAddressHigh :: Word16) `shiftL` 8) .|. (fromIntegral returnAddressLow :: Word16)
         relativeAddress = (fromIntegral returnAddress :: Int) - (fromIntegral pc :: Int)
     in (registers, oldStatus, relativeAddress, newSp, memory)
 
