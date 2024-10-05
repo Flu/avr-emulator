@@ -4,14 +4,21 @@ import Text.Parsec
 import Text.Parsec.String (Parser)
 import Numeric (readHex, readInt)
 import Data.Binary
+import Data.Char
 import Emulator
 import Data.Maybe (catMaybes)
 
 -- Parsers for basic components
 
+-- Match the lowercase or uppercase form of 'c'
+cichar c = char (toLower c) <|> char (toUpper c)
+
+-- Match the string 's', accepting either lowercase or uppercase form of each character 
+cistring s = try (mapM cichar s) <?> "\"" ++ s ++ "\""
+
 pRegister :: Parser Register
 pRegister = do
-    char 'R'
+    cichar 'R'
     reg <- many1 digit
     return (read reg)
 
@@ -20,7 +27,7 @@ pHexDigit = oneOf ['0'..'9'] <|> oneOf ['a'..'f'] <|> oneOf ['A'..'F']
 
 pWord8 :: Parser Word8
 pWord8 = do
-    string "0x"
+    (string "0x" <|> string "$")
     hexDigits <- many1 pHexDigit
     case readHex hexDigits of
         [(value, "")] -> 
@@ -42,7 +49,7 @@ pWord16 = do
 
 pXRegister :: Parser String
 pXRegister = do
-    value <- choice [ try (string "-X"), try(string "X+"), try(string "X") ]
+    value <- choice [ try (cistring "-X"), try(cistring "X+"), try(cistring "X") ]
     return value
 
 pDecimal :: Parser Word8
@@ -63,21 +70,21 @@ pComma = char ',' >> spaces
 
 pADC :: Parser Instruction
 pADC = do
-    string "ADC" >> spaces
+    cistring "ADC" >> spaces
     rd <- pRegister
     pComma
     ADC rd <$> pRegister
 
 pADD :: Parser Instruction
 pADD = do
-    string "ADD" >> spaces
+    cistring "ADD" >> spaces
     rd <- pRegister
     pComma
     ADD rd <$> pRegister
 
 pADIW :: Parser Instruction
 pADIW = do
-    string "ADIW" >> spaces
+    cistring "ADIW" >> spaces
     regPair <- pRegister
     char ':'
     regPair2 <- pDecimal
@@ -86,324 +93,324 @@ pADIW = do
 
 pAND :: Parser Instruction
 pAND = do
-    string "AND" >> spaces
+    cistring "AND" >> spaces
     rd <- pRegister
     pComma
     AND rd <$> pRegister
 
 pANDI :: Parser Instruction
 pANDI = do
-    string "ANDI" >> spaces
+    cistring "ANDI" >> spaces
     rd <- pRegister
     pComma
     ANDI rd <$> pWord8
 
 pBRCC :: Parser Instruction
 pBRCC = do
-    string "BRCC" >> spaces
+    cistring "BRCC" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRCC label)
 
 pBRCS :: Parser Instruction
 pBRCS = do
-    string "BRCS" >> spaces
+    cistring "BRCS" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRCS label)
 
 pBREQ :: Parser Instruction
 pBREQ = do
-    string "BREQ" >> spaces
+    cistring "BREQ" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BREQ label)
 
 pBRGE :: Parser Instruction
 pBRGE = do
-    string "BRGE" >> spaces
+    cistring "BRGE" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRGE label)
 
 pBRHC :: Parser Instruction
 pBRHC = do
-    string "BRHC" >> spaces
+    cistring "BRHC" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRHC label)
 
 pBRHS :: Parser Instruction
 pBRHS = do
-    string "BRHS" >> spaces
+    cistring "BRHS" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRHS label)
 
 pBRID :: Parser Instruction
 pBRID = do
-    string "BRID" >> spaces
+    cistring "BRID" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRID label)
 
 pBRIE :: Parser Instruction
 pBRIE = do
-    string "BRIE" >> spaces
+    cistring "BRIE" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRIE label)
 
 pBRLO :: Parser Instruction
 pBRLO = do
-    string "BRLO" >> spaces
+    cistring "BRLO" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRLO label)
 
 pBRLT :: Parser Instruction
 pBRLT = do
-    string "BRLT" >> spaces
+    cistring "BRLT" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRLT label)
 
 pBRMI :: Parser Instruction
 pBRMI = do
-    string "BRMI" >> spaces
+    cistring "BRMI" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRMI label)
 
 pBRNE :: Parser Instruction
 pBRNE = do
-    string "BRNE" >> spaces
+    cistring "BRNE" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRNE label)
 
 pBRPL :: Parser Instruction
 pBRPL = do
-    string "BRPL" >> spaces
+    cistring "BRPL" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRPL label)
 
 pBRSH :: Parser Instruction
 pBRSH = do
-    string "BRSH" >> spaces
+    cistring "BRSH" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRSH label)
 
 pBRTC :: Parser Instruction
 pBRTC = do
-    string "BRTC" >> spaces
+    cistring "BRTC" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRTC label)
 
 pBRTS :: Parser Instruction
 pBRTS = do
-    string "BRTS" >> spaces
+    cistring "BRTS" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRTS label)
 
 pBRVC :: Parser Instruction
 pBRVC = do
-    string "BRVC" >> spaces
+    cistring "BRVC" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRVC label)
 
 pBRVS :: Parser Instruction
 pBRVS = do
-    string "BRVS" >> spaces
+    cistring "BRVS" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (BRVS label)
 
 pCALL :: Parser Instruction
 pCALL = do
-    string "CALL" >> spaces
+    cistring "CALL" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (CALL label)
 
 pCOM :: Parser Instruction
 pCOM = do
-    string "COM" >> spaces
+    cistring "COM" >> spaces
     COM <$> pRegister
 
 pCP :: Parser Instruction
 pCP = do
-    string "CP" >> spaces
+    cistring "CP" >> spaces
     rd <- pRegister
     pComma
     CP rd <$> pRegister
 
 pCPC :: Parser Instruction
 pCPC = do
-    string "CPC" >> spaces
+    cistring "CPC" >> spaces
     rd <- pRegister
     pComma
     CPC rd <$> pRegister
 
 pCPI :: Parser Instruction
 pCPI = do
-    string "CPI" >> spaces
+    cistring "CPI" >> spaces
     rd <- pRegister
     pComma
     CPI rd <$> pWord8
 
 pCPSE :: Parser Instruction
 pCPSE = do
-    string "CPSE" >> spaces
+    cistring "CPSE" >> spaces
     rd <- pRegister
     pComma
     CPSE rd <$> pRegister
 
 pDEC :: Parser Instruction
 pDEC = do
-    string "DEC" >> spaces
+    cistring "DEC" >> spaces
     DEC <$> pRegister
 
 pEOR :: Parser Instruction
 pEOR = do
-    string "EOR" >> spaces
+    cistring "EOR" >> spaces
     rd <- pRegister
     pComma
     EOR rd <$> pRegister
 
 pINC :: Parser Instruction
 pINC = do
-    string "INC" >> spaces
+    cistring "INC" >> spaces
     INC <$> pRegister
 
 pJMP :: Parser Instruction
 pJMP = do
-    string "JMP" >> spaces
+    cistring "JMP" >> spaces
     label <- many1 (letter <|> digit <|> char '_')
     return (JMP label)
 
 pLD :: Parser Instruction
 pLD = do
-    string "LD" >> spaces
+    cistring "LD" >> spaces
     rd <- pRegister
     pComma
     LD rd <$> pXRegister
 
 pLDI :: Parser Instruction
 pLDI = do
-    string "LDI" >> spaces
+    cistring "LDI" >> spaces
     rd <- pRegister
     pComma
     LDI rd <$> pWord8
 
 pLDS :: Parser Instruction
 pLDS = do
-    string "LDS" >> spaces
+    cistring "LDS" >> spaces
     rd <- pRegister
     pComma
     LDS rd <$> pWord16
 
 pLSL :: Parser Instruction
 pLSL = do
-    string "LSL" >> spaces
+    cistring "LSL" >> spaces
     LSL <$> pRegister
 
 pLSR :: Parser Instruction
 pLSR = do
-    string "LSR" >> spaces
+    cistring "LSR" >> spaces
     LSR <$> pRegister
 
 pMOV :: Parser Instruction
 pMOV = do
-    string "MOV" >> spaces
+    cistring "MOV" >> spaces
     rd <- pRegister
     pComma
     MOV rd <$> pRegister
 
 pMUL :: Parser Instruction
 pMUL = do
-    string "MUL" >> spaces
+    cistring "MUL" >> spaces
     rd <- pRegister
     pComma
     MUL rd <$> pRegister
 
 pMULS :: Parser Instruction
 pMULS = do
-    string "MULS" >> spaces
+    cistring "MULS" >> spaces
     rd <- pRegister
     pComma
     MULS rd <$> pRegister
 
 pNEG :: Parser Instruction
 pNEG = do
-    string "NEG" >> spaces
+    cistring "NEG" >> spaces
     NEG <$> pRegister
 
 pNOP :: Parser Instruction
 pNOP = do
-    string "NOP" >> spaces
+    cistring "NOP" >> spaces
     return NOP
 
 pOR :: Parser Instruction
 pOR = do
-    string "OR" >> spaces
+    cistring "OR" >> spaces
     rd <- pRegister
     pComma
     OR rd <$> pRegister
 
 pORI :: Parser Instruction
 pORI = do
-    string "ORI" >> spaces
+    cistring "ORI" >> spaces
     rd <- pRegister
     pComma
     ORI rd <$> pWord8
 
 pPOP :: Parser Instruction
 pPOP = do
-    string "POP" >> spaces
+    cistring "POP" >> spaces
     POP <$> pRegister
 
 pPUSH :: Parser Instruction
 pPUSH = do
-    string "PUSH" >> spaces
+    cistring "PUSH" >> spaces
     PUSH <$> pRegister
 
 pRET :: Parser Instruction
 pRET = do
-    string "RET" >> spaces
+    cistring "RET" >> spaces
     return (RET)
 
 pSBRC :: Parser Instruction
 pSBRC = do
-    string "SBRC" >> spaces
+    cistring "SBRC" >> spaces
     rd <- pRegister
     pComma
     SBRC rd <$> pDecimal
 
 pSBRS :: Parser Instruction
 pSBRS = do
-    string "SBRS" >> spaces
+    cistring "SBRS" >> spaces
     rd <- pRegister
     pComma
     SBRS rd <$> pDecimal
 
 pST :: Parser Instruction
 pST = do
-    string "ST" >> spaces
+    cistring "ST" >> spaces
     x <- pXRegister
     pComma
     ST x <$> pRegister
 
 pSTS :: Parser Instruction
 pSTS = do
-    string "STS" >> spaces
+    cistring "STS" >> spaces
     k <- pWord16
     pComma
     STS k <$> pRegister
 
 pSUB :: Parser Instruction
 pSUB = do
-    string "SUB" >> spaces
+    cistring "SUB" >> spaces
     rd <- pRegister
     pComma
     SUB rd <$> pRegister
 
 pSUBI :: Parser Instruction
 pSUBI = do
-    string "SUBI" >> spaces
+    cistring "SUBI" >> spaces
     rd <- pRegister
     pComma
     SUBI rd <$> pWord8
 
 pSWAP :: Parser Instruction
 pSWAP = do
-    string "SWAP" >> spaces
+    cistring "SWAP" >> spaces
     SWAP <$> pRegister
 
 -- Main parser

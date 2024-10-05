@@ -100,7 +100,7 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - [ ] Registers should be mapped to the first 32 memory locations.
   - [ ] Fix Parser returning an error when last line of input file is an empty line or a comment.
   - [ ] Implementing step by step emulation of instructions.
-  - [ ] Implement Parser support for lowercase instructions.
+  - [x] Implement Parser support for lowercase instructions.
   - [ ] Implementing `ADIW`.
   - [ ] Unit tests for instructions.
   - [ ] Buy Grolsch beer when this is all done :tada: :beer:
