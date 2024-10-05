@@ -102,6 +102,7 @@ data Instruction
     | BRVSR Int
     | CALL Label
     | CALLR Int
+    | COM Register
     | CP Register Register
     | CPC Register Register
     | CPI Register Word8
@@ -120,6 +121,7 @@ data Instruction
     | MOV Register Register  -- Move value between registers
     | MUL Register Register
     | MULS Register Register
+    | NEG Register
     | NOP
     | OR Register Register
     | ORI Register Word8
@@ -132,6 +134,7 @@ data Instruction
     | STS Word16 Register
     | SUB Register Register
     | SUBI Register Word8
+    | SWAP Register
     deriving (Show)
 
 adc :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
@@ -331,6 +334,24 @@ call oldStatus registers sp memory relAddress returnAddress =
         updatedMemory = memory // [(fromIntegral sp, high),(fromIntegral (sp - 1), low)]
         newSp = sp - 2
         in (registers, oldStatus, relAddress, newSp, updatedMemory)
+
+com :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
+com oldStatus registers sp memory op1 = 
+    let rdIndex = fromIntegral op1
+        rd = registers ! rdIndex
+        result = 255 - rd
+        updatedRegisters = registers // [(rdIndex, result)]
+        updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = False,
+            negativeFlag = testBit result 7,
+            zeroFlag = result == 0,
+            carryFlag = True,
+            signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
+        }
+        in (updatedRegisters, updatedFlags, 0, sp, memory)
 
 cp :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 cp oldStatus registers sp memory op1 op2 =
@@ -599,6 +620,23 @@ muls oldStatus registers sp memory op1 op2 =
         }
     in (updatedRegisters, updatedFlags, 0, sp, memory)
 
+neg :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
+neg oldStatus registers sp memory op1 = 
+    let rdIndex = fromIntegral op1
+        rd = registers ! rdIndex
+        result = 0 - rd
+        updatedRegisters = registers // [(rdIndex, result)]
+        updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = (testBit result 3) || not (testBit rd 3),
+            overflowFlag = (testBit result 7) && not(testBit result 6) && not(testBit result 5) && not(testBit result 4) && not(testBit result 3) && not(testBit result 2) && not(testBit result 1) && not(testBit result 0),
+            negativeFlag = testBit result 7,
+            zeroFlag = result == 0,
+            carryFlag = (testBit result 7) || (testBit result 6) || (testBit result 5) || (testBit result 4) || (testBit result 3) || (testBit result 2) || (testBit result 1) || (testBit result 0),
+            signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
+        }
+        in (updatedRegisters, updatedFlags, 0, sp, memory)
 
 orInstr :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 orInstr oldStatus registers sp memory op1 op2 =
@@ -761,6 +799,14 @@ subi oldStatus registers sp memory op1 immediate =
         }
     in (updatedRegisters, updatedFlags, 0, sp, memory)
 
+swap :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
+swap oldStatus registers sp memory op1 = 
+    let rdIndex = fromIntegral op1
+        rd = registers ! rdIndex
+        result = (rd `shiftR` 4) .|. (rd `shiftL` 4)
+        updatedRegisters = registers // [(rdIndex, result)]
+        in (updatedRegisters, oldStatus, 0, sp, memory)
+
 executeInstruction :: Instruction -> EmulatorState -> EmulatorState
 executeInstruction instruction state = 
     let (updatedRegisters, updatedFlags, relativeJump, updatedSp, updatedMemory) = case instruction of
@@ -788,6 +834,7 @@ executeInstruction instruction state =
             BRVCR relativeAddress -> brvc (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRVSR relativeAddress -> brvs (flags state) (registers state) (sp state) (memory state) relativeAddress
             CALLR relativeAddress -> call (flags state) (registers state) (sp state) (memory state) relativeAddress (programCounter state)
+            COM rd -> com (flags state) (registers state) (sp state) (memory state) rd
             CP rd rr -> cp (flags state) (registers state) (sp state) (memory state) rd rr
             CPC rd rr -> cpc (flags state) (registers state) (sp state) (memory state) rd rr
             CPI rd k -> cpi (flags state) (registers state) (sp state) (memory state) rd k
@@ -805,6 +852,7 @@ executeInstruction instruction state =
             MOV rd rs -> mov (flags state) (registers state) (sp state) (memory state) rd rs
             MUL rd rs -> mul (flags state) (registers state) (sp state) (memory state) rd rs
             MULS rd rs -> muls (flags state) (registers state) (sp state) (memory state) rd rs
+            NEG rd -> neg (flags state) (registers state) (sp state) (memory state) rd
             NOP -> (registers state, flags state, 0, sp state, memory state)
             OR rd rr -> orInstr (flags state) (registers state) (sp state) (memory state) rd rr
             ORI rd k -> ori (flags state) (registers state) (sp state) (memory state) rd k
@@ -817,7 +865,7 @@ executeInstruction instruction state =
             STS k rr -> sts (flags state) (registers state) (sp state) (memory state) k rr
             SUB rd rr -> sub (flags state) (registers state) (sp state) (memory state) rd rr
             SUBI rd k -> subi (flags state) (registers state) (sp state) (memory state) rd k
-
+            SWAP rd -> swap (flags state) (registers state) (sp state) (memory state) rd
     in state {
         registers = updatedRegisters,
         flags = updatedFlags,

@@ -212,6 +212,11 @@ pCALL = do
     label <- many1 (letter <|> digit <|> char '_')
     return (CALL label)
 
+pCOM :: Parser Instruction
+pCOM = do
+    string "COM" >> spaces
+    COM <$> pRegister
+
 pCP :: Parser Instruction
 pCP = do
     string "CP" >> spaces
@@ -315,6 +320,11 @@ pMULS = do
     pComma
     MULS rd <$> pRegister
 
+pNEG :: Parser Instruction
+pNEG = do
+    string "NEG" >> spaces
+    NEG <$> pRegister
+
 pNOP :: Parser Instruction
 pNOP = do
     string "NOP" >> spaces
@@ -391,6 +401,11 @@ pSUBI = do
     pComma
     SUBI rd <$> pWord8
 
+pSWAP :: Parser Instruction
+pSWAP = do
+    string "SWAP" >> spaces
+    SWAP <$> pRegister
+
 -- Main parser
 
 pInstruction :: Parser (Maybe Instruction)
@@ -422,6 +437,7 @@ pInstruction = do
         try (Just <$> pBRVC),
         try (Just <$> pBRVS),
         try (Just <$> pCALL),
+        try (Just <$> pCOM),
         try (Just <$> pCP),
         try (Just <$> pCPC),
         try (Just <$> pCPI),
@@ -439,6 +455,7 @@ pInstruction = do
         try (Just <$> pMOV),
         try (Just <$> pMUL),
         try (Just <$> pMULS),
+        try (Just <$> pNEG),
         try (Just <$> pNOP),
         try (Just <$> pOR),
         try (Just <$> pORI),
@@ -451,6 +468,7 @@ pInstruction = do
         try (Just <$> pSTS),
         try (Just <$> pSUB),
         try (Just <$> pSUBI),
+        try (Just <$> pSWAP),
         try (char ';' >> manyTill anyChar newline) >> return Nothing -- Ignore comments
         ]
 

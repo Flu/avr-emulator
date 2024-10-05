@@ -19,7 +19,6 @@ main = do
     case args of
         [filename] -> do  -- Expect exactly one argument (the filename)
             maybeInstructions <- assembleProgramFromFile filename
-            print maybeInstructions
             case maybeInstructions of
                 Just instructions -> do
                     mapM_ print (replaceLabels instructions)

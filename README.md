@@ -60,6 +60,7 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `BRVC` – Branch if overflow flag is cleared.
   - `BRVS` – Branch if overflow flag is set.
   - `CALL` – Direct call to a subroutine with the return address pushed on the stack.
+  - `COM` – Take one's complement of register.
   - `CP` – Compare two registers.
   - `CPC` – Compare with carry between two registers.
   - `CPI` – Compare a register with an immediate value.
@@ -76,6 +77,7 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `MOV` – Move the value from one register to another.
   - `MUL` – Multiply two registers.
   - `MULS` – Multiply signed values in two registers.
+  - `NEG` – Take two's complement of register.
   - `NOP` – No operation.
   - `OR` – Perform a bitwise OR between two registers.
   - `ORI` – Perform a bitwise OR between a register and an immediate value.
@@ -88,14 +90,17 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `STS` – Store direct to data space.
   - `SUB` – Subtract one register value from another.
   - `SUBI` – Subtract an immediate value from a register.
+  - `SWAP` – Swap nibbles of register.
 
 ## Roadmap
   - [ ] Configurable memory size through command line arguments.
   - [x] Implement in-memory stack with `PUSH` and `POP` instructions.
   - [x] `CALL` and `RET` instructions.
+  - [ ] Maybe (?) move to MegaParsec for input parsing.
   - [ ] Registers should be mapped to the first 32 memory locations.
   - [ ] Fix Parser returning an error when last line of input file is an empty line or a comment.
   - [ ] Implementing step by step emulation of instructions.
   - [ ] Implement Parser support for lowercase instructions.
   - [ ] Implementing `ADIW`.
+  - [ ] Unit tests for instructions.
   - [ ] Buy Grolsch beer when this is all done :tada: :beer:
