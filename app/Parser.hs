@@ -93,11 +93,9 @@ pADD = do
 pADIW :: Parser Instruction
 pADIW = do
     cistring "ADIW" >> spaces
-    regPair <- pRegister
-    char ':'
-    regPair2 <- pDecimal
+    (reg1, reg2) <- pRegisterPair
     pComma
-    ADIW regPair regPair2 <$> pWord8
+    ADIW reg1 reg2 <$> pWord8
 
 pAND :: Parser Instruction
 pAND = do

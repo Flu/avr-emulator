@@ -186,6 +186,29 @@ add oldStatus registers sp memory rd rs =
         }
     in (updatedRegisters, updatedFlags, 0, sp, memory)
 
+adiw :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Register -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
+adiw oldStatus registers sp memory op1 op2 k =
+    let rd1Index = fromIntegral op1
+        rdIndex = fromIntegral op2
+        rd1 = registers ! rd1Index
+        rd = registers ! rdIndex
+        result = ((fromIntegral rd1 :: Word16) `shiftL` 8) + (fromIntegral rd :: Word16) + (fromIntegral k :: Word16)
+        resultH = fromIntegral (result `shiftR` 8) :: Word8
+        resultL = fromIntegral result :: Word8
+        updatedRegisters = registers // [(rd1Index, resultH), (rdIndex, resultL)]
+        updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = not(testBit rd1 7) && testBit result 15,
+            negativeFlag = testBit result 15,
+            zeroFlag = result == 0,
+            carryFlag = not(testBit result 15) && testBit rd1 7,
+            signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
+        }
+        in (updatedRegisters, updatedFlags, 0, sp, memory)
+
+
 andInstr :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 andInstr oldStatus registers sp memory op1 op2 =
     let
@@ -928,7 +951,7 @@ executeInstruction instruction state =
     let (updatedRegisters, updatedFlags, relativeJump, updatedSp, updatedMemory) = case instruction of
             ADC rd rs -> adc (flags state) (registers state) (sp state) (memory state) rd rs
             ADD rd rs -> add (flags state) (registers state) (sp state) (memory state) rd rs
-            ADIW rdh rdl immediate -> (registers state, flags state, 0, sp state, memory state)
+            ADIW rdh rdl immediate -> adiw (flags state) (registers state) (sp state) (memory state) rdh rdl immediate
             AND rd rr -> andInstr (flags state) (registers state) (sp state) (memory state) rd rr
             ANDI rd k -> andi (flags state) (registers state) (sp state) (memory state) rd k
             ASR rd -> asr (flags state) (registers state) (sp state) (memory state) rd
