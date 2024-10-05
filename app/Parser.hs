@@ -22,6 +22,14 @@ pRegister = do
     reg <- many1 digit
     return (read reg)
 
+pRegisterPair :: Parser (Register, Register)
+pRegisterPair = do
+    cichar 'R'
+    reg1 <- many1 digit
+    char ':'
+    reg2 <- many1 digit
+    return (read reg1, read reg2)
+
 pHexDigit :: Parser Char
 pHexDigit = oneOf ['0'..'9'] <|> oneOf ['a'..'f'] <|> oneOf ['A'..'F']
 
@@ -38,13 +46,13 @@ pWord8 = do
 
 pWord16 :: Parser Word16
 pWord16 = do
-    string "0x"
+    (string "0x" <|> string "$")
     hexDigits <- many1 pHexDigit
     case readHex hexDigits of
         [(value, "")] -> 
             if 0 <= value && value <= 0xFFFF
                 then return (fromInteger value)
-            else fail "Hexadecimal value out of range for Word8"
+            else fail "Hexadecimal value out of range for Word16"
         _ -> fail "Invalid hexadecimal format"
 
 pXRegister :: Parser String
@@ -104,6 +112,11 @@ pANDI = do
     rd <- pRegister
     pComma
     ANDI rd <$> pWord8
+
+pASR :: Parser Instruction
+pASR = do
+    cistring "ASR" >> spaces
+    ASR <$> pRegister
 
 pBRCC :: Parser Instruction
 pBRCC = do
@@ -313,6 +326,14 @@ pMOV = do
     pComma
     MOV rd <$> pRegister
 
+pMOVW :: Parser Instruction
+pMOVW = do
+    cistring "MOVW" >> spaces
+    (reg1, reg2) <- pRegisterPair
+    pComma
+    (reg3, reg4) <- pRegisterPair
+    return (MOVW reg1 reg2 reg3 reg4) 
+
 pMUL :: Parser Instruction
 pMUL = do
     cistring "MUL" >> spaces
@@ -366,6 +387,23 @@ pRET = do
     cistring "RET" >> spaces
     return (RET)
 
+pROL :: Parser Instruction
+pROL = do
+    cistring "ROL" >> spaces
+    ROL <$> pRegister
+
+pROR :: Parser Instruction
+pROR = do
+    cistring "ROR" >> spaces
+    ROR <$> pRegister
+
+pSBC :: Parser Instruction
+pSBC = do
+    cistring "SBC" >> spaces
+    rd <- pRegister
+    pComma
+    SBC rd <$> pRegister
+
 pSBRC :: Parser Instruction
 pSBRC = do
     cistring "SBRC" >> spaces
@@ -413,6 +451,11 @@ pSWAP = do
     cistring "SWAP" >> spaces
     SWAP <$> pRegister
 
+pTST :: Parser Instruction
+pTST = do
+    cistring "TST" >> spaces
+    TST <$> pRegister
+
 -- Main parser
 
 pInstruction :: Parser (Maybe Instruction)
@@ -425,6 +468,7 @@ pInstruction = do
         try (Just <$> pADIW),
         try (Just <$> pAND),
         try (Just <$> pANDI),
+        try (Just <$> pASR),
         try (Just <$> pBRCC),
         try (Just <$> pBRCS),
         try (Just <$> pBREQ),
@@ -460,6 +504,7 @@ pInstruction = do
         try (Just <$> pLSL),
         try (Just <$> pLSR),
         try (Just <$> pMOV),
+        try (Just <$> pMOVW),
         try (Just <$> pMUL),
         try (Just <$> pMULS),
         try (Just <$> pNEG),
@@ -469,6 +514,9 @@ pInstruction = do
         try (Just <$> pPOP),
         try (Just <$> pPUSH),
         try (Just <$> pRET),
+        try (Just <$> pROL),
+        try (Just <$> pROR),
+        try (Just <$> pSBC),
         try (Just <$> pSBRC),
         try (Just <$> pSBRS),
         try (Just <$> pST),
@@ -476,6 +524,7 @@ pInstruction = do
         try (Just <$> pSUB),
         try (Just <$> pSUBI),
         try (Just <$> pSWAP),
+        try (Just <$> pTST),
         try (char ';' >> manyTill anyChar newline) >> return Nothing -- Ignore comments
         ]
 

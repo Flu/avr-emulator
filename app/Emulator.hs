@@ -64,6 +64,7 @@ data Instruction
     | ADIW Register Register Word8
     | AND Register Register
     | ANDI Register Word8
+    | ASR Register
     | BRCC Label
     | BRCCR Int
     | BRCS Label
@@ -119,6 +120,7 @@ data Instruction
     | LSL Register
     | LSR Register
     | MOV Register Register  -- Move value between registers
+    | MOVW Register Register Register Register
     | MUL Register Register
     | MULS Register Register
     | NEG Register
@@ -128,6 +130,9 @@ data Instruction
     | POP Register
     | PUSH Register
     | RET
+    | ROL Register
+    | ROR Register
+    | SBC Register Register
     | SBRC Register Word8
     | SBRS Register Word8
     | ST String Register
@@ -135,6 +140,7 @@ data Instruction
     | SUB Register Register
     | SUBI Register Word8
     | SWAP Register
+    | TST Register
     deriving (Show)
 
 adc :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
@@ -216,6 +222,26 @@ andi oldStatus registers sp memory op1 immediate =
             negativeFlag = testBit result 7,
             zeroFlag = result == 0,
             carryFlag = carryFlag oldStatus,
+            signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
+        }
+    in (updatedRegisters, updatedFlags, 0, sp, memory)
+
+asr :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
+asr oldStatus registers sp memory op1 =
+    let rdIndex = fromIntegral op1
+        rd = registers ! rdIndex
+        lsb = testBit rd 0
+        msb = testBit rd 7
+        result = if msb then (rd `shiftR` 1) .|. (0x80) else (rd `shiftR` 1) .&. (0xBF)
+        updatedRegisters = registers // [(rdIndex,result)]
+        updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            negativeFlag = testBit result 7,
+            zeroFlag = result == 0,
+            carryFlag = lsb,
+            overflowFlag = xor (negativeFlag updatedFlags) (carryFlag updatedFlags),
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
     in (updatedRegisters, updatedFlags, 0, sp, memory)
@@ -567,6 +593,18 @@ mov oldStatus registers sp memory rd rs =
         updatedFlags = oldStatus
     in (updatedRegisters, updatedFlags, 0, sp, memory)
 
+movw :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Register -> Register -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
+movw oldStatus registers sp memory rd1 rd rr1 rr =
+    let rd1Index = fromIntegral rd1
+        rdIndex = fromIntegral rd
+        rr1Index = fromIntegral rr1
+        rrIndex = fromIntegral rr
+        valueH = registers ! rr1Index
+        valueL = registers ! rrIndex
+        updatedRegisters = registers // [(rd1Index,valueH), (rdIndex, valueL)]
+        updatedFlags = oldStatus
+    in (updatedRegisters, updatedFlags, 0, sp, memory)
+
 mul :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 mul oldStatus registers sp memory op1 op2 =
     let rdIndex = fromIntegral op1
@@ -701,6 +739,65 @@ ret oldStatus registers sp memory pc =
         relativeAddress = (fromIntegral returnAddress :: Int) - (fromIntegral pc :: Int)
     in (registers, oldStatus, relativeAddress, newSp, memory)
 
+rol :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
+rol oldStatus registers sp memory op1 =
+    let rdIndex = fromIntegral op1
+        rd = registers ! rdIndex
+        msb = testBit rd 7
+        result = if carryFlag oldStatus then (rd `shiftL` 1) .|. (0x01) else (rd `shiftL` 1)
+        updatedRegisters = registers // [(rdIndex,result)]
+        updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = testBit rd 3,
+            negativeFlag = testBit result 7,
+            zeroFlag = result == 0,
+            carryFlag = msb,
+            overflowFlag = xor (negativeFlag updatedFlags) (carryFlag updatedFlags),
+            signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
+        }
+    in (updatedRegisters, updatedFlags, 0, sp, memory)
+
+ror :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
+ror oldStatus registers sp memory op1 =
+    let rdIndex = fromIntegral op1
+        rd = registers ! rdIndex
+        lsb = testBit rd 0
+        result = if carryFlag oldStatus then (rd `shiftR` 1) .|. (0x80) else rd `shiftR` 1
+        updatedRegisters = registers // [(rdIndex,result)]
+        updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            negativeFlag = False,
+            zeroFlag = result == 0,
+            carryFlag = lsb,
+            overflowFlag = xor (negativeFlag updatedFlags) (carryFlag updatedFlags),
+            signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
+        }
+    in (updatedRegisters, updatedFlags, 0, sp, memory)
+
+sbc :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
+sbc oldStatus registers sp memory op1 op2 =
+    let
+        rdIndex = fromIntegral op1
+        rsIndex = fromIntegral op2
+        rd = registers ! rdIndex
+        rr = registers ! rsIndex
+        carry = if carryFlag oldStatus then 1 else 0
+        result = rd - rr - carry
+        updatedRegisters = registers // [(rdIndex,result)]
+        updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = not (testBit rd 3) && testBit rr 3 || testBit rr 3 && testBit result 3 || testBit result 3 && not(testBit rd 3),
+            overflowFlag = testBit rd 7 && not (testBit rr 7) && not(testBit result 7) || not(testBit rd 7) && testBit rr 7 && testBit result 7,
+            negativeFlag = testBit result 7,
+            zeroFlag = result == 0 && (zeroFlag oldStatus),
+            carryFlag = not (testBit rd 7) && testBit rr 7 || testBit rr 7 && testBit result 7 || testBit result 7 && not(testBit rd 7),
+            signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
+        }
+    in (updatedRegisters, updatedFlags, 0, sp, memory)
 
 sbrc :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
 sbrc oldStatus registers sp memory op1 immediate =
@@ -807,6 +904,22 @@ swap oldStatus registers sp memory op1 =
         updatedRegisters = registers // [(rdIndex, result)]
         in (updatedRegisters, oldStatus, 0, sp, memory)
 
+tst :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
+tst oldStatus registers sp memory op1 = 
+    let rdIndex = fromIntegral op1
+        rd = registers ! rdIndex
+        updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = False,
+            negativeFlag = testBit rd 7,
+            signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags),
+            zeroFlag = rd == 0,
+            carryFlag = carryFlag oldStatus
+        }
+        in (registers, updatedFlags, 0, sp, memory)
+
 executeInstruction :: Instruction -> EmulatorState -> EmulatorState
 executeInstruction instruction state = 
     let (updatedRegisters, updatedFlags, relativeJump, updatedSp, updatedMemory) = case instruction of
@@ -815,6 +928,7 @@ executeInstruction instruction state =
             ADIW rdh rdl immediate -> (registers state, flags state, 0, sp state, memory state)
             AND rd rr -> andInstr (flags state) (registers state) (sp state) (memory state) rd rr
             ANDI rd k -> andi (flags state) (registers state) (sp state) (memory state) rd k
+            ASR rd -> asr (flags state) (registers state) (sp state) (memory state) rd
             BRCCR relativeAddress -> brcc (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRCSR relativeAddress -> brcs (flags state) (registers state) (sp state) (memory state) relativeAddress
             BREQR relativeAddress -> breq (flags state) (registers state) (sp state) (memory state) relativeAddress
@@ -850,6 +964,7 @@ executeInstruction instruction state =
             LSL rd -> lsl (flags state) (registers state) (sp state) (memory state) rd
             LSR rd -> lsr (flags state) (registers state) (sp state) (memory state) rd
             MOV rd rs -> mov (flags state) (registers state) (sp state) (memory state) rd rs
+            MOVW rdh rdl rrh rrl -> movw (flags state) (registers state) (sp state) (memory state) rdh rdl rrh rrl
             MUL rd rs -> mul (flags state) (registers state) (sp state) (memory state) rd rs
             MULS rd rs -> muls (flags state) (registers state) (sp state) (memory state) rd rs
             NEG rd -> neg (flags state) (registers state) (sp state) (memory state) rd
@@ -859,6 +974,9 @@ executeInstruction instruction state =
             POP rd -> pop (flags state) (registers state) (sp state) (memory state) rd
             PUSH rr -> push (flags state) (registers state) (sp state) (memory state) rr
             RET -> ret (flags state) (registers state) (sp state) (memory state) (programCounter state)
+            ROL rd -> rol (flags state) (registers state) (sp state) (memory state) rd
+            ROR rd -> ror (flags state) (registers state) (sp state) (memory state) rd
+            SBC rd rr -> sbc (flags state) (registers state) (sp state) (memory state) rd rr
             SBRC rd b -> sbrc (flags state) (registers state) (sp state) (memory state) rd b
             SBRS rd b -> sbrs (flags state) (registers state) (sp state) (memory state) rd b
             ST xregister rr -> st (flags state) (registers state) (sp state) (memory state) xregister rr
@@ -866,6 +984,7 @@ executeInstruction instruction state =
             SUB rd rr -> sub (flags state) (registers state) (sp state) (memory state) rd rr
             SUBI rd k -> subi (flags state) (registers state) (sp state) (memory state) rd k
             SWAP rd -> swap (flags state) (registers state) (sp state) (memory state) rd
+            TST rd -> tst (flags state) (registers state) (sp state) (memory state) rd
     in state {
         registers = updatedRegisters,
         flags = updatedFlags,

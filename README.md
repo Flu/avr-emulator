@@ -41,6 +41,7 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `ADIW` – Add an immediate word to a register pair.
   - `AND` – Perform a bitwise AND between two registers.
   - `ANDI` – Perform a bitwise AND between a register and an immediate value.
+  - `ASR` – Arithmetic shift to the right.
   - `BRCC` – Branch if carry flag is cleared.
   - `BRCS` – Branch if carry flag is set.
   - `BREQ` – Branch if equal to zero.
@@ -75,6 +76,7 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `LSL` – Logical shift left.
   - `LSR` – Logical shift right.
   - `MOV` – Move the value from one register to another.
+  - `MOVW` – Move a word from a pair of registers to the other.
   - `MUL` – Multiply two registers.
   - `MULS` – Multiply signed values in two registers.
   - `NEG` – Take two's complement of register.
@@ -84,6 +86,9 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `POP` – Pops an element from the stack into a register.
   - `PUSH` – Pushes an element from a register onto the stack.
   - `RET` – Return from subroutine.
+  - `ROL` – Rotate left through carry.
+  - `ROR` – Rotate right through carry.
+  - `SBC` – Subtract one register value from another with carry.
   - `SBRC` – Skip next instruction if bit in register is cleared.
   - `SBRS` – Skip next instruction if bit in register is set.
   - `ST` – Store indirect to data space using an indirect address.
@@ -91,6 +96,7 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `SUB` – Subtract one register value from another.
   - `SUBI` – Subtract an immediate value from a register.
   - `SWAP` – Swap nibbles of register.
+  - `TST` – Test if a register is zero or negative.
 
 ## Roadmap
   - [ ] Configurable memory size through command line arguments.
