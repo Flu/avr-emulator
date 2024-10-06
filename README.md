@@ -61,15 +61,15 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `BRVC` – Branch if overflow flag is cleared.
   - `BRVS` – Branch if overflow flag is set.
   - `CALL` – Direct call to a subroutine with the return address pushed on the stack.
-  - `CLC` - Clear the Carry flag.
-  - `CLH` - Clear the Half Carry flag.
-  - `CLI` - Clear the Global Interrupt flag.
-  - `CLN` - Clear the Negative flag.
-  - `CLR` - Sets register to `0x00`.
-  - `CLS` - Clear Signed flag.
-  - `CLT` - Clear T flag.
-  - `CLV` - Clear Overflow flag.
-  - `CLZ` - Clear Zero flag.
+  - `CLC` – Clear the Carry flag.
+  - `CLH` – Clear the Half Carry flag.
+  - `CLI` – Clear the Global Interrupt flag.
+  - `CLN` – Clear the Negative flag.
+  - `CLR` – Sets register to `0x00`.
+  - `CLS` – Clear Signed flag.
+  - `CLT` – Clear T flag.
+  - `CLV` – Clear Overflow flag.
+  - `CLZ` – Clear Zero flag.
   - `COM` – Take one's complement of register.
   - `CP` – Compare two registers.
   - `CPC` – Compare with carry between two registers.
@@ -100,15 +100,15 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `SBC` – Subtract one register value from another with carry.
   - `SBRC` – Skip next instruction if bit in register is cleared.
   - `SBRS` – Skip next instruction if bit in register is set.
-  - `SEC` - Set the Carry flag.
-  - `SEH` - Set the Half Carry flag.
-  - `SEI` - Set the Global Interrupt flag.
-  - `SEN` - Set the Negative flag.
-  - `SER` - Sets all bits in a regitser.
-  - `SES` - Set Signed flag.
-  - `SET` - Set T flag.
-  - `SEV` - Set Overflow flag.
-  - `SEZ` - Set Zero flag.
+  - `SEC` – Set the Carry flag.
+  - `SEH` – Set the Half Carry flag.
+  - `SEI` – Set the Global Interrupt flag.
+  - `SEN` – Set the Negative flag.
+  - `SER` – Sets all bits in a regitser.
+  - `SES` – Set Signed flag.
+  - `SET` – Set T flag.
+  - `SEV` – Set Overflow flag.
+  - `SEZ` – Set Zero flag.
   - `ST` – Store indirect to data space using an indirect address.
   - `STS` – Store direct to data space.
   - `SUB` – Subtract one register value from another.
