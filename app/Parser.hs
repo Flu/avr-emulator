@@ -230,6 +230,52 @@ pCALL = do
     label <- many1 (letter <|> digit <|> char '_')
     return (CALL label)
 
+pCLC :: Parser Instruction
+pCLC = do
+    cistring "CLC" >> spaces
+    return (CLC)
+
+pCLH :: Parser Instruction
+pCLH = do
+    cistring "CLH" >> spaces
+    return (CLH)
+
+pCLI :: Parser Instruction
+pCLI = do
+    cistring "CLI" >> spaces
+    return (CLI)
+
+pCLN :: Parser Instruction
+pCLN = do
+    cistring "CLN" >> spaces
+    return (CLN)
+
+pCLR :: Parser Instruction
+pCLR = do
+    cistring "CLR" >> spaces
+    CLR <$> pRegister
+
+pCLS :: Parser Instruction
+pCLS = do
+    cistring "CLS" >> spaces
+    return (CLS)
+
+pCLT :: Parser Instruction
+pCLT = do
+    cistring "CLT" >> spaces
+    return (CLT)
+
+pCLV :: Parser Instruction
+pCLV = do
+    cistring "CLV" >> spaces
+    return (CLV)
+
+pCLZ :: Parser Instruction
+pCLZ = do
+    cistring "CLZ" >> spaces
+    return (CLZ)
+
+
 pCOM :: Parser Instruction
 pCOM = do
     cistring "COM" >> spaces
@@ -416,6 +462,51 @@ pSBRS = do
     pComma
     SBRS rd <$> pDecimal
 
+pSEC :: Parser Instruction
+pSEC = do
+    cistring "SEC" >> spaces
+    return (SEC)
+
+pSEH :: Parser Instruction
+pSEH = do
+    cistring "SEH" >> spaces
+    return (SEH)
+
+pSEI :: Parser Instruction
+pSEI = do
+    cistring "SEI" >> spaces
+    return (SEI)
+
+pSEN :: Parser Instruction
+pSEN = do
+    cistring "SEN" >> spaces
+    return (SEN)
+
+pSER :: Parser Instruction
+pSER = do
+    cistring "SER" >> spaces
+    SER <$> pRegister
+
+pSES :: Parser Instruction
+pSES = do
+    cistring "SES" >> spaces
+    return (SES)
+
+pSET :: Parser Instruction
+pSET = do
+    cistring "SET" >> spaces
+    return (SET)
+
+pSEV :: Parser Instruction
+pSEV = do
+    cistring "SEV" >> spaces
+    return (SEV)
+
+pSEZ :: Parser Instruction
+pSEZ = do
+    cistring "SEZ" >> spaces
+    return (SEZ)
+
 pST :: Parser Instruction
 pST = do
     cistring "ST" >> spaces
@@ -486,6 +577,15 @@ pInstruction = do
         try (Just <$> pBRVC),
         try (Just <$> pBRVS),
         try (Just <$> pCALL),
+        try (Just <$> pCLC),
+        try (Just <$> pCLH),
+        try (Just <$> pCLI),
+        try (Just <$> pCLN),
+        try (Just <$> pCLR),
+        try (Just <$> pCLS),
+        try (Just <$> pCLT),
+        try (Just <$> pCLV),
+        try (Just <$> pCLZ),
         try (Just <$> pCOM),
         try (Just <$> pCP),
         try (Just <$> pCPC),
@@ -517,6 +617,15 @@ pInstruction = do
         try (Just <$> pSBC),
         try (Just <$> pSBRC),
         try (Just <$> pSBRS),
+        try (Just <$> pSEC),
+        try (Just <$> pSEH),
+        try (Just <$> pSEI),
+        try (Just <$> pSEN),
+        try (Just <$> pSER),
+        try (Just <$> pSES),
+        try (Just <$> pSET),
+        try (Just <$> pSEV),
+        try (Just <$> pSEZ),
         try (Just <$> pST),
         try (Just <$> pSTS),
         try (Just <$> pSUB),
