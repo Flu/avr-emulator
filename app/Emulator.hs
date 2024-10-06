@@ -104,6 +104,15 @@ data Instruction
     | BRVSR Int
     | CALL Label
     | CALLR Int
+    | CLC
+    | CLH
+    | CLI
+    | CLN
+    | CLR Register
+    | CLS
+    | CLT
+    | CLV
+    | CLZ
     | COM Register
     | CP Register Register
     | CPC Register Register
@@ -136,6 +145,15 @@ data Instruction
     | SBC Register Register
     | SBRC Register Word8
     | SBRS Register Word8
+    | SEC
+    | SEH
+    | SEI
+    | SEN
+    | SER Register
+    | SES
+    | SET
+    | SEV
+    | SEZ
     | ST String Register
     | STS Word16 Register
     | SUB Register Register
@@ -384,6 +402,136 @@ call oldStatus registers sp memory relAddress returnAddress =
         updatedMemory = memory // [(fromIntegral sp, high),(fromIntegral (sp - 1), low)]
         newSp = sp - 2
         in (registers, oldStatus, relAddress, newSp, updatedMemory)
+
+clc :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+clc oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = False,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+clh :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+clh oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = False,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = carryFlag oldStatus,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+cli :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+cli oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = False,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = carryFlag oldStatus,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+cln :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+cln oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = False,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = carryFlag oldStatus,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+clr :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
+clr oldStatus registers sp memory op1 =
+    let rdIndex = fromIntegral op1
+        rd = registers ! rdIndex
+        result = 0
+        updatedRegisters = registers // [(rdIndex, result)]
+        updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = False,
+            negativeFlag = False,
+            zeroFlag = True,
+            carryFlag = carryFlag oldStatus,
+            signFlag = False
+    }
+    in (updatedRegisters, updatedFlags, 0, sp, memory)
+
+cls :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+cls oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = carryFlag oldStatus,
+            signFlag = False
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+clt :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+clt oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = False,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = carryFlag oldStatus,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+clv :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+clv oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = False,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = carryFlag oldStatus,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+clz :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+clz oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = False,
+            carryFlag = carryFlag oldStatus,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
 
 com :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 com oldStatus registers sp memory op1 = 
@@ -843,6 +991,126 @@ sbrs oldStatus registers sp memory op1 immediate =
         relativeJump = if shouldJump then 1 else 0
     in (registers, oldStatus, relativeJump, sp, memory)
 
+sec :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+sec oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = True,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+seh :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+seh oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = True,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = carryFlag oldStatus,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+sei :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+sei oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = True,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = carryFlag oldStatus,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+sen :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+sen oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = True,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = carryFlag oldStatus,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+ser :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
+ser oldStatus registers sp memory op1 =
+    let rdIndex = fromIntegral op1
+        rd = registers ! rdIndex
+        result = 255
+        updatedRegisters = registers // [(rdIndex, result)]
+    in (updatedRegisters, oldStatus, 0, sp, memory)
+
+ses :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+ses oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = carryFlag oldStatus,
+            signFlag = True
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+set :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+set oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = True,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = carryFlag oldStatus,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+sev :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+sev oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = True,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = zeroFlag oldStatus,
+            carryFlag = carryFlag oldStatus,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
+sez :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
+sez oldStatus registers sp memory =
+    let updatedFlags = StatusFlags {
+            interruptFlag = interruptFlag oldStatus,
+            tFlag = tFlag oldStatus,
+            halfCarryFlag = halfCarryFlag oldStatus,
+            overflowFlag = overflowFlag oldStatus,
+            negativeFlag = negativeFlag oldStatus,
+            zeroFlag = True,
+            carryFlag = carryFlag oldStatus,
+            signFlag = signFlag oldStatus
+    }
+    in (registers, updatedFlags, 0, sp, memory )
+
 st :: StatusFlags -> Registers -> StackPointer -> Memory -> String -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 st oldStatus registers sp memory "X" op2 =
     let rrIndex = fromIntegral op2
@@ -974,6 +1242,15 @@ executeInstruction instruction state =
             BRVCR relativeAddress -> brvc (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRVSR relativeAddress -> brvs (flags state) (registers state) (sp state) (memory state) relativeAddress
             CALLR relativeAddress -> call (flags state) (registers state) (sp state) (memory state) relativeAddress (programCounter state)
+            CLC -> clc (flags state) (registers state) (sp state) (memory state)
+            CLH -> clh (flags state) (registers state) (sp state) (memory state)
+            CLI -> cli (flags state) (registers state) (sp state) (memory state)
+            CLN -> cln (flags state) (registers state) (sp state) (memory state)
+            CLR rd -> clr (flags state) (registers state) (sp state) (memory state) rd
+            CLS -> cls (flags state) (registers state) (sp state) (memory state)
+            CLT -> clt (flags state) (registers state) (sp state) (memory state)
+            CLV -> clv (flags state) (registers state) (sp state) (memory state)
+            CLZ -> clz (flags state) (registers state) (sp state) (memory state)
             COM rd -> com (flags state) (registers state) (sp state) (memory state) rd
             CP rd rr -> cp (flags state) (registers state) (sp state) (memory state) rd rr
             CPC rd rr -> cpc (flags state) (registers state) (sp state) (memory state) rd rr
@@ -1005,6 +1282,15 @@ executeInstruction instruction state =
             SBC rd rr -> sbc (flags state) (registers state) (sp state) (memory state) rd rr
             SBRC rd b -> sbrc (flags state) (registers state) (sp state) (memory state) rd b
             SBRS rd b -> sbrs (flags state) (registers state) (sp state) (memory state) rd b
+            SEC -> sec (flags state) (registers state) (sp state) (memory state)
+            SEH -> seh (flags state) (registers state) (sp state) (memory state)
+            SEI -> sei (flags state) (registers state) (sp state) (memory state)
+            SEN -> sen (flags state) (registers state) (sp state) (memory state)
+            SER rd -> ser (flags state) (registers state) (sp state) (memory state) rd
+            SES -> ses (flags state) (registers state) (sp state) (memory state)
+            SET -> set (flags state) (registers state) (sp state) (memory state)
+            SEV -> sev (flags state) (registers state) (sp state) (memory state)
+            SEZ -> sez (flags state) (registers state) (sp state) (memory state)
             ST xregister rr -> st (flags state) (registers state) (sp state) (memory state) xregister rr
             STS k rr -> sts (flags state) (registers state) (sp state) (memory state) k rr
             SUB rd rr -> sub (flags state) (registers state) (sp state) (memory state) rd rr

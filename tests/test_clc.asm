@@ -1,0 +1,4 @@
+LDI R16, 0xff
+ADD R16, R16
+CLC
+NOP

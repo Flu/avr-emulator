@@ -1,0 +1,3 @@
+LDI R16, 0x02
+CLR R16
+NOP
