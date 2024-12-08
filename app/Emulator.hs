@@ -1,4 +1,4 @@
-module Emulator(run, Instruction(..), Register, Registers, EmulatorState, StatusFlags, add, ldi, mov, flags, registers,
+module Emulator(run, Instruction(..), Register, Registers(..), EmulatorState, StatusFlags(..), add, ldi, mov, flags, registers,
 showRegisters, showStatusFlags, programCounter, replaceLabels, memory) where
 
 import Data.Binary (Word8, Word16)
