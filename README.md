@@ -132,7 +132,7 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - [x] `CALL` and `RET` instructions.
   - [x] Maybe (?) move to MegaParsec for input parsing.
   - [ ] Registers should be mapped to the first 32 memory locations.
-  - [ ] Fix Parser returning an error when last line of input file is an empty line or a comment.
+  - [x] Fix Parser returning an error when last line of input file is an empty line or a comment.
   - [ ] Implementing step by step emulation of instructions.
   - [x] Implement Parser support for lowercase instructions.
   - [x] Implementing `ADIW`.

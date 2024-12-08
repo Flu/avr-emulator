@@ -648,7 +648,9 @@ instructionParser = do
 commentParser :: Parser (Maybe Instruction)
 commentParser = do
     _ <- char ';'  -- Skip the comment start
-    manyTill printChar eol  -- Consume the comment content
+    choice [
+        try (manyTill printChar eol),
+        manyTill printChar eof]  -- Consume the comment content
     return Nothing  -- Always return Nothing for comments
 
 -- Parser for a line (either an instruction or a comment)
@@ -656,12 +658,15 @@ lineParser :: Parser (Maybe Instruction)
 lineParser = try instructionParser <|> try commentParser
 
 -- Parser for a list of instructions
-programParser :: Parser [(Maybe Instruction)]
-programParser = many (space *> lineParser <* optional eol)
+programParser :: Parser [Instruction]
+programParser = do
+    instructions <- many (space *> lineParser <* space)
+    eof
+    return (catMaybes instructions)
 
 -- Run the parser on the input
 parseAssembly :: String -> Either (ParseErrorBundle T.Text Void) [Instruction]
 parseAssembly input = do
     let textInput = T.pack input
     parsingResult <- runParser programParser "" textInput
-    return (catMaybes parsingResult) 
+    return parsingResult

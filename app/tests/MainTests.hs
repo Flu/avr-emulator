@@ -147,6 +147,11 @@ main = hspec $ do
         it "should correctly emulate bubblesort.asm and match expected state" $ do
             let assemblyFilePath = "test_files/bubblesort.asm"
             emulateProgramFromFile assemblyFilePath testBubblesort
+
+        -- Test 23: test_eof.asm
+        it "should correctly emulate test_eof.asm and match expected state" $ do
+            let assemblyFilePath = "test_files/test_eof.asm"
+            emulateProgramFromFile assemblyFilePath testEof
             
 
 -- Checking EmulatorState for the "fibonacci.asm"
@@ -713,5 +718,21 @@ testBubblesort state = do
     (overflowFlag $ flags state) `shouldBe` False
     (negativeFlag $ flags state) `shouldBe` False
     (zeroFlag $ flags state) `shouldBe` True
+    (carryFlag $ flags state) `shouldBe` False
+
+-- Checking EmulatorState for the "test_eof.asm"
+testEof :: EmulatorState -> IO ()
+testEof state = do
+    -- Program counter
+    (programCounter state) `shouldBe` 12
+
+    -- Status flags
+    (interruptFlag $ flags state) `shouldBe` False
+    (tFlag $ flags state) `shouldBe` False
+    (halfCarryFlag $ flags state) `shouldBe` True
+    (signFlag $ flags state) `shouldBe` True
+    (overflowFlag $ flags state) `shouldBe` True
+    (negativeFlag $ flags state) `shouldBe` False
+    (zeroFlag $ flags state) `shouldBe` False
     (carryFlag $ flags state) `shouldBe` False
 
