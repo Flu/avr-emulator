@@ -10,8 +10,8 @@ _main:
     LDI R27, 0x0
     LDI R16, 0xa7 ; Seed for the PRNG
     LDI R17, 0x45 ; Feedback constant for the PRNG
-    LDI R8, 0x31  ; Register pair for how many random values we want
-    LDI R9, 0x04
+    LDI R8, 0xff  ; Register pair for how many random values we want
+    LDI R9, 0x00
     LDI R18, 0x01 ; Register pair for subtracting from R9:R8
     LDI R19, 0x00
 
@@ -29,8 +29,8 @@ prng_loop:
     LDI R26, 0x00
     LDI R27, 0x00
     
-    LDI R8, 0x31
-    LDI R9, 0x04
+    LDI R8, 0xff
+    LDI R9, 0x00
 
     CALL BUBBLE_SORT
     JMP END_OF_PROGRAM
