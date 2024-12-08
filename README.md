@@ -130,7 +130,7 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - [ ] Configurable memory size through command line arguments.
   - [x] Implement in-memory stack with `PUSH` and `POP` instructions.
   - [x] `CALL` and `RET` instructions.
-  - [ ] Maybe (?) move to MegaParsec for input parsing.
+  - [x] Maybe (?) move to MegaParsec for input parsing.
   - [ ] Registers should be mapped to the first 32 memory locations.
   - [ ] Fix Parser returning an error when last line of input file is an empty line or a comment.
   - [ ] Implementing step by step emulation of instructions.
