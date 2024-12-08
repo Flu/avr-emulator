@@ -16,6 +16,16 @@ You need to have `Cabal` and `GHC` installed to build and run the emulator. We r
    cabal build
    ```
 
+### Test the Emulator
+
+1. Clone the repository and navigate to the project folder.
+2. Run the following command to run the unit tests for the project:
+   ```bash
+   cabal test all
+   ```
+
+This will run all the test suites and will tell you if anything failed. In general, any commit on the `main` branch should pass all tests. If yours doesn't, open up an issue.
+
 ### Run the emulator
 
 ```bash
@@ -30,7 +40,7 @@ The emulator will automatically end when there are no more instructions to execu
 
 ### Test files
 
-You can find test assembly programs in the `tests/` directory. These files provide examples of how an AVR assembly program is structured and can be used to verify the emulator's functionality.
+You can find test assembly programs in the `test_files/` directory in the root of the project. These files provide examples of how an AVR assembly program is structured and can be used to verify the emulator's functionality.
 
 ## Features
 - **Memory**: 2KB starting from `0x0000`.
@@ -104,7 +114,7 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - `SEH` – Set the Half Carry flag.
   - `SEI` – Set the Global Interrupt flag.
   - `SEN` – Set the Negative flag.
-  - `SER` – Sets all bits in a regitser.
+  - `SER` – Sets all bits in a register.
   - `SES` – Set Signed flag.
   - `SET` – Set T flag.
   - `SEV` – Set Overflow flag.
@@ -126,5 +136,5 @@ You can find test assembly programs in the `tests/` directory. These files provi
   - [ ] Implementing step by step emulation of instructions.
   - [x] Implement Parser support for lowercase instructions.
   - [x] Implementing `ADIW`.
-  - [ ] Unit tests for instructions.
+  - [x] Unit tests for instructions.
   - [ ] Buy Grolsch beer when this is all done :tada: :beer:

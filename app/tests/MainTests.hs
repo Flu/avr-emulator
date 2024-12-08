@@ -38,12 +38,12 @@ emulateProgramFromFile filepath checkingFunction = do
 main :: IO ()
 main = hspec $ do
     describe "AVR Emulator E2E tests" $ do    
-        -- Test 2: test_fibonacci.asm
+        -- Test 1: test_fibonacci.asm
         it "should correctly emulate fibonacci.asm and match expected state" $ do
             let assemblyFilePath = "test_files/fibonacci.asm"
             emulateProgramFromFile assemblyFilePath testFibonacci 
 
-        -- Test 3: test_asr.asm
+        -- Test 2: test_asr.asm
         it "should correctly emulate test_asr.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_asr.asm"
             emulateProgramFromFile assemblyFilePath testAsr
@@ -53,97 +53,97 @@ main = hspec $ do
             let assemblyFilePath = "test_files/test_brlo.asm"
             emulateProgramFromFile assemblyFilePath testBrlo
 
-        -- Test 3: test_brmi.asm
+        -- Test 4: test_brmi.asm
         it "should correctly emulate test_brmi.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_brmi.asm"
             emulateProgramFromFile assemblyFilePath testBrmi
 
-        -- Test 3: test_call.asm
+        -- Test 5: test_call.asm
         it "should correctly emulate test_call.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_call.asm"
             emulateProgramFromFile assemblyFilePath testCall
 
-        -- Test 3: test_clc.asm
+        -- Test 6: test_clc.asm
         it "should correctly emulate test_clc.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_clc.asm"
             emulateProgramFromFile assemblyFilePath testClc
 
-        -- Test 3: test_clr.asm
+        -- Test 7: test_clr.asm
         it "should correctly emulate test_clr.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_clr.asm"
             emulateProgramFromFile assemblyFilePath testClr
 
-        -- Test 3: test_clearing.asm
+        -- Test 8: test_clearing.asm
         it "should correctly emulate test_clearing.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_clearing.asm"
             emulateProgramFromFile assemblyFilePath testClearingFlags
 
-        -- Test 3: test_clr.asm
+        -- Test 9: test_clr.asm
         it "should correctly emulate test_eor.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_eor.asm"
             emulateProgramFromFile assemblyFilePath testEor
 
-        -- Test 3: test_movw.asm
+        -- Test 10: test_movw.asm
         it "should correctly emulate test_movw.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_movw.asm"
             emulateProgramFromFile assemblyFilePath testMovw
 
-        -- Test 3: test_mul.asm
+        -- Test 11: test_mul.asm
         it "should correctly emulate test_mul.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_mul.asm"
             emulateProgramFromFile assemblyFilePath testMul
 
-        -- Test 3: test_or.asm
+        -- Test 12: test_or.asm
         it "should correctly emulate test_or.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_or.asm"
             emulateProgramFromFile assemblyFilePath testOr
 
-        -- Test 3: test_push.asm
+        -- Test 13: test_push.asm
         it "should correctly emulate test_push.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_push.asm"
             emulateProgramFromFile assemblyFilePath testPush
 
-        -- Test 3: test_rol_ror.asm
+        -- Test 14: test_rol_ror.asm
         it "should correctly emulate test_rol_ror.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_rol_ror.asm"
             emulateProgramFromFile assemblyFilePath testRolRor
 
-        -- Test 3: test_sbc.asm
+        -- Test 15: test_sbc.asm
         it "should correctly emulate test_sbc.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_sbc.asm"
             emulateProgramFromFile assemblyFilePath testSbc
 
-        -- Test 3: test_sbrs.asm
+        -- Test 16: test_sbrs.asm
         it "should correctly emulate test_sbrs.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_sbrs.asm"
             emulateProgramFromFile assemblyFilePath testSbrs
 
-        -- Test 3: test_setting.asm
+        -- Test 17: test_setting.asm
         it "should correctly emulate test_setting.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_setting.asm"
             emulateProgramFromFile assemblyFilePath testSettingFlags
 
-        -- Test 3: test_subi.asm
+        -- Test 18: test_subi.asm
         it "should correctly emulate test_subi.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_subi.asm"
             emulateProgramFromFile assemblyFilePath testSubi
 
-        -- Test 1: test_swap.asm
+        -- Test 19: test_swap.asm
         it "should correctly emulate test_swap.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_swap.asm"
             emulateProgramFromFile assemblyFilePath testSwap
 
-        -- Test 1: test_tst.asm
+        -- Test 20: test_tst.asm
         it "should correctly emulate test_tst.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test_tst.asm"
             emulateProgramFromFile assemblyFilePath testTst
 
-        -- Test 1: test.asm
+        -- Test 21: test.asm
         it "should correctly emulate test.asm and match expected state" $ do
             let assemblyFilePath = "test_files/test.asm"
             emulateProgramFromFile assemblyFilePath testTest
 
-        -- Test 1: bubblesort.asm
+        -- Test 22: bubblesort.asm
         it "should correctly emulate bubblesort.asm and match expected state" $ do
             let assemblyFilePath = "test_files/bubblesort.asm"
             emulateProgramFromFile assemblyFilePath testBubblesort
