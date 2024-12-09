@@ -1,5 +1,5 @@
 module Emulator(run, Instruction(..), Memory, Register, Registers(..), EmulatorState, StatusFlags(..), add, ldi, mov, flags, registers,
-showRegisters, showStatusFlags, programCounter, replaceLabels, memory, sp) where
+printRegisterBank, registersToString, showStatusFlags, programCounter, replaceLabels, memory, sp) where
 
 import Data.Binary (Word8, Word16)
 import Data.Bits
@@ -11,6 +11,7 @@ import Data.Maybe (catMaybes)
 import Data.Array
 import Debug.Trace (trace)
 import Text.Printf
+import System.Console.ANSI
 
 data EmulatorState = EmulatorState {
     registers :: Registers,
@@ -27,14 +28,42 @@ type Registers = Array Int Register
 type Memory = Array Int Word8
 type StackPointer = Word16
 
-showRegisters :: Registers -> String
-showRegisters regs =
+printRegisterBank :: Registers -> IO ()
+printRegisterBank regs = do
+    go (assocs regs)
+    where
+        go::[(Int, Register)] -> IO ()
+        go [] = return ()
+        go ((i, r):rs)
+            | r /= 0 = do
+                putStr $ printf "R%-5s " (show i)
+                setSGR [SetColor Background Vivid Red]
+                setSGR [SetColor Foreground Dull Black]
+                putStr $ printf "0x%02x" r
+                setSGR [Reset]
+                putStr "  "
+                setSGR [SetColor Background Vivid Red]
+                setSGR [SetColor Foreground Dull Black]
+                putStr $ printf "%08s" (showIntAtBase 2 intToDigit r "")
+                setSGR [Reset]
+                putStrLn ""
+                go rs
+            | r == 0 = do
+                putStr $ printf "R%-5s " (show i)
+                setSGR [Reset]
+                putStrLn $ printf "0x%02x  %08s" r (showIntAtBase 2 intToDigit r "")
+                setSGR [Reset]
+                go rs
+
+
+registersToString :: Registers -> String
+registersToString regs =
     let
         registers = assocs regs
         go::[(Int, Register)] -> String
         go regs = case regs of
             [] -> ""
-            ((i, r):rs) -> "R" ++ show i ++ ": 0x" ++ showHex r "" ++ " (" ++ showIntAtBase 2 intToDigit r "" ++ ")" ++ "\n" ++ go rs
+            ((i, r):rs) -> (printf "R%-5s 0x%02x  %08s" (show i) r (showIntAtBase 2 intToDigit r "")) ++ "\n" ++ go rs
     in
         go registers
 

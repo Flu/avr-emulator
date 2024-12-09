@@ -49,7 +49,7 @@ entryFunction (Options file False dmpIR memorySize) = do
     finalState <- compileFromFile file dmpIR memorySize
     case finalState of
         Right state -> do
-            putStrLn (showRegisters $ registers state)  -- Print the final register values
+            printRegisterBank $ registers state  -- Print the final register values
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
         Left errorMessage -> do
             print errorMessage
@@ -59,7 +59,7 @@ entryFunction (Options file True dmpIR memorySize) = do
     case finalState of
         Right state -> do
             print (memory state)
-            putStrLn (showRegisters $ registers state)  -- Print the final register values
+            printRegisterBank $ registers state  -- Print the final register values
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
         Left errorMessage -> do
             print errorMessage

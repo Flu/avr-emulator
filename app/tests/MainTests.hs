@@ -24,9 +24,9 @@ emulateProgramFromFile filepath checkingFunction = do
     case maybeInstructions of
         Just instructions -> do
             -- Emulate the parsed program
-            let finalState = run instructions
+            let finalState = run instructions 2000
             print (memory finalState)
-            putStrLn (showRegisters $ registers finalState)  -- Print the final register values
+            printRegisterBank $ registers finalState  -- Print the final register values
             putStrLn (showStatusFlags $ flags finalState)    -- Print the final status flags
             print (programCounter finalState)                -- Print the program counter
             -- Check that the emulator returned the expected state

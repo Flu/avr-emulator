@@ -72,6 +72,7 @@ executable avr-emulator
         , text >= 2.0.2
         , megaparsec >= 9.7.0
         , optparse-applicative >= 0.18.1.0
+        , ansi-terminal >= 1.1.2
 
     -- Directories containing source files.
     hs-source-dirs:   app
@@ -98,5 +99,6 @@ test-suite avr-emulator-test
         , hspec >= 2.7
         , vector >= 0.5.4.0
         , optparse-applicative >= 0.18.1.0
+        , ansi-terminal >= 1.1.2
 
   default-language: GHC2021
