@@ -25,10 +25,9 @@ emulateProgramFromFile filepath checkingFunction = do
         Just instructions -> do
             -- Emulate the parsed program
             let finalState = run instructions 2000
-            print (memory finalState)
-            printRegisterBank $ registers finalState  -- Print the final register values
+            prettyPrintMemory $ memory finalState            -- Pretty print the memory
+            printRegisterBank $ registers finalState         -- Pretty print the register banks
             putStrLn (showStatusFlags $ flags finalState)    -- Print the final status flags
-            print (programCounter finalState)                -- Print the program counter
             -- Check that the emulator returned the expected state
             checkingFunction finalState
         Nothing -> do
@@ -37,7 +36,7 @@ emulateProgramFromFile filepath checkingFunction = do
 -- Main function for testing
 main :: IO ()
 main = hspec $ do
-    describe "AVR Emulator E2E tests" $ do    
+    describe "AVR Emulator E2E tests" $ do
         -- Test 1: test_fibonacci.asm
         it "should correctly emulate fibonacci.asm and match expected state" $ do
             let assemblyFilePath = "test_files/fibonacci.asm"

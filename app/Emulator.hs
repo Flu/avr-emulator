@@ -1,5 +1,5 @@
 module Emulator(run, Instruction(..), Memory, Register, Registers(..), EmulatorState, StatusFlags(..), add, ldi, mov, flags, registers,
-printRegisterBank, registersToString, showStatusFlags, programCounter, replaceLabels, memory, sp) where
+printRegisterBank, registersToString, showStatusFlags, prettyPrintMemory, programCounter, replaceLabels, memory, sp) where
 
 import Data.Binary (Word8, Word16)
 import Data.Bits
@@ -37,13 +37,11 @@ printRegisterBank regs = do
         go ((i, r):rs)
             | r /= 0 = do
                 putStr $ printf "R%-5s " (show i)
-                setSGR [SetColor Background Vivid Red]
-                setSGR [SetColor Foreground Dull Black]
+                setSGR [SetColor Foreground Vivid Red]
                 putStr $ printf "0x%02x" r
                 setSGR [Reset]
                 putStr "  "
-                setSGR [SetColor Background Vivid Red]
-                setSGR [SetColor Foreground Dull Black]
+                setSGR [SetColor Foreground Vivid Red]
                 putStr $ printf "%08s" (showIntAtBase 2 intToDigit r "")
                 setSGR [Reset]
                 putStrLn ""
@@ -77,6 +75,56 @@ showStatusFlags sreg =
     " N: " ++ show (negativeFlag sreg) ++
     " Z: " ++ show (zeroFlag sreg) ++
     " C: " ++ show (carryFlag sreg)
+
+-- Converts an Int to a zero-padded hex string of length 4 (e.g., "0000")
+toHex4 :: Int -> String
+toHex4 x = let h = showHex x "" in replicate (4 - length h) '0' ++ h
+
+-- Converts a Word8 to a zero-padded hex string of length 2 (e.g., "00")
+toHex2 :: Word8 -> String
+toHex2 x = let h = showHex x "" in replicate (2 - length h) '0' ++ h
+
+-- Prints a single row of memory
+printRow :: Int -> [Word8] -> IO ()
+printRow addr values = do
+    putStr $ "0x" ++ toHex4 addr ++ "    " -- Print the address
+    mapM_ printPair (groupPairs values)
+    putStrLn ""
+  where
+    -- Groups the list of bytes into pairs
+    groupPairs :: [Word8] -> [[Word8]]
+    groupPairs []       = []
+    groupPairs (x:y:xs) = [x, y] : groupPairs xs
+    groupPairs [x]      = [[x]] -- Handle odd-sized memory gracefully
+
+    -- Prints a single pair of bytes, with non-zero highlighting
+    printPair :: [Word8] -> IO ()
+    printPair [a, b] = do
+        if a /= 0 || b /= 0
+            then do
+                setSGR [SetColor Foreground Vivid Red]
+                putStr $ toHex2 a ++ toHex2 b
+                setSGR [Reset]
+            else
+                putStr $ toHex2 a ++ toHex2 b
+        putStr " "
+    printPair [a] = do -- Handle the last unpaired byte if any
+        let pair = toHex2 a ++ "00"
+        if a /= 0
+            then do
+                setSGR [SetColor Foreground Vivid Red]
+                putStr pair
+                setSGR [Reset]
+            else
+                putStr pair
+        putStr " "
+
+-- Pretty-prints the entire memory
+prettyPrintMemory :: Memory -> IO ()
+prettyPrintMemory mem = do
+    let (_, end) = bounds mem
+        rows = [(addr, [mem ! i | i <- [addr .. min (addr + 15) end]]) | addr <- [0, 16 .. end]]
+    mapM_ (uncurry printRow) rows
     
 data StatusFlags = StatusFlags {
     interruptFlag :: Bool,  -- I flag
