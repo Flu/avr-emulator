@@ -4,7 +4,9 @@
 
 ## How to Contribute
 
-We welcome contributions in the form of bug fixes, new features, tests, or improvements to the documentation. If you're unsure where to start, take a look at the open [issues](https://github.com/Flu/avr-emulator/issues)—some are tagged as "good first issue" for newcomers.
+We welcome contributions in the form of bug fixes, new features, tests, or improvements to the documentation. If you're unsure where to start, take a look at the open [issues](https://github.com/Flu/avr-emulator/issues) — some are tagged as "good first issue" for newcomers.
+
+You are not limited to only doing features or fixes. You could fix typos in comments/README. You can add more comments in the code if you think the code is not well-documented enough. You can add more tests for different functions or parts of the application. 
 
 ### Step 1: Fork the Repository
 
