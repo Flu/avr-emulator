@@ -29,10 +29,10 @@ This will run all the test suites and will tell you if anything failed. In gener
 ### Run the emulator
 
 ```bash
-cabal run exes -- /path/to/assembly/file.asm
+cabal run exes -- -f /path/to/assembly/file.asm -d -m 500
 ```
 
-Replace `/path/to/assembly/file.asm` with the path to your assembly file.
+This tells Cabal that you want to run the application. Here there are also some command line options that you can use to change the emulator's parameters. For example, `-d` dumps and prints the whole memory of the emulator, besides the registers and the flags. `-m 500` specifies the amount of memory to allocate for the emulator in bytes. There are more options, which you can see by using `-h` or `--help`.
 
 ### Ending the program
 
@@ -43,8 +43,8 @@ The emulator will automatically end when there are no more instructions to execu
 You can find test assembly programs in the `test_files/` directory in the root of the project. These files provide examples of how an AVR assembly program is structured and can be used to verify the emulator's functionality.
 
 ## Features
-- **Memory**: 2KB starting from `0x0000`.
-- **Stack**: Starts from the last memory address and grows towards lower addresses
+- **Memory**: 2KB by default, starting from `0x0000`.
+- **Stack**: Starts from the last memory address and grows towards lower addresses.
 - **Supported Instructions**:
   - `ADC` – Add with carry between two registers.
   - `ADD` – Add two register values and store the result in one of the registers.
@@ -127,10 +127,11 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - `TST` – Test if a register is zero or negative.
 
 ## Roadmap
-  - [ ] Configurable memory size through command line arguments.
+  - [x] Configurable memory size through command line arguments.
   - [x] Implement in-memory stack with `PUSH` and `POP` instructions.
   - [x] `CALL` and `RET` instructions.
   - [x] Maybe (?) move to MegaParsec for input parsing.
+  - [x] Implement nicer formatting for the emulator state after the program ended.
   - [ ] Registers should be mapped to the first 32 memory locations.
   - [x] Fix Parser returning an error when last line of input file is an empty line or a comment.
   - [ ] Implementing step by step emulation of instructions.
@@ -138,3 +139,7 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - [x] Implementing `ADIW`.
   - [x] Unit tests for instructions.
   - [ ] Buy Grolsch beer when this is all done :tada: :beer:
+
+## How to contribute
+
+Take a look at the `CONTRIBUTING.md` file for more instructions.
