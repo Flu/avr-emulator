@@ -13,21 +13,24 @@ import Debug.Trace (trace)
 import Text.Printf
 import System.Console.ANSI
 
+-- Data type for holding everything about the current state of the emulator
+-- TODO: registers should be part of memory, mapped to the first 32 bytes of memory
 data EmulatorState = EmulatorState {
-    registers :: Registers,
-    flags :: StatusFlags,
-    programCounter :: ProgramCounter,
-    sp :: StackPointer,
-    memory :: Memory
+    registers :: Registers,             -- ^ General purpose registers R0 through R31
+    flags :: StatusFlags,               -- ^ SREG or status flags for keeping track of certain conditions 
+    programCounter :: ProgramCounter,   -- ^ Program counter for keeping track of the next instruction to execute
+    sp :: StackPointer,                 -- ^ Stack pointer - it always points to the top of the stack, in memory
+    memory :: Memory                    -- ^ Memory array for SRAM (LD or ST operations write to memory)
 } deriving (Show)
 
-type Register = Word8
-type Label = String
-type ProgramCounter = Word16
-type Registers = Array Int Register
-type Memory = Array Int Word8
-type StackPointer = Word16
+type Register = Word8               -- ^ Registers are 1 byte in AVR processors
+type Label = String                 -- ^ Labels as they come from parsing
+type ProgramCounter = Word16        -- ^ The PC is 2 bytes in AVR processors
+type Registers = Array Int Register -- ^ The register bank is an array of 32 Word8
+type Memory = Array Int Word8       -- ^ Memory is an array of Word8 as well, but the exact size depends on the SRAM of the device
+type StackPointer = Word16          -- ^ The stack pointer is also 2 bytes, since it points to a location in SRAM
 
+-- | Pretty prints the register bank to stdout and colors non-zero values so they can be easier to see
 printRegisterBank :: Registers -> IO ()
 printRegisterBank regs = do
     go (assocs regs)
@@ -53,18 +56,22 @@ printRegisterBank regs = do
                 setSGR [Reset]
                 go rs
 
-
+-- | Returns a String representation of the register bank in hexadecimal and binary
 registersToString :: Registers -> String
 registersToString regs =
     let
-        registers = assocs regs
-        go::[(Int, Register)] -> String
+        registers = assocs regs         -- Create a list of tuples of index and register value
+        go::[(Int, Register)] -> String -- unction for iterating through the register bank array
         go regs = case regs of
+            -- If arrived at the end of the array, return an empty String
             [] -> ""
+            -- Take the current index and register value, construct the String representation in the form "R12  0x01 00000001",
+            -- add a newline and call the function recursively on the next element
             ((i, r):rs) -> (printf "R%-5s 0x%02x  %08s" (show i) r (showIntAtBase 2 intToDigit r "")) ++ "\n" ++ go rs
     in
         go registers
 
+-- | Returns a String representation of the SREG/status flags
 showStatusFlags :: StatusFlags -> String
 showStatusFlags sreg =
     " I: " ++ show (interruptFlag sreg) ++
@@ -76,70 +83,91 @@ showStatusFlags sreg =
     " Z: " ++ show (zeroFlag sreg) ++
     " C: " ++ show (carryFlag sreg)
 
--- Converts an Int to a zero-padded hex string of length 4 (e.g., "0000")
+-- ^ Converts an Int to a zero-padded hex string of length 4 (e.g., "0000")
 toHex4 :: Int -> String
 toHex4 x = let h = showHex x "" in replicate (4 - length h) '0' ++ h
 
--- Converts a Word8 to a zero-padded hex string of length 2 (e.g., "00")
+-- ^ Converts a Word8 to a zero-padded hex string of length 2 (e.g., "00")
 toHex2 :: Word8 -> String
 toHex2 x = let h = showHex x "" in replicate (2 - length h) '0' ++ h
 
--- Prints a single row of memory
+{- | Prints a single row of memory, starting with the address of the first byte to be printed and then a number of bytes
+depending on the values given. The bytes are grouped 2-by-2 and colored if non-zero 
+-}
 printRow :: Int -> [Word8] -> IO ()
 printRow addr values = do
     putStr $ "0x" ++ toHex4 addr ++ "    " -- Print the address
-    mapM_ printPair (groupPairs values)
+    mapM_ printPair (groupPairs values)    -- Print the byte pair for every pair after groupinh
     putStrLn ""
   where
-    -- Groups the list of bytes into pairs
+    -- | Groups the list of bytes into pairs
     groupPairs :: [Word8] -> [[Word8]]
     groupPairs []       = []
     groupPairs (x:y:xs) = [x, y] : groupPairs xs
     groupPairs [x]      = [[x]] -- Handle odd-sized memory gracefully
 
-    -- Prints a single pair of bytes, with non-zero highlighting
+    -- | Prints a single pair of bytes, with non-zero highlighting
     printPair :: [Word8] -> IO ()
     printPair [a, b] = do
-        if a /= 0 || b /= 0
+        if a /= 0 || b /= 0 -- If either of the bytes is not zero, color the whole group
             then do
                 setSGR [SetColor Foreground Vivid Red]
                 putStr $ toHex2 a ++ toHex2 b
                 setSGR [Reset]
-            else
+            else            -- Else don't color them
                 putStr $ toHex2 a ++ toHex2 b
         putStr " "
     printPair [a] = do -- Handle the last unpaired byte if any
         let pair = toHex2 a ++ "00"
-        if a /= 0
+        if a /= 0   -- If either of the bytes is not zero, color the whole group
             then do
                 setSGR [SetColor Foreground Vivid Red]
                 putStr pair
                 setSGR [Reset]
-            else
+            else    -- Else don't color them
                 putStr pair
-        putStr " "
+        putStr " " -- Add some space before the next byte pair
 
--- Pretty-prints the entire memory
+-- | Pretty-prints the entire memory
 prettyPrintMemory :: Memory -> IO ()
 prettyPrintMemory mem = do
-    let (_, end) = bounds mem
+    let (_, end) = bounds mem -- Get the length of the memory in bytes
+        -- Get every 16th address and pair it with the next 16 bytes of memory
         rows = [(addr, [mem ! i | i <- [addr .. min (addr + 15) end]]) | addr <- [0, 16 .. end]]
+    -- Because printRow needs two arguments, we need to uncurry it so it can receive a tuple instead
+    -- Then we map over all elements of rows (the tuples) and give them one by one to printRow, which formattes them
+    -- and prints them
     mapM_ (uncurry printRow) rows
     
+-- | Data type for holding the status flags. Otherwise called the SREG
 data StatusFlags = StatusFlags {
-    interruptFlag :: Bool,  -- I flag
-    tFlag :: Bool,          -- T flag
-    halfCarryFlag :: Bool,  -- H flag
-    signFlag :: Bool,       -- S flag
-    overflowFlag :: Bool,   -- V flag
-    negativeFlag :: Bool,   -- N flag
-    zeroFlag :: Bool,       -- Z flag
-    carryFlag :: Bool       -- C flag
+    interruptFlag :: Bool,  -- ^ Global interrupt flag
+    tFlag :: Bool,          -- ^ T flag (custom flag to be used by the user)
+    halfCarryFlag :: Bool,  -- ^ Half-carry flag
+    signFlag :: Bool,       -- ^ Sign flag
+    overflowFlag :: Bool,   -- ^ Overflow flag
+    negativeFlag :: Bool,   -- ^ Negative flag
+    zeroFlag :: Bool,       -- ^ Zero flag
+    carryFlag :: Bool       -- ^ Carry flag
 } deriving (Show)
 
+{- | Data type for holding the intermediary representation of the code.
+    In this emulator, code, after being parsed, is transformed into IR (intermediary representation), which is just a list
+    of Instruction objects. Each Instruction can be a different instruction, as well as pseudo-instructions, like `LABEL String`,
+    which isn't really an instruction, but rather a way to signal that a label was there in the original program. This is useful
+    for resolving labels with actual addresses later, as this is not done during the parsing process.
+
+    Every instruction has an equivalent in this Instruction datatype. Sometimes even 2 if it is a branch instruction that uses labels.
+    Because labels are resolved later, the parser returns `BRCC Label` for example. After resolving labels to addresses in memory,
+    we wouldn't know what `Label` refers to anymore, so we need a BRCCR (the last R is for relative) which holds an Int instead,
+    which signifies how many instructions ahead/behind we should jump. This is the instruction that gets interpreted by the VM.
+
+    Find the complete reference for the instructions here:
+    https://ww1.microchip.com/downloads/en/DeviceDoc/AVR-InstructionSet-Manual-DS40002198.pdf 
+-}
 data Instruction
     = ADC Register Register
-    | ADD Register Register  -- Add two registers
+    | ADD Register Register
     | ADIW Register Register Word8
     | AND Register Register
     | ANDI Register Word8
@@ -203,11 +231,11 @@ data Instruction
     | JMPR Int
     | LD Register String
     | LABEL Label
-    | LDI Register Word8     -- Load immediate value into a register
+    | LDI Register Word8
     | LDS Register Word16
     | LSL Register
     | LSR Register
-    | MOV Register Register  -- Move value between registers
+    | MOV Register Register
     | MOVW Register Register Register Register
     | MUL Register Register
     | MULS Register Register
@@ -239,6 +267,18 @@ data Instruction
     | SWAP Register
     | TST Register
     deriving (Show)
+
+-- /////////////////////////////////////////////////////
+-- Instruction implementations
+-- Study the reference for what every instruction does, what flags it sets and what registers it modifies:
+-- https://ww1.microchip.com/downloads/en/DeviceDoc/AVR-InstructionSet-Manual-DS40002198.pdf
+-- /////////////////////////////////////////////////////
+
+{-
+    The arguments for these functions may vary, as the decoder function takes care to assign the arguments, but the
+    return type should be the same for all of them. So if you want your new instruction to return something else,
+    you need to change the return type for all the functions.
+-}
 
 adc :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 adc oldStatus registers sp memory rd rs =
@@ -1292,6 +1332,14 @@ tst oldStatus registers sp memory op1 =
         }
         in (registers, updatedFlags, 0, sp, memory)
 
+-- /////////////////////////////////////////////////////
+-- End instruction implementations 
+-- /////////////////////////////////////////////////////
+
+{- | Decodes the current instruction and calls its respective function with the current emulator state,
+    then records the updated emulator state for the next instruction. For instructions that may jump, it also
+    sends the relative address to the current PC to jump to, if needed.
+-}
 executeInstruction :: Instruction -> EmulatorState -> EmulatorState
 executeInstruction instruction state = 
     let (updatedRegisters, updatedFlags, relativeJump, updatedSp, updatedMemory) = case instruction of
@@ -1378,16 +1426,25 @@ executeInstruction instruction state =
     in state {
         registers = updatedRegisters,
         flags = updatedFlags,
-        programCounter = programCounter state + fromIntegral relativeJump + 1,
+        -- This is where the PC is either set to PC + 1 if there was no jump, or to PC + relAddress + 1 if the instruction jumped.
+        -- This is why most instructions return a 0 as a relative address, and this is also why, when resolving labels, a label that's
+        -- 20 instructions behind is actually getting resolved to a relative address of -21, because of this '+ 1' that guarantees that if
+        -- the instruction doesn't jump, we continue normally to the next one.
+        programCounter = programCounter state + fromIntegral relativeJump + 1, 
         sp = updatedSp,
         memory = updatedMemory
     }
 
+-- | Constructs a hash table with all the labels and their addresses to refer to later when resolving labels for branch instructions
 constructJumpTable :: [Instruction] -> Int -> Map.Map Label Int -> (Map.Map Label Int, Int)
 constructJumpTable [] currentAddress labelMap = (labelMap, currentAddress)
 constructJumpTable ((LABEL label):rest) currentAddress labelMap = constructJumpTable rest (currentAddress+1) (Map.insert label currentAddress labelMap)
 constructJumpTable (_:rest) currentAddress labelMap = constructJumpTable rest (currentAddress + 1) labelMap
 
+{- | Iterate through all instructions. If the instruction is a branch/jump/call, resolve the label using the jump table to get a
+    relative address to the current instruction. For example, if the instruction was 'CALL label1' and label1 was 20 instructions behind,
+    the new instruction would be 'CALLR -21'.
+-}
 resolveLabels :: Map.Map Label Int -> (Int, Instruction) -> Maybe Instruction
 resolveLabels labelMap (address, JMP label)
     | relAddress > 0 = Just (JMPR (relAddress - 1))
@@ -1489,35 +1546,47 @@ resolveLabels labelMap (address, CALL label)
    | otherwise = Just (CALLR relAddress)
    where relAddress = Map.findWithDefault 0 label labelMap - address
 
+-- | If the current Instruction is a label or any other instruction, skip
 resolveLabels _labelMap (_, LABEL label) = Just (LABEL label)
 resolveLabels _labelMap (address, otherInstr) = Just otherInstr
 
+-- | Constructs the jump table and then resolves the labels with it
 replaceLabels :: [Instruction] -> [Maybe Instruction]
 replaceLabels instructions = 
   let (labelMap, _) = constructJumpTable instructions 0 Map.empty
    in zipWith (curry (resolveLabels labelMap)) [0 .. ] instructions
 
+{- | After resolving the labels, this is the heart of the emulator. It fetches the instruction from memory with the PC,
+    loads the state from the previous instruction and call executeInstruction. After the execution is done, it calls itself
+    again with either PC + 1 (if it was a normal instruction or a branch that didn't happen) or PC + relAddress (if it was 
+    a branch, jump or call). This is the 'fetch -> decode -> execute' cycle in a processor.
+
+    If there are no more instructions in the list (PC has surpassed the upper bound of the instruction list), execution is considered
+    done and the function returns the most recent EmulatorState.
+-}
 runProgram :: [Instruction] -> EmulatorState -> EmulatorState
-runProgram initialInstructions = go
+runProgram initialInstructions = go -- Call recursive helper function go
   where
     go state =
       let pc = fromIntegral (programCounter state)
-      in if pc >= length initialInstructions 
-         then state
+      in if pc >= length initialInstructions -- If PC bigger than the list, it means we got to the end of execution
+         then state -- So return the state
          else 
-           let currentInstruction = initialInstructions !! pc
-               newState = executeInstruction currentInstruction state
-           in go newState 
+           let currentInstruction = initialInstructions !! pc -- Fetch next instruction to be executed from where the PC points to
+               newState = executeInstruction currentInstruction state -- Decode and execute it, then get the updated emulator state 
+           in go newState -- Call recursively with the new state
 
+-- | Gets the list of instructions from the parser and the size of the SRAM as configured by the user.
+-- @returns the final emulator state after finishing execution.
 run :: [Instruction] -> Int -> EmulatorState
 run instructions memorySize =
     let initialState = EmulatorState {
-        registers = listArray (0,31) (replicate 32 0),  -- Initialize all registers to 0
-        flags = StatusFlags False False False False False False False False,
-        programCounter = 0,
-        memory = listArray (0, memorySize - 1) (replicate memorySize 0),
-        sp = fromIntegral (memorySize - 1) :: Word16
+        registers = listArray (0,31) (replicate 32 0),                        -- Initialize all registers to 0
+        flags = StatusFlags False False False False False False False False,  -- Initialize all status flags to False
+        programCounter = 0,                                                   -- Program counter starts executing from 0x0000
+        memory = listArray (0, memorySize - 1) (replicate memorySize 0),      -- Initialize the memory with the requested size, set to 0
+        sp = fromIntegral (memorySize - 1) :: Word16                          -- The stack pointer should point to the last memory address
         }
-        instructionsWithAddresses = catMaybes $ replaceLabels instructions
+        instructionsWithAddresses = catMaybes $ replaceLabels instructions -- Resolve labels and filter out Nothings from the list
     in
-        runProgram instructionsWithAddresses initialState
+        runProgram instructionsWithAddresses initialState -- Start the 'fetch -> decode -> execute' cycle by calling this function with the initial state
