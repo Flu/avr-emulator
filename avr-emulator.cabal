@@ -20,7 +20,7 @@ name:               avr-emulator
 -- PVP summary:     +-+------- breaking API changes
 --                  | | +----- non-breaking API additions
 --                  | | | +--- code changes with no API change
-version:            0.1.0.0
+version:            0.2.1.1
 
 -- A short (one-line) description of the package.
 -- synopsis:
@@ -59,7 +59,7 @@ executable avr-emulator
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    other-modules: Parser, Emulator, Options
+    other-modules: Parser, Emulator, Options, Paths_avr_emulator
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -87,7 +87,7 @@ test-suite avr-emulator-test
 
   hs-source-dirs: app
 
-  other-modules: Parser, Emulator, Options
+  other-modules: Parser, Emulator, Options, Paths_avr_emulator
 
   build-depends:
         base >=4.16.2.1

@@ -6,6 +6,9 @@ import Emulator
 import Parser
 import Options
 
+import Data.Version ( showVersion )
+import Paths_avr_emulator ( version )
+
 main :: IO ()
 main = entryFunction =<< execParser opts
     where
@@ -44,8 +47,11 @@ compileFromFile input True memorySize = do
         Nothing -> do
             (return (Left "Error assembling the program"))
 
+getVersion :: String
+getVersion = showVersion version
+
 entryFunction :: Options -> IO () 
-entryFunction (Options file False dmpIR memorySize) = do
+entryFunction (Options False dmpIR memorySize False file) = do
     finalState <- compileFromFile file dmpIR memorySize
     case finalState of
         Right state -> do
@@ -54,7 +60,7 @@ entryFunction (Options file False dmpIR memorySize) = do
         Left errorMessage -> do
             print errorMessage
 
-entryFunction (Options file True dmpIR memorySize) = do
+entryFunction (Options True dmpIR memorySize False file) = do
     finalState <- compileFromFile file dmpIR memorySize
     case finalState of
         Right state -> do
@@ -64,3 +70,6 @@ entryFunction (Options file True dmpIR memorySize) = do
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
         Left errorMessage -> do
             print errorMessage
+
+entryFunction (Options _ _ _ True _) = do
+    putStrLn ("avr-emulator v" ++ getVersion)

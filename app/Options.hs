@@ -3,19 +3,15 @@ module Options(Options(..), options) where
 import Options.Applicative
 
 data Options = Options
-    { file :: String
-    , dumpMemory :: Bool
+    { dumpMemory :: Bool
     , dumpIntermediaryRepresentation :: Bool
-    , memorySize :: Int }
+    , memorySize :: Int
+    , displayVersion :: Bool
+    , file :: String }
 
 options :: Parser Options
 options = Options
-    <$> strOption
-        (metavar "TARGET"
-        <> short 'f'
-        <> long "file"
-        <> help "Target file for assembling")
-    <*> switch
+    <$> switch
         (long "dumpMemory"
         <> short 'd'
         <> help "Dump all the memory")
@@ -31,3 +27,12 @@ options = Options
         <> showDefault
         <> value 2000
         <> metavar "INT")
+    <*> switch
+        (long "version"
+        <> short 'v'
+        <> help "Print version of program")
+    <*> strOption
+        (metavar "TARGET"
+        <> short 'f'
+        <> long "file"
+        <> help "Target file for assembling")
