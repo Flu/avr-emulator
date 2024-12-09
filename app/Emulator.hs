@@ -10,6 +10,7 @@ import qualified Data.Map as Map
 import Data.Maybe (catMaybes)
 import Data.Array
 import Debug.Trace (trace)
+import Text.Printf
 
 data EmulatorState = EmulatorState {
     registers :: Registers,
@@ -1431,10 +1432,8 @@ runProgram initialInstructions = go
                newState = executeInstruction currentInstruction state
            in go newState 
 
-memorySize = 2000
-
-run :: [Instruction] -> EmulatorState
-run instructions =
+run :: [Instruction] -> Int -> EmulatorState
+run instructions memorySize =
     let initialState = EmulatorState {
         registers = listArray (0,31) (replicate 32 0),  -- Initialize all registers to 0
         flags = StatusFlags False False False False False False False False,
