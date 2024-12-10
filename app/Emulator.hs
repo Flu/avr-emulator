@@ -144,7 +144,7 @@ data Instruction
     | AND Register Register
     | ANDI Register Word8
     | ASR Register
-    | BCLR Word8
+    | BCLR Int
     | BRCC Label
     | BRCCR Int
     | BRCS Label
@@ -369,7 +369,7 @@ asr oldStatus registers sp memory op1 =
 
 -- Clears a single flag.
 -- TODO: Handle invalid numbers.
-bclr :: StatusFlags  -> Registers -> StackPointer -> Memory -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
+bclr :: StatusFlags  -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
 bclr oldStatus registers sp memory flagNumber =
     let updatedFlags = StatusFlags{
         interruptFlag = and [interruptFlag oldStatus, not (flagNumber == 7)],

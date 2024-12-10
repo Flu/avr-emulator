@@ -43,6 +43,9 @@ pRegisterPair = do
 pHexDigit :: Parser Char
 pHexDigit = oneOf ['0'..'9'] <|> oneOf ['a'..'f'] <|> oneOf ['A'..'F']
 
+pFlagDigit :: Parser Int
+pFlagDigit = digitToInt <$> oneOf ['0'..'7']
+
 pWord8 :: Parser Word8
 pWord8 = do
     (string "0x" <|> string "$")
@@ -129,7 +132,7 @@ pASR = do
 pBCLR :: Parser Instruction
 pBCLR = do
     cistring "BCLR" >> space
-    BCLR <$> pWord8
+    BCLR <$> pFlagDigit
 
 pBRCC :: Parser Instruction
 pBRCC = do
