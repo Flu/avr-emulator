@@ -52,6 +52,7 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - `AND` – Perform a bitwise AND between two registers.
   - `ANDI` – Perform a bitwise AND between a register and an immediate value.
   - `ASR` – Arithmetic shift to the right.
+  - `BCLR` – Bit clears a flag in SREG given a value from 0 to 7.
   - `BRCC` – Branch if carry flag is cleared.
   - `BRCS` – Branch if carry flag is set.
   - `BREQ` – Branch if equal to zero.
