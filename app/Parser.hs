@@ -126,6 +126,11 @@ pASR = do
     cistring "ASR" >> space
     ASR <$> pRegister
 
+pBCLR :: Parser Instruction
+pBCLR = do
+    cistring "BCLR" >> space
+    BCLR <$> pWord8
+
 pBRCC :: Parser Instruction
 pBRCC = do
     cistring "BRCC" >> space
@@ -568,6 +573,7 @@ instructionParser = do
         try (Just <$> pAND),
         try (Just <$> pANDI),
         try (Just <$> pASR),
+        try (Just <$> pBCLR),
         try (Just <$> pBRCC),
         try (Just <$> pBRCS),
         try (Just <$> pBREQ),
