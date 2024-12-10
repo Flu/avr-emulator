@@ -211,6 +211,7 @@ data Instruction
     | BRVSR Int
     | CALL Label
     | CALLR Int
+    | CBR Register Word8
     | CLC
     | CLH
     | CLI
@@ -549,6 +550,9 @@ call oldStatus registers sp memory relAddress returnAddress =
         updatedMemory = memory // [(fromIntegral sp, high),(fromIntegral (sp - 1), low)]
         newSp = sp - 2
         in (registers, oldStatus, relAddress, newSp, updatedMemory)
+
+cbr :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
+cbr status registers sp mem rb k = andi status registers sp mem rb (0xFF - k)
 
 clc :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 clc oldStatus registers sp memory =
@@ -1399,6 +1403,7 @@ executeInstruction instruction state =
             BRVCR relativeAddress -> brvc (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRVSR relativeAddress -> brvs (flags state) (registers state) (sp state) (memory state) relativeAddress
             CALLR relativeAddress -> call (flags state) (registers state) (sp state) (memory state) relativeAddress (programCounter state)
+            CBR rd k -> cbr (flags state) (registers state) (sp state) (memory state) rd k
             CLC -> clc (flags state) (registers state) (sp state) (memory state)
             CLH -> clh (flags state) (registers state) (sp state) (memory state)
             CLI -> cli (flags state) (registers state) (sp state) (memory state)

@@ -128,7 +128,6 @@ pASR = do
     cistring "ASR" >> space
     ASR <$> pRegister
 
-
 pBCLR :: Parser Instruction
 pBCLR = do
     cistring "BCLR" >> space
@@ -254,6 +253,13 @@ pCALL = do
     cistring "CALL" >> space
     label <- some (alphaNumChar <|> char '_')
     return (CALL label)
+
+pCBR :: Parser Instruction
+pCBR = do
+    cistring "CBR" >> space
+    rd <- pRegister
+    pComma
+    CBR rd <$> pWord8
 
 pCLC :: Parser Instruction
 pCLC = do
@@ -604,6 +610,7 @@ instructionParser = do
         try (Just <$> pBRVC),
         try (Just <$> pBRVS),
         try (Just <$> pCALL),
+        try (Just <$> pCBR),
         try (Just <$> pCLC),
         try (Just <$> pCLH),
         try (Just <$> pCLI),

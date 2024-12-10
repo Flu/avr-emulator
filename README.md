@@ -73,6 +73,7 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - `BRVC` – Branch if overflow flag is cleared.
   - `BRVS` – Branch if overflow flag is set.
   - `CALL` – Direct call to a subroutine with the return address pushed on the stack.
+  - `CBR` – Clears specific bits of a register based on the argument provided.
   - `CLC` – Clear the Carry flag.
   - `CLH` – Clear the Half Carry flag.
   - `CLI` – Clear the Global Interrupt flag.
