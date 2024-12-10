@@ -171,6 +171,7 @@ data Instruction
     | AND Register Register
     | ANDI Register Word8
     | ASR Register
+    | BCLR Int
     | BRCC Label
     | BRCCR Int
     | BRCS Label
@@ -404,6 +405,22 @@ asr oldStatus registers sp memory op1 =
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
     in (updatedRegisters, updatedFlags, 0, sp, memory)
+
+-- Clears a single flag.
+bclr :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+bclr oldStatus registers sp memory flagNumber =
+  let updatedFlags =
+        StatusFlags {
+            interruptFlag = interruptFlag oldStatus && (flagNumber /= 7),
+            tFlag = tFlag oldStatus && (flagNumber /= 6),
+            halfCarryFlag = halfCarryFlag oldStatus && (flagNumber /= 5),
+            signFlag = signFlag oldStatus && (flagNumber /= 4),
+            overflowFlag = overflowFlag oldStatus && (flagNumber /= 3),
+            negativeFlag = negativeFlag oldStatus && (flagNumber /= 2),
+            zeroFlag = zeroFlag oldStatus && (flagNumber /= 1),
+            carryFlag = halfCarryFlag oldStatus && (flagNumber /= 0)
+        }
+   in (registers, updatedFlags, 0, sp, memory)
 
 brcc :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
 brcc oldStatus registers sp memory relAddress =
@@ -1348,6 +1365,7 @@ executeInstruction instruction state =
             AND rd rr -> andInstr (flags state) (registers state) (sp state) (memory state) rd rr
             ANDI rd k -> andi (flags state) (registers state) (sp state) (memory state) rd k
             ASR rd -> asr (flags state) (registers state) (sp state) (memory state) rd
+            BCLR s -> bclr (flags state) (registers state) (sp state) (memory state) s
             BRCCR relativeAddress -> brcc (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRCSR relativeAddress -> brcs (flags state) (registers state) (sp state) (memory state) relativeAddress
             BREQR relativeAddress -> breq (flags state) (registers state) (sp state) (memory state) relativeAddress
