@@ -172,6 +172,7 @@ data Instruction
     | ANDI Register Word8
     | ASR Register
     | BCLR Int
+    | BLD Register Int
     | BRCC Label
     | BRCCR Int
     | BRCS Label
@@ -421,6 +422,18 @@ bclr oldStatus registers sp memory flagNumber =
             carryFlag = halfCarryFlag oldStatus && (flagNumber /= 0)
         }
    in (registers, updatedFlags, 0, sp, memory)
+
+-- Sets byte b in register Rd equal to the T bit.
+bld :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+bld flags registers sp memory rd b = 
+    let rdIndex = fromIntegral rd
+        t = tFlag flags
+        value = registers ! rdIndex
+        updatedValue
+            | t = setBit value b
+            | otherwise = clearBit value b
+        newRegisters = registers // [(rdIndex, updatedValue)]
+    in (newRegisters, flags, 0, sp, memory)
 
 brcc :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
 brcc oldStatus registers sp memory relAddress =
@@ -1366,6 +1379,7 @@ executeInstruction instruction state =
             ANDI rd k -> andi (flags state) (registers state) (sp state) (memory state) rd k
             ASR rd -> asr (flags state) (registers state) (sp state) (memory state) rd
             BCLR s -> bclr (flags state) (registers state) (sp state) (memory state) s
+            BLD rd b -> bld (flags state) (registers state) (sp state) (memory state) rd b
             BRCCR relativeAddress -> brcc (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRCSR relativeAddress -> brcs (flags state) (registers state) (sp state) (memory state) relativeAddress
             BREQR relativeAddress -> breq (flags state) (registers state) (sp state) (memory state) relativeAddress

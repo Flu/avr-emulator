@@ -155,6 +155,30 @@ main = hspec $ describe "AVR Emulator E2E tests" $ do
         let assemblyFilePath = "test_files/test_bclr.asm"
         emulateProgramFromFile assemblyFilePath testBclr
 
+    -- Test 25: test_bld.asm
+    it "Should correctly emulate test_bld.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_bld.asm"
+        emulateProgramFromFile assemblyFilePath testBld
+
+testBld:: EmulatorState -> IO()
+testBld state = do
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
+    
+    let regValue = registers state ! 30
+    regValue `shouldBe` 0x05
+
+    let regValue = registers state ! 31
+    regValue `shouldBe` 0xFF
+
+    
+
 testBclr :: EmulatorState -> IO ()
 testBclr state = do
     interruptFlag (flags state) `shouldBe` False

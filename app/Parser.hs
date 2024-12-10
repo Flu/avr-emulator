@@ -134,6 +134,12 @@ pBCLR = do
     cistring "BCLR" >> space
     BCLR <$> pFlagDigit
 
+pBLD :: Parser Instruction
+pBLD = do
+    cistring "BLD" >> space
+    rd <- pRegister
+    pComma
+    BLD rd <$> pFlagDigit
 
 pBRCC :: Parser Instruction
 pBRCC = do
@@ -578,6 +584,7 @@ instructionParser = do
         try (Just <$> pANDI),
         try (Just <$> pASR),
         try (Just <$> pBCLR),
+        try (Just <$> pBLD),
         try (Just <$> pBRCC),
         try (Just <$> pBRCS),
         try (Just <$> pBREQ),
