@@ -1,8 +1,8 @@
 import Test.Hspec
 import Parser
-import Emulator
 import Data.Array
 import qualified Data.Vector as V
+import Emulator
 
 -- Takes the path of a program and parses it into an intermediary form that the Emulator can understand
 -- If parsing fails, returns Nothing
@@ -30,653 +30,651 @@ emulateProgramFromFile filepath checkingFunction = do
             putStrLn (showStatusFlags $ flags finalState)    -- Print the final status flags
             -- Check that the emulator returned the expected state
             checkingFunction finalState
-        Nothing -> do
-            putStrLn "Error assembling the program."
+        Nothing -> putStrLn "Error assembling the program."
 
 -- Main function for testing
 main :: IO ()
-main = hspec $ do
-    describe "AVR Emulator E2E tests" $ do
-        -- Test 1: test_fibonacci.asm
-        it "should correctly emulate fibonacci.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/fibonacci.asm"
-            emulateProgramFromFile assemblyFilePath testFibonacci 
+main = hspec $ describe "AVR Emulator E2E tests" $ do
+    -- Test 1: test_fibonacci.asm
+    it "should correctly emulate fibonacci.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/fibonacci.asm"
+        emulateProgramFromFile assemblyFilePath testFibonacci
 
-        -- Test 2: test_asr.asm
-        it "should correctly emulate test_asr.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_asr.asm"
-            emulateProgramFromFile assemblyFilePath testAsr
+    -- Test 2: test_asr.asm
+    it "should correctly emulate test_asr.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_asr.asm"
+        emulateProgramFromFile assemblyFilePath testAsr
 
-        -- Test 3: test_brlo.asm
-        it "should correctly emulate test_brlo.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_brlo.asm"
-            emulateProgramFromFile assemblyFilePath testBrlo
+    -- Test 3: test_brlo.asm
+    it "should correctly emulate test_brlo.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_brlo.asm"
+        emulateProgramFromFile assemblyFilePath testBrlo
 
-        -- Test 4: test_brmi.asm
-        it "should correctly emulate test_brmi.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_brmi.asm"
-            emulateProgramFromFile assemblyFilePath testBrmi
+    -- Test 4: test_brmi.asm
+    it "should correctly emulate test_brmi.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_brmi.asm"
+        emulateProgramFromFile assemblyFilePath testBrmi
 
-        -- Test 5: test_call.asm
-        it "should correctly emulate test_call.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_call.asm"
-            emulateProgramFromFile assemblyFilePath testCall
+    -- Test 5: test_call.asm
+    it "should correctly emulate test_call.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_call.asm"
+        emulateProgramFromFile assemblyFilePath testCall
 
-        -- Test 6: test_clc.asm
-        it "should correctly emulate test_clc.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_clc.asm"
-            emulateProgramFromFile assemblyFilePath testClc
+    -- Test 6: test_clc.asm
+    it "should correctly emulate test_clc.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_clc.asm"
+        emulateProgramFromFile assemblyFilePath testClc
 
-        -- Test 7: test_clr.asm
-        it "should correctly emulate test_clr.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_clr.asm"
-            emulateProgramFromFile assemblyFilePath testClr
+    -- Test 7: test_clr.asm
+    it "should correctly emulate test_clr.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_clr.asm"
+        emulateProgramFromFile assemblyFilePath testClr
 
-        -- Test 8: test_clearing.asm
-        it "should correctly emulate test_clearing.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_clearing.asm"
-            emulateProgramFromFile assemblyFilePath testClearingFlags
+    -- Test 8: test_clearing.asm
+    it "should correctly emulate test_clearing.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_clearing.asm"
+        emulateProgramFromFile assemblyFilePath testClearingFlags
 
-        -- Test 9: test_clr.asm
-        it "should correctly emulate test_eor.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_eor.asm"
-            emulateProgramFromFile assemblyFilePath testEor
+    -- Test 9: test_clr.asm
+    it "should correctly emulate test_eor.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_eor.asm"
+        emulateProgramFromFile assemblyFilePath testEor
 
-        -- Test 10: test_movw.asm
-        it "should correctly emulate test_movw.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_movw.asm"
-            emulateProgramFromFile assemblyFilePath testMovw
+    -- Test 10: test_movw.asm
+    it "should correctly emulate test_movw.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_movw.asm"
+        emulateProgramFromFile assemblyFilePath testMovw
 
-        -- Test 11: test_mul.asm
-        it "should correctly emulate test_mul.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_mul.asm"
-            emulateProgramFromFile assemblyFilePath testMul
+    -- Test 11: test_mul.asm
+    it "should correctly emulate test_mul.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_mul.asm"
+        emulateProgramFromFile assemblyFilePath testMul
 
-        -- Test 12: test_or.asm
-        it "should correctly emulate test_or.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_or.asm"
-            emulateProgramFromFile assemblyFilePath testOr
+    -- Test 12: test_or.asm
+    it "should correctly emulate test_or.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_or.asm"
+        emulateProgramFromFile assemblyFilePath testOr
 
-        -- Test 13: test_push.asm
-        it "should correctly emulate test_push.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_push.asm"
-            emulateProgramFromFile assemblyFilePath testPush
+    -- Test 13: test_push.asm
+    it "should correctly emulate test_push.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_push.asm"
+        emulateProgramFromFile assemblyFilePath testPush
 
-        -- Test 14: test_rol_ror.asm
-        it "should correctly emulate test_rol_ror.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_rol_ror.asm"
-            emulateProgramFromFile assemblyFilePath testRolRor
+    -- Test 14: test_rol_ror.asm
+    it "should correctly emulate test_rol_ror.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_rol_ror.asm"
+        emulateProgramFromFile assemblyFilePath testRolRor
 
-        -- Test 15: test_sbc.asm
-        it "should correctly emulate test_sbc.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_sbc.asm"
-            emulateProgramFromFile assemblyFilePath testSbc
+    -- Test 15: test_sbc.asm
+    it "should correctly emulate test_sbc.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_sbc.asm"
+        emulateProgramFromFile assemblyFilePath testSbc
 
-        -- Test 16: test_sbrs.asm
-        it "should correctly emulate test_sbrs.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_sbrs.asm"
-            emulateProgramFromFile assemblyFilePath testSbrs
+    -- Test 16: test_sbrs.asm
+    it "should correctly emulate test_sbrs.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_sbrs.asm"
+        emulateProgramFromFile assemblyFilePath testSbrs
 
-        -- Test 17: test_setting.asm
-        it "should correctly emulate test_setting.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_setting.asm"
-            emulateProgramFromFile assemblyFilePath testSettingFlags
+    -- Test 17: test_setting.asm
+    it "should correctly emulate test_setting.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_setting.asm"
+        emulateProgramFromFile assemblyFilePath testSettingFlags
 
-        -- Test 18: test_subi.asm
-        it "should correctly emulate test_subi.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_subi.asm"
-            emulateProgramFromFile assemblyFilePath testSubi
+    -- Test 18: test_subi.asm
+    it "should correctly emulate test_subi.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_subi.asm"
+        emulateProgramFromFile assemblyFilePath testSubi
 
-        -- Test 19: test_swap.asm
-        it "should correctly emulate test_swap.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_swap.asm"
-            emulateProgramFromFile assemblyFilePath testSwap
+    -- Test 19: test_swap.asm
+    it "should correctly emulate test_swap.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_swap.asm"
+        emulateProgramFromFile assemblyFilePath testSwap
 
-        -- Test 20: test_tst.asm
-        it "should correctly emulate test_tst.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_tst.asm"
-            emulateProgramFromFile assemblyFilePath testTst
+    -- Test 20: test_tst.asm
+    it "should correctly emulate test_tst.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_tst.asm"
+        emulateProgramFromFile assemblyFilePath testTst
 
-        -- Test 21: test.asm
-        it "should correctly emulate test.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test.asm"
-            emulateProgramFromFile assemblyFilePath testTest
+    -- Test 21: test.asm
+    it "should correctly emulate test.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test.asm"
+        emulateProgramFromFile assemblyFilePath testTest
 
-        -- Test 22: bubblesort.asm
-        it "should correctly emulate bubblesort.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/bubblesort.asm"
-            emulateProgramFromFile assemblyFilePath testBubblesort
+    -- Test 22: bubblesort.asm
+    it "should correctly emulate bubblesort.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/bubblesort.asm"
+        emulateProgramFromFile assemblyFilePath testBubblesort
 
-        -- Test 23: test_eof.asm
-        it "should correctly emulate test_eof.asm and match expected state" $ do
-            let assemblyFilePath = "test_files/test_eof.asm"
-            emulateProgramFromFile assemblyFilePath testEof
-            
+    -- Test 23: test_eof.asm
+    it "should correctly emulate test_eof.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_eof.asm"
+        emulateProgramFromFile assemblyFilePath testEof
+
 
 -- Checking EmulatorState for the "fibonacci.asm"
 testFibonacci :: EmulatorState -> IO ()
 testFibonacci state = do
     -- Registers
-    let regValue = (registers state) ! 15
+    let regValue = registers state ! 15
     regValue `shouldBe` 0xe
 
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0xe9
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x90
 
-    let regValue = (registers state) ! 18
+    let regValue = registers state ! 18
     regValue `shouldBe` 0xe9
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` True
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_asr.asm"
 testAsr :: EmulatorState -> IO ()
 testAsr state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x4
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0xfe
 
-    let regValue = (registers state) ! 18
+    let regValue = registers state ! 18
     regValue `shouldBe` 0xfc
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` True
-    (negativeFlag $ flags state) `shouldBe` True
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` True
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_brlo.asm"
 testBrlo :: EmulatorState -> IO ()
 testBrlo state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x00
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x00
 
-    let regValue = (registers state) ! 19
+    let regValue = registers state ! 19
     regValue `shouldBe` 0x10
 
     -- Program counter
-    (programCounter state) `shouldBe` 6
+    programCounter state `shouldBe` 6
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` True
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_brmi.asm"
 testBrmi :: EmulatorState -> IO ()
 testBrmi state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x1
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x1
 
-    let regValue = (registers state) ! 18
+    let regValue = registers state ! 18
     regValue `shouldBe` 0xf
 
     -- Program counter
-    (programCounter state) `shouldBe` 7
+    programCounter state `shouldBe` 7
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_call.asm"
 testCall :: EmulatorState -> IO ()
 testCall state = do
     -- Registers
-    let regValue = (registers state) ! 0
+    let regValue = registers state ! 0
     regValue `shouldBe` 0x1
 
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x1
 
-    let regValue = (registers state) ! 31
+    let regValue = registers state ! 31
     regValue `shouldBe` 0x1
 
     -- Program counter
-    (programCounter state) `shouldBe` 29
+    programCounter state `shouldBe` 29
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` True
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_clc.asm"
 testClc :: EmulatorState -> IO ()
 testClc state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0xfe
 
     -- Program counter
-    (programCounter state) `shouldBe` 4
+    programCounter state `shouldBe` 4
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` True
-    (signFlag $ flags state) `shouldBe` True
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` True
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` True
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_clearing.asm"
 testClearingFlags :: EmulatorState -> IO ()
 testClearingFlags state = do
     -- Registers
-    let regValue = (registers state) ! 18
+    let regValue = registers state ! 18
     regValue `shouldBe` 0x00
 
     -- Program counter
-    (programCounter state) `shouldBe` 18
+    programCounter state `shouldBe` 18
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_clr.asm"
 testClr :: EmulatorState -> IO ()
 testClr state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x0
 
     -- Program counter
-    (programCounter state) `shouldBe` 3
+    programCounter state `shouldBe` 3
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` True
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_eor.asm"
 testEor :: EmulatorState -> IO ()
 testEor state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x63
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x1b
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_movw.asm"
 testMovw :: EmulatorState -> IO ()
 testMovw state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0xbe
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0xef
 
-    let regValue = (registers state) ! 25
+    let regValue = registers state ! 25
     regValue `shouldBe` 0xbe
 
-    let regValue = (registers state) ! 26
+    let regValue = registers state ! 26
     regValue `shouldBe` 0xef
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_mul.asm"
 testMul :: EmulatorState -> IO ()
 testMul state = do
     -- Registers
-    let regValue = (registers state) ! 0
+    let regValue = registers state ! 0
     regValue `shouldBe` 0xc
 
-    let regValue = (registers state) ! 5
+    let regValue = registers state ! 5
     regValue `shouldBe` 0x2
 
-    let regValue = (registers state) ! 6
+    let regValue = registers state ! 6
     regValue `shouldBe` 0x6
 
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x15
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x1c
 
-    let regValue = (registers state) ! 25
+    let regValue = registers state ! 25
     regValue `shouldBe` 0x00
 
-    let regValue = (registers state) ! 26
+    let regValue = registers state ! 26
     regValue `shouldBe` 0x00
 
     -- Program counter
-    (programCounter state) `shouldBe` 12
+    programCounter state `shouldBe` 12
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` True
-    (signFlag $ flags state) `shouldBe` True
-    (overflowFlag $ flags state) `shouldBe` True
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` True
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` True
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_or.asm"
 testOr :: EmulatorState -> IO ()
 testOr state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0xff
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0xef
 
-    let regValue = (registers state) ! 18
+    let regValue = registers state ! 18
     regValue `shouldBe` 0xff
 
     -- Program counter
-    (programCounter state) `shouldBe` 5
+    programCounter state `shouldBe` 5
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` True
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` True
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_push.asm"
 testPush :: EmulatorState -> IO ()
 testPush state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x1
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x2
 
-    let regValue = (registers state) ! 18
+    let regValue = registers state ! 18
     regValue `shouldBe` 0x2
 
     -- Program counter
-    (programCounter state) `shouldBe` 6
+    programCounter state `shouldBe` 6
 
     -- Memory
-    let topOfStack = (memory state) ! (fromIntegral (sp state))
+    let topOfStack = memory state ! fromIntegral (sp state)
     topOfStack `shouldBe` 0x2
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_rol_ror.asm"
 testRolRor :: EmulatorState -> IO ()
 testRolRor state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x4
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x66
 
-    let regValue = (registers state) ! 18
+    let regValue = registers state ! 18
     regValue `shouldBe` 0xd5
 
-    let regValue = (registers state) ! 19
+    let regValue = registers state ! 19
     regValue `shouldBe` 0x7
 
     -- Program counter
-    (programCounter state) `shouldBe` 8
+    programCounter state `shouldBe` 8
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` True
-    (overflowFlag $ flags state) `shouldBe` True
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` True
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` True
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` True
 
 -- Checking EmulatorState for the "test_sbc.asm"
 testSbc :: EmulatorState -> IO ()
 testSbc state = do
     -- Registers
-    let regValue = (registers state) ! 0
+    let regValue = registers state ! 0
     regValue `shouldBe` 0x3
 
-    let regValue = (registers state) ! 1
+    let regValue = registers state ! 1
     regValue `shouldBe` 0x11
 
-    let regValue = (registers state) ! 2
+    let regValue = registers state ! 2
     regValue `shouldBe` 0x38
 
-    let regValue = (registers state) ! 3
+    let regValue = registers state ! 3
     regValue `shouldBe` 0xcc
 
     -- Program counter
-    (programCounter state) `shouldBe` 6
+    programCounter state `shouldBe` 6
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` True
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` True
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_sbrs.asm"
 testSbrs :: EmulatorState -> IO ()
 testSbrs state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x33
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x7
 
-    let regValue = (registers state) ! 18
+    let regValue = registers state ! 18
     regValue `shouldBe` 0xf0
 
     -- Program counter
-    (programCounter state) `shouldBe` 6
+    programCounter state `shouldBe` 6
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_setting.asm"
 testSettingFlags :: EmulatorState -> IO ()
 testSettingFlags state = do
     -- Registers
-    let regValue = (registers state) ! 18
+    let regValue = registers state ! 18
     regValue `shouldBe` 0xff
 
     -- Program counter
-    (programCounter state) `shouldBe` 9
+    programCounter state `shouldBe` 9
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` True
-    (tFlag $ flags state) `shouldBe` True
-    (halfCarryFlag $ flags state) `shouldBe` True
-    (signFlag $ flags state) `shouldBe` True
-    (overflowFlag $ flags state) `shouldBe` True
-    (negativeFlag $ flags state) `shouldBe` True
-    (zeroFlag $ flags state) `shouldBe` True
-    (carryFlag $ flags state) `shouldBe` True
+    interruptFlag (flags state) `shouldBe` True
+    tFlag (flags state) `shouldBe` True
+    halfCarryFlag (flags state) `shouldBe` True
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` True
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` True
 
 -- Checking EmulatorState for the "test_subi.asm"
 testSubi :: EmulatorState -> IO ()
 testSubi state = do
     -- Registers
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x45
 
     -- Program counter
-    (programCounter state) `shouldBe` 7
+    programCounter state `shouldBe` 7
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` True
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_swap.asm"
 testSwap :: EmulatorState -> IO ()
 testSwap state = do
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0xeb
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x41
 
-    let regValue = (registers state) ! 18
+    let regValue = registers state ! 18
     regValue `shouldBe` 0xff
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` True
-    (signFlag $ flags state) `shouldBe` True
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` True
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` True
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` True
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` True
 
 -- Checking EmulatorState for the "test_tst.asm"
 testTst :: EmulatorState -> IO ()
 testTst state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0xfc
 
     -- Program counter
-    (programCounter state) `shouldBe` 2
+    programCounter state `shouldBe` 2
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` True
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` True
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test.asm"
 testTest :: EmulatorState -> IO ()
 testTest state = do
     -- Registers
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x21
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x20
 
-    let regValue = (registers state) ! 18
+    let regValue = registers state ! 18
     regValue `shouldBe` 0xf0
 
-    let regValue = (registers state) ! 19
+    let regValue = registers state ! 19
     regValue `shouldBe` 0x40
 
-    let regValue = (registers state) ! 27
+    let regValue = registers state ! 27
     regValue `shouldBe` 0x4
 
     -- Program counter
-    (programCounter state) `shouldBe` 46
+    programCounter state `shouldBe` 46
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` True
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "bubblesort.asm"
 testBubblesort :: EmulatorState -> IO ()
@@ -691,47 +689,47 @@ testBubblesort state = do
     sliceOfMemory `shouldBe` expectedVector
 
     -- Registers
-    let regValue = (registers state) ! 8
+    let regValue = registers state ! 8
     regValue `shouldBe` 0xff
 
-    let regValue = (registers state) ! 9
+    let regValue = registers state ! 9
     regValue `shouldBe` 0x00
 
-    let regValue = (registers state) ! 16
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x5b
 
-    let regValue = (registers state) ! 17
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x45
 
-    let regValue = (registers state) ! 18
+    let regValue = registers state ! 18
     regValue `shouldBe` 0x1
 
     -- Program counter
-    (programCounter state) `shouldBe` 91
+    programCounter state `shouldBe` 91
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` False
-    (signFlag $ flags state) `shouldBe` False
-    (overflowFlag $ flags state) `shouldBe` False
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` True
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_eof.asm"
 testEof :: EmulatorState -> IO ()
 testEof state = do
     -- Program counter
-    (programCounter state) `shouldBe` 12
+    programCounter state `shouldBe` 12
 
     -- Status flags
-    (interruptFlag $ flags state) `shouldBe` False
-    (tFlag $ flags state) `shouldBe` False
-    (halfCarryFlag $ flags state) `shouldBe` True
-    (signFlag $ flags state) `shouldBe` True
-    (overflowFlag $ flags state) `shouldBe` True
-    (negativeFlag $ flags state) `shouldBe` False
-    (zeroFlag $ flags state) `shouldBe` False
-    (carryFlag $ flags state) `shouldBe` False
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` True
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` True
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 

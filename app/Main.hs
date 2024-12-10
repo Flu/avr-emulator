@@ -33,9 +33,8 @@ compileFromFile input False memorySize = do
     case maybeInstructions of
         Just instructions -> do
             let finalState = run instructions memorySize
-            (return (Right finalState))
-        Nothing -> do
-            (return (Left "Error assembling the program"))
+            return (Right finalState)
+        Nothing -> (return (Left "Error assembling the program"))
 
 compileFromFile input True memorySize = do
     maybeInstructions <- assembleProgramFromFile input
@@ -43,22 +42,20 @@ compileFromFile input True memorySize = do
         Just instructions -> do
             mapM_ print (replaceLabels instructions)
             let finalState = run instructions memorySize
-            (return (Right finalState))
-        Nothing -> do
-            (return (Left "Error assembling the program"))
+            return (Right finalState)
+        Nothing -> (return (Left "Error assembling the program"))
 
 getVersion :: String
 getVersion = showVersion version
 
-entryFunction :: Options -> IO () 
+entryFunction :: Options -> IO ()
 entryFunction (Options False dmpIR memorySize False file) = do
     finalState <- compileFromFile file dmpIR memorySize
     case finalState of
         Right state -> do
             printRegisterBank $ registers state         -- Pretty print the register banks
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
-        Left errorMessage -> do
-            print errorMessage
+        Left errorMessage -> print errorMessage
 
 entryFunction (Options True dmpIR memorySize False file) = do
     finalState <- compileFromFile file dmpIR memorySize
@@ -68,8 +65,6 @@ entryFunction (Options True dmpIR memorySize False file) = do
             putStrLn ""
             printRegisterBank $ registers state         -- Pretty print the register banks
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
-        Left errorMessage -> do
-            print errorMessage
+        Left errorMessage -> print errorMessage
 
-entryFunction (Options _ _ _ True _) = do
-    putStrLn ("avr-emulator v" ++ getVersion)
+entryFunction (Options _ _ _ True _) = putStrLn ("avr-emulator v" ++ getVersion)

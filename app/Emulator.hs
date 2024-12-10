@@ -32,8 +32,7 @@ type StackPointer = Word16          -- ^ The stack pointer is also 2 bytes, sinc
 
 -- | Pretty prints the register bank to stdout and colors non-zero values so they can be easier to see
 printRegisterBank :: Registers -> IO ()
-printRegisterBank regs = do
-    go (assocs regs)
+printRegisterBank regs = go (assocs regs)
     where
         go::[(Int, Register)] -> IO ()
         go [] = return ()
@@ -67,7 +66,7 @@ registersToString regs =
             [] -> ""
             -- Take the current index and register value, construct the String representation in the form "R12  0x01 00000001",
             -- add a newline and call the function recursively on the next element
-            ((i, r):rs) -> (printf "R%-5s 0x%02x  %08s" (show i) r (showIntAtBase 2 intToDigit r "")) ++ "\n" ++ go rs
+            ((i, r):rs) -> printf "R%-5s 0x%02x  %08s" (show i) r (showIntAtBase 2 intToDigit r "") ++ "\n" ++ go rs
     in
         go registers
 
@@ -83,11 +82,11 @@ showStatusFlags sreg =
     " Z: " ++ show (zeroFlag sreg) ++
     " C: " ++ show (carryFlag sreg)
 
--- ^ Converts an Int to a zero-padded hex string of length 4 (e.g., "0000")
+-- | Converts an Int to a zero-padded hex string of length 4 (e.g., "0000")
 toHex4 :: Int -> String
 toHex4 x = let h = showHex x "" in replicate (4 - length h) '0' ++ h
 
--- ^ Converts a Word8 to a zero-padded hex string of length 2 (e.g., "00")
+-- | Converts a Word8 to a zero-padded hex string of length 2 (e.g., "00")
 toHex2 :: Word8 -> String
 toHex2 x = let h = showHex x "" in replicate (2 - length h) '0' ++ h
 
@@ -138,7 +137,7 @@ prettyPrintMemory mem = do
     -- Then we map over all elements of rows (the tuples) and give them one by one to printRow, which formattes them
     -- and prints them
     mapM_ (uncurry printRow) rows
-    
+
 -- | Data type for holding the status flags. Otherwise called the SREG
 data StatusFlags = StatusFlags {
     interruptFlag :: Bool,  -- ^ Global interrupt flag
@@ -292,11 +291,11 @@ adc oldStatus registers sp memory rd rs =
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
             tFlag = tFlag oldStatus,
-            halfCarryFlag = testBit op1 3 && testBit op2 3 || testBit op1 3 && not(testBit result 3) || not(testBit result 3) && testBit op1 3,
-            overflowFlag = testBit op1 7 && testBit op2 7 && not(testBit result 7) || not(testBit op1 7) && not(testBit op2 7) && testBit result 7,
+            halfCarryFlag = testBit op1 3 && testBit op2 3 || testBit op1 3 && not (testBit result 3) || not (testBit result 3) && testBit op1 3,
+            overflowFlag = testBit op1 7 && testBit op2 7 && not (testBit result 7) || not (testBit op1 7) && not (testBit op2 7) && testBit result 7,
             negativeFlag = testBit result 7,
             zeroFlag = result == 0,
-            carryFlag = testBit op1 7 && testBit op2 7 || testBit op1 7 && not(testBit result 7) || not(testBit result 7) && testBit op1 7,
+            carryFlag = testBit op1 7 && testBit op2 7 || testBit op1 7 && not (testBit result 7) || not (testBit result 7) && testBit op1 7,
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
     in (updatedRegisters, updatedFlags, 0, sp, memory)
@@ -313,11 +312,11 @@ add oldStatus registers sp memory rd rs =
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
             tFlag = tFlag oldStatus,
-            halfCarryFlag = testBit op1 3 && testBit op2 3 || testBit op1 3 && not(testBit result 3) || not(testBit result 3) && testBit op1 3,
-            overflowFlag = testBit op1 7 && testBit op2 7 && not(testBit result 7) || not(testBit op1 7) && not(testBit op2 7) && testBit result 7,
+            halfCarryFlag = testBit op1 3 && testBit op2 3 || testBit op1 3 && not (testBit result 3) || not (testBit result 3) && testBit op1 3,
+            overflowFlag = testBit op1 7 && testBit op2 7 && not (testBit result 7) || not (testBit op1 7) && not (testBit op2 7) && testBit result 7,
             negativeFlag = testBit result 7,
             zeroFlag = result == 0,
-            carryFlag = testBit op1 7 && testBit op2 7 || testBit op1 7 && not(testBit result 7) || not(testBit result 7) && testBit op1 7,
+            carryFlag = testBit op1 7 && testBit op2 7 || testBit op1 7 && not (testBit result 7) || not (testBit result 7) && testBit op1 7,
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
     in (updatedRegisters, updatedFlags, 0, sp, memory)
@@ -328,7 +327,7 @@ adiw oldStatus registers sp memory op1 op2 k =
         rdIndex = fromIntegral op2
         rd1 = registers ! rd1Index
         rd = registers ! rdIndex
-        result = ((fromIntegral rd1 :: Word16) `shiftL` 8) + (fromIntegral rd :: Word16) + (fromIntegral k :: Word16)
+        result = (fromIntegral rd1 :: Word16) `shiftL` 8 + (fromIntegral rd :: Word16) + (fromIntegral k :: Word16)
         resultH = fromIntegral (result `shiftR` 8) :: Word8
         resultL = fromIntegral result :: Word8
         updatedRegisters = registers // [(rd1Index, resultH), (rdIndex, resultL)]
@@ -336,10 +335,10 @@ adiw oldStatus registers sp memory op1 op2 k =
             interruptFlag = interruptFlag oldStatus,
             tFlag = tFlag oldStatus,
             halfCarryFlag = halfCarryFlag oldStatus,
-            overflowFlag = not(testBit rd1 7) && testBit result 15,
+            overflowFlag = not (testBit rd1 7) && testBit result 15,
             negativeFlag = testBit result 15,
             zeroFlag = result == 0,
-            carryFlag = not(testBit result 15) && testBit rd1 7,
+            carryFlag = not (testBit result 15) && testBit rd1 7,
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
         in (updatedRegisters, updatedFlags, 0, sp, memory)
@@ -392,7 +391,7 @@ asr oldStatus registers sp memory op1 =
         rd = registers ! rdIndex
         lsb = testBit rd 0
         msb = testBit rd 7
-        result = if msb then (rd `shiftR` 1) .|. (0x80) else (rd `shiftR` 1) .&. (0xBF)
+        result = if msb then rd `shiftR` 1 .|. 0x80 else rd `shiftR` 1 .&. 0xBF
         updatedRegisters = registers // [(rdIndex,result)]
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
@@ -533,7 +532,7 @@ clc oldStatus registers sp memory =
             carryFlag = False,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 clh :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 clh oldStatus registers sp memory =
@@ -547,7 +546,7 @@ clh oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 cli :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 cli oldStatus registers sp memory =
@@ -561,7 +560,7 @@ cli oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 cln :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 cln oldStatus registers sp memory =
@@ -575,7 +574,7 @@ cln oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 clr :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 clr oldStatus registers sp memory op1 =
@@ -607,7 +606,7 @@ cls oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = False
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 clt :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 clt oldStatus registers sp memory =
@@ -621,7 +620,7 @@ clt oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 clv :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 clv oldStatus registers sp memory =
@@ -635,7 +634,7 @@ clv oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 clz :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 clz oldStatus registers sp memory =
@@ -649,10 +648,10 @@ clz oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 com :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
-com oldStatus registers sp memory op1 = 
+com oldStatus registers sp memory op1 =
     let rdIndex = fromIntegral op1
         rd = registers ! rdIndex
         result = 255 - rd
@@ -679,11 +678,11 @@ cp oldStatus registers sp memory op1 op2 =
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
             tFlag = tFlag oldStatus,
-            halfCarryFlag = not(testBit rd 3) && testBit rr 3 || testBit rr 3 && testBit result 3 || testBit result 3 && not(testBit rd 3),
-            overflowFlag = testBit rd 7 && not (testBit rr 7) && not(testBit result 7) || not(testBit rd 7) && testBit rr 7 && testBit result 7,
+            halfCarryFlag = not (testBit rd 3) && testBit rr 3 || testBit rr 3 && testBit result 3 || testBit result 3 && not (testBit rd 3),
+            overflowFlag = testBit rd 7 && not (testBit rr 7) && not (testBit result 7) || not (testBit rd 7) && testBit rr 7 && testBit result 7,
             negativeFlag = testBit result 7,
             zeroFlag = result == 0,
-            carryFlag = not (testBit rd 7) && testBit rr 7 || testBit rr 7 && testBit result 7 || testBit result 7 && not(testBit rd 7),
+            carryFlag = not (testBit rd 7) && testBit rr 7 || testBit rr 7 && testBit result 7 || testBit result 7 && not (testBit rd 7),
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
     in (registers, updatedFlags, 0, sp, memory)
@@ -699,11 +698,11 @@ cpc oldStatus registers sp memory op1 op2 =
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
             tFlag = tFlag oldStatus,
-            halfCarryFlag = not(testBit rd 3) && testBit rr 3 || testBit rr 3 && testBit result 3 || testBit result 3 && not(testBit rd 3),
-            overflowFlag = testBit rd 7 && not (testBit rr 7) && not(testBit result 7) || not(testBit rd 7) && testBit rr 7 && testBit result 7,
+            halfCarryFlag = not (testBit rd 3) && testBit rr 3 || testBit rr 3 && testBit result 3 || testBit result 3 && not (testBit rd 3),
+            overflowFlag = testBit rd 7 && not (testBit rr 7) && not (testBit result 7) || not (testBit rd 7) && testBit rr 7 && testBit result 7,
             negativeFlag = testBit result 7,
             zeroFlag = result == 0 && zeroFlag oldStatus,
-            carryFlag = not (testBit rd 7) && testBit rr 7 || testBit rr 7 && testBit result 7 || testBit result 7 && not(testBit rd 7),
+            carryFlag = not (testBit rd 7) && testBit rr 7 || testBit rr 7 && testBit result 7 || testBit result 7 && not (testBit rd 7),
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
     in (registers, updatedFlags, 0, sp, memory)
@@ -717,11 +716,11 @@ cpi oldStatus registers sp memory op1 immediate =
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
             tFlag = tFlag oldStatus,
-            halfCarryFlag = not(testBit rd 3) && testBit k 3 || testBit k 3 && testBit result 3 || testBit result 3 && not(testBit rd 3),
-            overflowFlag = testBit rd 7 && not (testBit k 7) && not(testBit result 7) || not(testBit rd 7) && testBit k 7 && testBit result 7,
+            halfCarryFlag = not (testBit rd 3) && testBit k 3 || testBit k 3 && testBit result 3 || testBit result 3 && not (testBit rd 3),
+            overflowFlag = testBit rd 7 && not (testBit k 7) && not (testBit result 7) || not (testBit rd 7) && testBit k 7 && testBit result 7,
             negativeFlag = testBit result 7,
             zeroFlag = result == 0,
-            carryFlag = not (testBit rd 7) && testBit k 7 || testBit k 7 && testBit result 7 || testBit result 7 && not(testBit rd 7),
+            carryFlag = not (testBit rd 7) && testBit k 7 || testBit k 7 && testBit result 7 || testBit result 7 && not (testBit rd 7),
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
     in (registers, updatedFlags, 0, sp, memory)
@@ -799,26 +798,26 @@ jmp oldStatus registers sp memory relAddress = (registers, oldStatus, relAddress
 ld :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> String -> (Registers, StatusFlags, Int, StackPointer, Memory)
 ld oldStatus registers sp memory op1 "X" =
     let rdIndex = fromIntegral op1
-        address16b = ((fromIntegral (registers ! 27) :: Word16) `shiftL` 8) + (fromIntegral (registers ! 26) :: Word16)
-        updatedRegisters = registers // [(rdIndex, memory ! (fromIntegral address16b))]
+        address16b = (fromIntegral (registers ! 27) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 26) :: Word16)
+        updatedRegisters = registers // [(rdIndex, memory ! fromIntegral address16b)]
     in (updatedRegisters, oldStatus, 0, sp, memory)
 
 ld oldStatus registers sp memory op1 "X+" =
     let rdIndex = fromIntegral op1
-        address16b = ((fromIntegral (registers ! 27) :: Word16) `shiftL` 8) + (fromIntegral (registers ! 26) :: Word16)
+        address16b = (fromIntegral (registers ! 27) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 26) :: Word16)
         newXRegister = address16b + 1
         xHigh = fromIntegral (newXRegister `shiftR` 8) :: Word8
         xLow = fromIntegral newXRegister :: Word8
-        updatedRegisters = registers // [(rdIndex, memory ! (fromIntegral address16b)), (27, xHigh), (26, xLow)]
+        updatedRegisters = registers // [(rdIndex, memory ! fromIntegral address16b), (27, xHigh), (26, xLow)]
     in (updatedRegisters, oldStatus, 0, sp, memory)
 
 ld oldStatus registers sp memory op1 "-X" =
     let rdIndex = fromIntegral op1
-        address16b = ((fromIntegral (registers ! 27) :: Word16) `shiftL` 8) + (fromIntegral (registers ! 26) :: Word16)
+        address16b = (fromIntegral (registers ! 27) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 26) :: Word16)
         newXRegister = address16b - 1
         xHigh = fromIntegral (newXRegister `shiftR` 8) :: Word8
         xLow = fromIntegral newXRegister :: Word8
-        updatedRegisters = registers // [(rdIndex, memory ! (fromIntegral newXRegister)), (27, xHigh), (26, xLow)]
+        updatedRegisters = registers // [(rdIndex, memory ! fromIntegral newXRegister), (27, xHigh), (26, xLow)]
     in (updatedRegisters, oldStatus, 0, sp, memory)
 
 ldi :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
@@ -928,9 +927,9 @@ muls oldStatus registers sp memory op1 op2 =
         multiplySigned _ 0 = 0
         multiplySigned 0 _ = 0
         multiplySigned m1 m2
-            | testBit m1 7 && not(testBit m2 7) = negate ((fromIntegral (negate m1) :: Word16) * fromIntegral m2 :: Word16)
-            | not(testBit m1 7) && testBit m2 7 = negate ((fromIntegral m1 ::Word16)*(fromIntegral (negate m2) ::Word16))
-            | not(testBit m1 7) && not(testBit m2 7) = (fromIntegral m1 ::Word16)*(fromIntegral m2 ::Word16)
+            | testBit m1 7 && not (testBit m2 7) = negate ((fromIntegral (negate m1) :: Word16) * fromIntegral m2 :: Word16)
+            | not (testBit m1 7) && testBit m2 7 = negate ((fromIntegral m1 ::Word16)*(fromIntegral (negate m2) ::Word16))
+            | not (testBit m1 7) && not (testBit m2 7) = (fromIntegral m1 ::Word16)*(fromIntegral m2 ::Word16)
             | testBit m1 7 && testBit m2 7 = (fromIntegral (negate m1) ::Word16)*(fromIntegral (negate m2) ::Word16)
         result = multiplySigned rd rr
         resultH = fromIntegral (result `shiftR` 8) :: Word8
@@ -949,19 +948,19 @@ muls oldStatus registers sp memory op1 op2 =
     in (updatedRegisters, updatedFlags, 0, sp, memory)
 
 neg :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
-neg oldStatus registers sp memory op1 = 
+neg oldStatus registers sp memory op1 =
     let rdIndex = fromIntegral op1
         rd = registers ! rdIndex
-        result = 0 - rd
+        result = negate rd
         updatedRegisters = registers // [(rdIndex, result)]
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
             tFlag = tFlag oldStatus,
-            halfCarryFlag = (testBit result 3) || not (testBit rd 3),
-            overflowFlag = (testBit result 7) && not(testBit result 6) && not(testBit result 5) && not(testBit result 4) && not(testBit result 3) && not(testBit result 2) && not(testBit result 1) && not(testBit result 0),
+            halfCarryFlag = testBit result 3 || not (testBit rd 3),
+            overflowFlag = testBit result 7 && not (testBit result 6) && not (testBit result 5) && not (testBit result 4) && not (testBit result 3) && not (testBit result 2) && not (testBit result 1) && not (testBit result 0),
             negativeFlag = testBit result 7,
             zeroFlag = result == 0,
-            carryFlag = (testBit result 7) || (testBit result 6) || (testBit result 5) || (testBit result 4) || (testBit result 3) || (testBit result 2) || (testBit result 1) || (testBit result 0),
+            carryFlag = testBit result 7 || testBit result 6 || testBit result 5 || testBit result 4 || testBit result 3 || testBit result 2 || testBit result 1 || testBit result 0,
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
         in (updatedRegisters, updatedFlags, 0, sp, memory)
@@ -1009,7 +1008,7 @@ pop :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Regist
 pop oldStatus registers sp memory op1 =
     let rdIndex = fromIntegral op1
         newSp = sp + 1
-        poppedValue = memory ! (fromIntegral newSp)
+        poppedValue = memory ! fromIntegral newSp
         updatedRegisters = registers // [(rdIndex, poppedValue)]
     in (updatedRegisters, oldStatus, 0, newSp, memory)
 
@@ -1025,9 +1024,9 @@ ret ::  StatusFlags -> Registers -> StackPointer -> Memory -> ProgramCounter -> 
 ret oldStatus registers sp memory pc =
     let
         newSp = sp + 2
-        returnAddressHigh = memory ! (fromIntegral newSp)
-        returnAddressLow = memory ! ((fromIntegral newSp) - 1)
-        returnAddress = ((fromIntegral returnAddressHigh :: Word16) `shiftL` 8) .|. (fromIntegral returnAddressLow :: Word16)
+        returnAddressHigh = memory ! fromIntegral newSp
+        returnAddressLow = memory ! (fromIntegral newSp - 1)
+        returnAddress = (fromIntegral returnAddressHigh :: Word16) `shiftL` 8 .|. (fromIntegral returnAddressLow :: Word16)
         relativeAddress = (fromIntegral returnAddress :: Int) - (fromIntegral pc :: Int)
     in (registers, oldStatus, relativeAddress, newSp, memory)
 
@@ -1036,7 +1035,7 @@ rol oldStatus registers sp memory op1 =
     let rdIndex = fromIntegral op1
         rd = registers ! rdIndex
         msb = testBit rd 7
-        result = if carryFlag oldStatus then (rd `shiftL` 1) .|. (0x01) else (rd `shiftL` 1)
+        result = if carryFlag oldStatus then rd `shiftL` 1 .|. 0x01 else rd `shiftL` 1
         updatedRegisters = registers // [(rdIndex,result)]
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
@@ -1055,7 +1054,7 @@ ror oldStatus registers sp memory op1 =
     let rdIndex = fromIntegral op1
         rd = registers ! rdIndex
         lsb = testBit rd 0
-        result = if carryFlag oldStatus then (rd `shiftR` 1) .|. (0x80) else rd `shiftR` 1
+        result = if carryFlag oldStatus then rd `shiftR` 1 .|. 0x80 else rd `shiftR` 1
         updatedRegisters = registers // [(rdIndex,result)]
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
@@ -1082,11 +1081,11 @@ sbc oldStatus registers sp memory op1 op2 =
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
             tFlag = tFlag oldStatus,
-            halfCarryFlag = not (testBit rd 3) && testBit rr 3 || testBit rr 3 && testBit result 3 || testBit result 3 && not(testBit rd 3),
-            overflowFlag = testBit rd 7 && not (testBit rr 7) && not(testBit result 7) || not(testBit rd 7) && testBit rr 7 && testBit result 7,
+            halfCarryFlag = not (testBit rd 3) && testBit rr 3 || testBit rr 3 && testBit result 3 || testBit result 3 && not (testBit rd 3),
+            overflowFlag = testBit rd 7 && not (testBit rr 7) && not (testBit result 7) || not (testBit rd 7) && testBit rr 7 && testBit result 7,
             negativeFlag = testBit result 7,
-            zeroFlag = result == 0 && (zeroFlag oldStatus),
-            carryFlag = not (testBit rd 7) && testBit rr 7 || testBit rr 7 && testBit result 7 || testBit result 7 && not(testBit rd 7),
+            zeroFlag = result == 0 && zeroFlag oldStatus,
+            carryFlag = not (testBit rd 7) && testBit rr 7 || testBit rr 7 && testBit result 7 || testBit result 7 && not (testBit rd 7),
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
     in (updatedRegisters, updatedFlags, 0, sp, memory)
@@ -1096,7 +1095,7 @@ sbrc oldStatus registers sp memory op1 immediate =
     let rdIndex = fromIntegral op1
         rd = registers ! rdIndex
         b = fromIntegral immediate
-        shouldJump = not(testBit rd b)
+        shouldJump = not (testBit rd b)
         relativeJump = if shouldJump then 1 else 0
     in (registers, oldStatus, relativeJump, sp, memory)
 
@@ -1121,7 +1120,7 @@ sec oldStatus registers sp memory =
             carryFlag = True,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 seh :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 seh oldStatus registers sp memory =
@@ -1135,7 +1134,7 @@ seh oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 sei :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 sei oldStatus registers sp memory =
@@ -1149,7 +1148,7 @@ sei oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 sen :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 sen oldStatus registers sp memory =
@@ -1163,7 +1162,7 @@ sen oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 ser :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 ser oldStatus registers sp memory op1 =
@@ -1185,7 +1184,7 @@ ses oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = True
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 set :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 set oldStatus registers sp memory =
@@ -1199,7 +1198,7 @@ set oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 sev :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 sev oldStatus registers sp memory =
@@ -1213,7 +1212,7 @@ sev oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 sez :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 sez oldStatus registers sp memory =
@@ -1227,20 +1226,20 @@ sez oldStatus registers sp memory =
             carryFlag = carryFlag oldStatus,
             signFlag = signFlag oldStatus
     }
-    in (registers, updatedFlags, 0, sp, memory )
+    in (registers, updatedFlags, 0, sp, memory)
 
 st :: StatusFlags -> Registers -> StackPointer -> Memory -> String -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 st oldStatus registers sp memory "X" op2 =
     let rrIndex = fromIntegral op2
         rr = registers ! rrIndex
-        address16b = ((fromIntegral (registers ! 27) :: Word16) `shiftL` 8) + (fromIntegral (registers ! 26) :: Word16)
+        address16b = (fromIntegral (registers ! 27) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 26) :: Word16)
         updatedMemory = memory // [(fromIntegral address16b, rr)]
     in (registers, oldStatus, 0, sp, updatedMemory)
 
 st oldStatus registers sp memory "X+" op2 =
     let rrIndex = fromIntegral op2
         rr = registers ! rrIndex
-        address16b = ((fromIntegral (registers ! 27) :: Word16) `shiftL` 8) + (fromIntegral (registers ! 26) :: Word16)
+        address16b = (fromIntegral (registers ! 27) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 26) :: Word16)
         updatedMemory = memory // [(fromIntegral address16b, rr)]
         newXRegister = address16b + 1
         xHigh = fromIntegral (newXRegister `shiftR` 8) :: Word8
@@ -1251,7 +1250,7 @@ st oldStatus registers sp memory "X+" op2 =
 st oldStatus registers sp memory "-X" op2 =
     let rrIndex = fromIntegral op2
         rr = registers ! rrIndex
-        address16b = ((fromIntegral (registers ! 27) :: Word16) `shiftL` 8) + (fromIntegral (registers ! 26) :: Word16)
+        address16b = (fromIntegral (registers ! 27) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 26) :: Word16)
         newXRegister = address16b - 1
         updatedMemory = memory // [(fromIntegral newXRegister, rr)]
         xHigh = fromIntegral (newXRegister `shiftR` 8) :: Word8
@@ -1279,11 +1278,11 @@ sub oldStatus registers sp memory op1 op2 =
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
             tFlag = tFlag oldStatus,
-            halfCarryFlag = not (testBit rd 3) && testBit rr 3 || testBit rr 3 && testBit result 3 || testBit result 3 && not(testBit rd 3),
-            overflowFlag = testBit rd 7 && not (testBit rr 7) && not(testBit result 7) || not(testBit rd 7) && testBit rr 7 && testBit result 7,
+            halfCarryFlag = not (testBit rd 3) && testBit rr 3 || testBit rr 3 && testBit result 3 || testBit result 3 && not (testBit rd 3),
+            overflowFlag = testBit rd 7 && not (testBit rr 7) && not (testBit result 7) || not (testBit rd 7) && testBit rr 7 && testBit result 7,
             negativeFlag = testBit result 7,
             zeroFlag = result == 0,
-            carryFlag = not (testBit rd 7) && testBit rr 7 || testBit rr 7 && testBit result 7 || testBit result 7 && not(testBit rd 7),
+            carryFlag = not (testBit rd 7) && testBit rr 7 || testBit rr 7 && testBit result 7 || testBit result 7 && not (testBit rd 7),
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
     in (updatedRegisters, updatedFlags, 0, sp, memory)
@@ -1299,25 +1298,25 @@ subi oldStatus registers sp memory op1 immediate =
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
             tFlag = tFlag oldStatus,
-            halfCarryFlag = not (testBit rd 3) && testBit k 3 || testBit k 3 && testBit result 3 || testBit result 3 && not(testBit rd 3),
-            overflowFlag = testBit rd 7 && not (testBit k 7) && not(testBit result 7) || not(testBit rd 7) && testBit k 7 && testBit result 7,
+            halfCarryFlag = not (testBit rd 3) && testBit k 3 || testBit k 3 && testBit result 3 || testBit result 3 && not (testBit rd 3),
+            overflowFlag = testBit rd 7 && not (testBit k 7) && not (testBit result 7) || not (testBit rd 7) && testBit k 7 && testBit result 7,
             negativeFlag = testBit result 7,
             zeroFlag = result == 0,
-            carryFlag = not (testBit rd 7) && testBit k 7 || testBit k 7 && testBit result 7 || testBit result 7 && not(testBit rd 7),
+            carryFlag = not (testBit rd 7) && testBit k 7 || testBit k 7 && testBit result 7 || testBit result 7 && not (testBit rd 7),
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
     in (updatedRegisters, updatedFlags, 0, sp, memory)
 
 swap :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
-swap oldStatus registers sp memory op1 = 
+swap oldStatus registers sp memory op1 =
     let rdIndex = fromIntegral op1
         rd = registers ! rdIndex
-        result = (rd `shiftR` 4) .|. (rd `shiftL` 4)
+        result = rd `shiftR` 4 .|. rd `shiftL` 4
         updatedRegisters = registers // [(rdIndex, result)]
         in (updatedRegisters, oldStatus, 0, sp, memory)
 
 tst :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
-tst oldStatus registers sp memory op1 = 
+tst oldStatus registers sp memory op1 =
     let rdIndex = fromIntegral op1
         rd = registers ! rdIndex
         updatedFlags = StatusFlags {
@@ -1341,7 +1340,7 @@ tst oldStatus registers sp memory op1 =
     sends the relative address to the current PC to jump to, if needed.
 -}
 executeInstruction :: Instruction -> EmulatorState -> EmulatorState
-executeInstruction instruction state = 
+executeInstruction instruction state =
     let (updatedRegisters, updatedFlags, relativeJump, updatedSp, updatedMemory) = case instruction of
             ADC rd rs -> adc (flags state) (registers state) (sp state) (memory state) rd rs
             ADD rd rs -> add (flags state) (registers state) (sp state) (memory state) rd rs
@@ -1430,7 +1429,7 @@ executeInstruction instruction state =
         -- This is why most instructions return a 0 as a relative address, and this is also why, when resolving labels, a label that's
         -- 20 instructions behind is actually getting resolved to a relative address of -21, because of this '+ 1' that guarantees that if
         -- the instruction doesn't jump, we continue normally to the next one.
-        programCounter = programCounter state + fromIntegral relativeJump + 1, 
+        programCounter = programCounter state + fromIntegral relativeJump + 1,
         sp = updatedSp,
         memory = updatedMemory
     }
@@ -1552,7 +1551,7 @@ resolveLabels _labelMap (address, otherInstr) = Just otherInstr
 
 -- | Constructs the jump table and then resolves the labels with it
 replaceLabels :: [Instruction] -> [Maybe Instruction]
-replaceLabels instructions = 
+replaceLabels instructions =
   let (labelMap, _) = constructJumpTable instructions 0 Map.empty
    in zipWith (curry (resolveLabels labelMap)) [0 .. ] instructions
 
@@ -1571,7 +1570,7 @@ runProgram initialInstructions = go -- Call recursive helper function go
       let pc = fromIntegral (programCounter state)
       in if pc >= length initialInstructions -- If PC bigger than the list, it means we got to the end of execution
          then state -- So return the state
-         else 
+         else
            let currentInstruction = initialInstructions !! pc -- Fetch next instruction to be executed from where the PC points to
                newState = executeInstruction currentInstruction state -- Decode and execute it, then get the updated emulator state 
            in go newState -- Call recursively with the new state

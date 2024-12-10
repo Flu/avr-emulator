@@ -1,6 +1,6 @@
 -- Enable the OverloadedStrings language extension so we can use string literals as Text values
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
+
 
 module Parser(parseAssembly) where
 
@@ -45,21 +45,21 @@ pHexDigit = oneOf ['0'..'9'] <|> oneOf ['a'..'f'] <|> oneOf ['A'..'F']
 
 pWord8 :: Parser Word8
 pWord8 = do
-    (string "0x" <|> string "$")
+    string "0x" <|> string "$"
     hexDigits <- some pHexDigit
     case readHex hexDigits of
-        [(value, "")] -> 
-            if 0 <= value && value <= 0xFF 
+        [(value, "")] ->
+            if 0 <= value && value <= 0xFF
                 then return (fromInteger value)
             else fail "Hexadecimal value out of range for Word8"
         _ -> fail "Invalid hexadecimal format"
 
 pWord16 :: Parser Word16
 pWord16 = do
-    (string "0x" <|> string "$")
+    string "0x" <|> string "$"
     hexDigits <- some pHexDigit
     case readHex hexDigits of
-        [(value, "")] -> 
+        [(value, "")] ->
             if 0 <= value && value <= 0xFFFF
                 then return (fromInteger value)
             else fail "Hexadecimal value out of range for Word16"
@@ -67,8 +67,7 @@ pWord16 = do
 
 pXRegister :: Parser String
 pXRegister = do
-    value <- choice [ try (cistring "-X"), try(cistring "X+"), try(cistring "X") ]
-    return value
+    choice [ try (cistring "-X"), try (cistring "X+"), try (cistring "X") ]
 
 pDecimal :: Parser Word8
 pDecimal = do
@@ -243,22 +242,22 @@ pCALL = do
 pCLC :: Parser Instruction
 pCLC = do
     cistring "CLC" >> space
-    return (CLC)
+    return CLC
 
 pCLH :: Parser Instruction
 pCLH = do
     cistring "CLH" >> space
-    return (CLH)
+    return CLH
 
 pCLI :: Parser Instruction
 pCLI = do
     cistring "CLI" >> space
-    return (CLI)
+    return CLI
 
 pCLN :: Parser Instruction
 pCLN = do
     cistring "CLN" >> space
-    return (CLN)
+    return CLN
 
 pCLR :: Parser Instruction
 pCLR = do
@@ -268,22 +267,22 @@ pCLR = do
 pCLS :: Parser Instruction
 pCLS = do
     cistring "CLS" >> space
-    return (CLS)
+    return CLS
 
 pCLT :: Parser Instruction
 pCLT = do
     cistring "CLT" >> space
-    return (CLT)
+    return CLT
 
 pCLV :: Parser Instruction
 pCLV = do
     cistring "CLV" >> space
-    return (CLV)
+    return CLV
 
 pCLZ :: Parser Instruction
 pCLZ = do
     cistring "CLZ" >> space
-    return (CLZ)
+    return CLZ
 
 
 pCOM :: Parser Instruction
@@ -386,7 +385,7 @@ pMOVW = do
     (reg1, reg2) <- pRegisterPair
     pComma
     (reg3, reg4) <- pRegisterPair
-    return (MOVW reg1 reg2 reg3 reg4) 
+    return (MOVW reg1 reg2 reg3 reg4)
 
 pMUL :: Parser Instruction
 pMUL = do
@@ -439,7 +438,7 @@ pPUSH = do
 pRET :: Parser Instruction
 pRET = do
     cistring "RET" >> space
-    return (RET)
+    return RET
 
 pROL :: Parser Instruction
 pROL = do
@@ -475,22 +474,22 @@ pSBRS = do
 pSEC :: Parser Instruction
 pSEC = do
     cistring "SEC" >> space
-    return (SEC)
+    return SEC
 
 pSEH :: Parser Instruction
 pSEH = do
     cistring "SEH" >> space
-    return (SEH)
+    return SEH
 
 pSEI :: Parser Instruction
 pSEI = do
     cistring "SEI" >> space
-    return (SEI)
+    return SEI
 
 pSEN :: Parser Instruction
 pSEN = do
     cistring "SEN" >> space
-    return (SEN)
+    return SEN
 
 pSER :: Parser Instruction
 pSER = do
@@ -500,22 +499,22 @@ pSER = do
 pSES :: Parser Instruction
 pSES = do
     cistring "SES" >> space
-    return (SES)
+    return SES
 
 pSET :: Parser Instruction
 pSET = do
     cistring "SET" >> space
-    return (SET)
+    return SET
 
 pSEV :: Parser Instruction
 pSEV = do
     cistring "SEV" >> space
-    return (SEV)
+    return SEV
 
 pSEZ :: Parser Instruction
 pSEZ = do
     cistring "SEZ" >> space
-    return (SEZ)
+    return SEZ
 
 pST :: Parser Instruction
 pST = do
@@ -668,5 +667,4 @@ programParser = do
 parseAssembly :: String -> Either (ParseErrorBundle T.Text Void) [Instruction]
 parseAssembly input = do
     let textInput = T.pack input
-    parsingResult <- runParser programParser "" textInput
-    return parsingResult
+    runParser programParser "" textInput
