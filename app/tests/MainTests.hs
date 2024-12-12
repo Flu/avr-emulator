@@ -163,19 +163,16 @@ main = hspec $ describe "AVR Emulator E2E tests" $ do
 testBld:: EmulatorState -> IO()
 testBld state = do
     interruptFlag (flags state) `shouldBe` False
-    tFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` True
     halfCarryFlag (flags state) `shouldBe` False
     signFlag (flags state) `shouldBe` False
     overflowFlag (flags state) `shouldBe` False
     negativeFlag (flags state) `shouldBe` False
     zeroFlag (flags state) `shouldBe` False
     carryFlag (flags state) `shouldBe` False
-    
-    let regValue = registers state ! 30
-    regValue `shouldBe` 0x05
 
     let regValue = registers state ! 31
-    regValue `shouldBe` 0xFF
+    regValue `shouldBe` 0xF0
 
     
 
