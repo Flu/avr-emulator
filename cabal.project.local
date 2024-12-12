@@ -1,4 +1,4 @@
 tests: True
 package *
   coverage: True
-  library-coverage: False
+  library-coverage: True

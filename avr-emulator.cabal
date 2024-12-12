@@ -50,44 +50,49 @@ extra-doc-files:    CHANGELOG.md
 -- Extra source files to be distributed with the package, such as examples, or a tutorial module.
 -- extra-source-files:
 
+-- Library component
+library
+    exposed-modules:    Parser, Emulator, Options
+    hs-source-dirs:     src
+    build-depends:      base >=4.16.2.1
+                        , binary >=0.8.9.1
+                        , containers >=0.6.7
+                        , array >=0.5.4.0
+                        , text >=2.0.2
+                        , megaparsec >=9.7.0
+                        , optparse-applicative >=0.18.1.0
+                        , ansi-terminal >=1.1.1
+    default-language:   GHC2021
+
+-- Executable component
 executable avr-emulator
-    -- Import common warning flags.
-    ghc-options:
-        -O2
+    -- Import common warning flags and optimization flags.
+    ghc-options:        -O2
 
     -- .hs or .lhs file containing the Main module.
-    main-is:          Main.hs
-
-    -- Modules included in this executable, other than Main.
-    other-modules: Parser, Emulator, Options, Paths_avr_emulator
-
-    -- LANGUAGE extensions used by modules in this package.
-    -- other-extensions:
-
-    -- Other library packages from which modules are imported.
-    build-depends: base >=4.16.2.1
-        , binary >=0.8.9.1
-        , containers >= 0.6.7
-        , array >= 0.5.4.0
-        , text >= 2.0.2
-        , megaparsec >= 9.7.0
-        , optparse-applicative >= 0.18.1.0
-        , ansi-terminal >= 1.1.2
+    main-is:            Main.hs
 
     -- Directories containing source files.
-    hs-source-dirs:   app
+    hs-source-dirs:     app
+
+    other-modules: Paths_avr_emulator
+
+    -- Other library packages from which modules are imported.
+    build-depends:      base >=4.16.2.1
+                        , optparse-applicative >= 0.18.1.0
+                        , avr-emulator
 
     -- Base language which the package is written in.
-    default-language: GHC2021
+    default-language:   GHC2021
 
 test-suite avr-emulator-test
   type: exitcode-stdio-1.0
 
-  main-is: tests/MainTests.hs
+  main-is: MainTests.hs
 
-  hs-source-dirs: app
+  hs-source-dirs: test
 
-  other-modules: Parser, Emulator, Options, Paths_avr_emulator
+  other-modules: Paths_avr_emulator
 
   build-depends:
         base >=4.16.2.1
@@ -100,5 +105,6 @@ test-suite avr-emulator-test
         , vector >= 0.5.4.0
         , optparse-applicative >= 0.18.1.0
         , ansi-terminal >= 1.1.2
+        , avr-emulator
 
   default-language: GHC2021
