@@ -172,6 +172,7 @@ data Instruction
     | ANDI Register Word8
     | ASR Register
     | BCLR Int
+    | BLD Register Int
     | BRCC Label
     | BRCCR Int
     | BRCS Label
@@ -210,6 +211,7 @@ data Instruction
     | BRVSR Int
     | CALL Label
     | CALLR Int
+    | CBR Register Word8
     | CLC
     | CLH
     | CLI
@@ -422,6 +424,18 @@ bclr oldStatus registers sp memory flagNumber =
         }
    in (registers, updatedFlags, 0, sp, memory)
 
+-- Sets byte b in register Rd equal to the T bit.
+bld :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
+bld flags registers sp memory rd b = 
+    let rdIndex = fromIntegral rd
+        t = tFlag flags
+        value = registers ! rdIndex
+        updatedValue
+            | t = setBit value b
+            | otherwise = clearBit value b
+        newRegisters = registers // [(rdIndex, updatedValue)]
+    in (newRegisters, flags, 0, sp, memory)
+
 brcc :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
 brcc oldStatus registers sp memory relAddress =
     let shouldJump = not (carryFlag oldStatus)
@@ -536,6 +550,9 @@ call oldStatus registers sp memory relAddress returnAddress =
         updatedMemory = memory // [(fromIntegral sp, high),(fromIntegral (sp - 1), low)]
         newSp = sp - 2
         in (registers, oldStatus, relAddress, newSp, updatedMemory)
+
+cbr :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
+cbr status registers sp mem rb k = andi status registers sp mem rb (0xFF - k)
 
 clc :: StatusFlags -> Registers -> StackPointer -> Memory -> (Registers, StatusFlags, Int, StackPointer, Memory)
 clc oldStatus registers sp memory =
@@ -1366,6 +1383,7 @@ executeInstruction instruction state =
             ANDI rd k -> andi (flags state) (registers state) (sp state) (memory state) rd k
             ASR rd -> asr (flags state) (registers state) (sp state) (memory state) rd
             BCLR s -> bclr (flags state) (registers state) (sp state) (memory state) s
+            BLD rd b -> bld (flags state) (registers state) (sp state) (memory state) rd b
             BRCCR relativeAddress -> brcc (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRCSR relativeAddress -> brcs (flags state) (registers state) (sp state) (memory state) relativeAddress
             BREQR relativeAddress -> breq (flags state) (registers state) (sp state) (memory state) relativeAddress
@@ -1385,6 +1403,7 @@ executeInstruction instruction state =
             BRVCR relativeAddress -> brvc (flags state) (registers state) (sp state) (memory state) relativeAddress
             BRVSR relativeAddress -> brvs (flags state) (registers state) (sp state) (memory state) relativeAddress
             CALLR relativeAddress -> call (flags state) (registers state) (sp state) (memory state) relativeAddress (programCounter state)
+            CBR rd k -> cbr (flags state) (registers state) (sp state) (memory state) rd k
             CLC -> clc (flags state) (registers state) (sp state) (memory state)
             CLH -> clh (flags state) (registers state) (sp state) (memory state)
             CLI -> cli (flags state) (registers state) (sp state) (memory state)

@@ -53,6 +53,7 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - `ANDI` – Perform a bitwise AND between a register and an immediate value.
   - `ASR` – Arithmetic shift to the right.
   - `BCLR` – Bit clears a flag in SREG given a value from 0 to 7.
+  - `BLD` – Sets a bit in a registry equal to the T flag.
   - `BRCC` – Branch if carry flag is cleared.
   - `BRCS` – Branch if carry flag is set.
   - `BREQ` – Branch if equal to zero.
@@ -72,6 +73,7 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - `BRVC` – Branch if overflow flag is cleared.
   - `BRVS` – Branch if overflow flag is set.
   - `CALL` – Direct call to a subroutine with the return address pushed on the stack.
+  - `CBR` – Clears specific bits of a register based on the argument provided.
   - `CLC` – Clear the Carry flag.
   - `CLH` – Clear the Half Carry flag.
   - `CLI` – Clear the Global Interrupt flag.
