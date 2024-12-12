@@ -1,5 +1,6 @@
 # AVR Emulator
 [![build](https://github.com/Flu/avr-emulator/actions/workflows/haskell.yml/badge.svg)](https://github.com/Flu/avr-emulator/actions/workflows/haskell.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This project is an AVR emulator written in Haskell, utilizing CABAL for building and managing dependencies. The emulator simulates a basic AVR microcontroller environment with a 2KB memory space starting from address `0x0000`. The emulator currently supports a subset of AVR instructions, and you can load and execute assembly programs to test its functionality.
 
