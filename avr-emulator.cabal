@@ -52,7 +52,8 @@ extra-doc-files:    CHANGELOG.md
 
 -- Library component
 library
-    exposed-modules:    Parser, Emulator, Options
+    exposed-modules:    Parser, Emulator, Repl, Options
+    other-modules:      Emulator.Core, Emulator.State, Emulator.Instructions, Emulator.Utils
     hs-source-dirs:     src
     build-depends:      base >=4.16.2.1
                         , binary >=0.8.9.1
