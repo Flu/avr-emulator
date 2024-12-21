@@ -1,5 +1,5 @@
 module Emulator(run, Instruction(..), Memory, Register, Registers(..), EmulatorState(..), StatusFlags(..),
-printRegisterBank, registersToString, showStatusFlags, prettyPrintMemory, replaceLabels, initEmulatorState, stepOneInstruction) where
+printRegisterBank, registersToString, showStatusFlags, prettyPrintMemory, replaceLabels, initEmulatorState, stepOneInstruction, stepMultipleInstructions) where
 
 import Emulator.Core
 import Emulator.Instructions
@@ -36,6 +36,14 @@ stepOneInstruction programMemory lastState =
         currentInstruction = programMemory ! pc
         updatedState = executeInstruction currentInstruction lastState
     in updatedState
+
+stepMultipleInstructions :: Array Int Instruction -> EmulatorState -> Int -> EmulatorState
+stepMultipleInstructions programMemory lastState steps = loop lastState steps
+    where
+        loop :: EmulatorState -> Int -> EmulatorState
+        loop s 0 = s
+        loop s n = loop (executeInstruction (programMemory ! (fromIntegral $ programCounter s)) s) (n-1)
+    
 
 initEmulatorState :: Int -> EmulatorState
 initEmulatorState memorySize = EmulatorState {

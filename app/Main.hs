@@ -50,6 +50,8 @@ getVersion :: String
 getVersion = showVersion version
 
 entryFunction :: Options -> IO ()
+entryFunction (Options _ _ _ _ True _) = putStrLn ("avr-emulator v" ++ getVersion)
+
 entryFunction (Options False dmpIR memorySize False False file) = do
     finalState <- compileFromFile file dmpIR memorySize
     case finalState of
@@ -73,8 +75,5 @@ entryFunction (Options _ _ memorySize True False file) = do
     case maybeInstructions of
         Just instructions -> do
             state <- replLoop instructions memorySize
-            putStrLn "geagre"
-        Nothing -> putStrLn "Nothing ever worked right, idk"
-    
-
-entryFunction (Options _ _ _ _ True _) = putStrLn ("avr-emulator v" ++ getVersion)
+            return ()
+        Nothing -> putStrLn "Assembler error"
