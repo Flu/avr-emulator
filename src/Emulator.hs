@@ -1,5 +1,5 @@
-module Emulator(run, Instruction(..), Memory, Register, Registers(..), EmulatorState, StatusFlags(..), flags, registers,
-printRegisterBank, registersToString, showStatusFlags, prettyPrintMemory, programCounter, replaceLabels, memory, sp, initEmulatorState) where
+module Emulator(run, Instruction(..), Memory, Register, Registers(..), EmulatorState(..), StatusFlags(..),
+printRegisterBank, registersToString, showStatusFlags, prettyPrintMemory, replaceLabels, initEmulatorState, stepOneInstruction) where
 
 import Emulator.Core
 import Emulator.Instructions
@@ -29,6 +29,13 @@ runProgram initialInstructions = go -- Call recursive helper function go
            let currentInstruction = initialInstructions ! pc -- Fetch next instruction to be executed from where the PC points to
                newState = executeInstruction currentInstruction state -- Decode and execute it, then get the updated emulator state 
            in go newState -- Call recursively with the new state
+
+stepOneInstruction :: Array Int Instruction -> EmulatorState -> EmulatorState
+stepOneInstruction programMemory lastState =
+    let pc = fromIntegral $ programCounter lastState
+        currentInstruction = programMemory ! pc
+        updatedState = executeInstruction currentInstruction lastState
+    in updatedState
 
 initEmulatorState :: Int -> EmulatorState
 initEmulatorState memorySize = EmulatorState {

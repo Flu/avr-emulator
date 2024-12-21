@@ -65,6 +65,7 @@ library
                         , optparse-applicative >=0.18.1.0
                         , ansi-terminal >=1.1.1
                         , haskeline >= 0.8.2.1
+                        , mtl >=2.3.1
     default-language:   GHC2021
 
 -- Executable component
