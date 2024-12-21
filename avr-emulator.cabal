@@ -53,7 +53,7 @@ extra-doc-files:    CHANGELOG.md
 -- Library component
 library
     exposed-modules:    Parser, Emulator, Repl, Options
-    ghc-options:        -fspecialise-aggressively -fexpose-all-unfoldings
+    ghc-options:        -fspecialise-aggressively -fexpose-all-unfoldings -threaded
     other-modules:      Emulator.Core, Emulator.State, Emulator.Instructions, Emulator.Utils
     hs-source-dirs:     src
     build-depends:      base >=4.16.2.1
@@ -71,7 +71,7 @@ library
 -- Executable component
 executable avr-emulator
     -- Import common warning flags and optimization flags.
-    ghc-options:        -fspecialise-aggressively -fexpose-all-unfoldings
+    ghc-options:        -fspecialise-aggressively -fexpose-all-unfoldings -threaded
 
     -- .hs or .lhs file containing the Main module.
     main-is:            Main.hs
@@ -90,15 +90,15 @@ executable avr-emulator
     default-language:   GHC2021
 
 test-suite avr-emulator-test
-  type: exitcode-stdio-1.0
+    type: exitcode-stdio-1.0
 
-  main-is: MainTests.hs
+    main-is: MainTests.hs
 
-  hs-source-dirs: test
+    hs-source-dirs: test
 
-  other-modules: Paths_avr_emulator
+    other-modules: Paths_avr_emulator
 
-  build-depends:
+    build-depends:
         base >=4.16.2.1
         , binary >=0.8.9.1
         , containers >= 0.6.7
@@ -111,4 +111,4 @@ test-suite avr-emulator-test
         , ansi-terminal >= 1.1.2
         , avr-emulator
 
-  default-language: GHC2021
+    default-language: GHC2021

@@ -1,5 +1,7 @@
 tests: True
 optimization: 2
-package *
-  coverage: True
-  library-coverage: True
+
+-- Remove code coverage for now
+--package *
+--  coverage: True
+--  library-coverage: True
