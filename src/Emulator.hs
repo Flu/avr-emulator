@@ -1,5 +1,5 @@
 module Emulator(run, Instruction(..), Memory, Register, Registers(..), EmulatorState, StatusFlags(..), flags, registers,
-printRegisterBank, registersToString, showStatusFlags, prettyPrintMemory, programCounter, replaceLabels, memory, sp) where
+printRegisterBank, registersToString, showStatusFlags, prettyPrintMemory, programCounter, replaceLabels, memory, sp, initEmulatorState) where
 
 import Emulator.Core
 import Emulator.Instructions
@@ -30,17 +30,20 @@ runProgram initialInstructions = go -- Call recursive helper function go
                newState = executeInstruction currentInstruction state -- Decode and execute it, then get the updated emulator state 
            in go newState -- Call recursively with the new state
 
--- | Gets the list of instructions from the parser and the size of the SRAM as configured by the user.
--- @returns the final emulator state after finishing execution.
-run :: [Instruction] -> Int -> EmulatorState
-run instructions memorySize =
-    let initialState = EmulatorState {
+initEmulatorState :: Int -> EmulatorState
+initEmulatorState memorySize = EmulatorState {
         registers = listArray (0,31) (replicate 32 0),                        -- Initialize all registers to 0
         flags = StatusFlags False False False False False False False False,  -- Initialize all status flags to False
         programCounter = 0,                                                   -- Program counter starts executing from 0x0000
         memory = listArray (0, memorySize - 1) (replicate memorySize 0),      -- Initialize the memory with the requested size, set to 0
         sp = fromIntegral (memorySize - 1) :: Word16                          -- The stack pointer should point to the last memory address
         }
+
+-- | Gets the list of instructions from the parser and the size of the SRAM as configured by the user.
+-- @returns the final emulator state after finishing execution.
+run :: [Instruction] -> Int -> EmulatorState
+run instructions memorySize =
+    let initialState = initEmulatorState memorySize
         instructionsWithAddresses = catMaybes $ replaceLabels instructions -- Resolve labels and filter out Nothings from the list
     in
         runProgram instructionsWithAddresses initialState -- Start the 'fetch -> decode -> execute' cycle by calling this function with the initial state

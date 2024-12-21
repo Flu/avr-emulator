@@ -6,6 +6,7 @@ data Options = Options
     { dumpMemory :: Bool
     , dumpIntermediaryRepresentation :: Bool
     , memorySize :: Int
+    , interactive :: Bool
     , displayVersion :: Bool
     , file :: String }
 
@@ -27,6 +28,10 @@ options = Options
         <> showDefault
         <> value 2000
         <> metavar "INT")
+    <*> switch
+        (long "interactive"
+        <> short 'i'
+        <> help "Start up an interactive session for step-by-step execution and debugging")
     <*> switch
         (long "version"
         <> short 'v'

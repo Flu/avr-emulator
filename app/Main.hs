@@ -8,6 +8,7 @@ import Options
 
 import Data.Version ( showVersion )
 import Paths_avr_emulator ( version )
+import Repl (replLoop)
 
 main :: IO ()
 main = entryFunction =<< execParser opts
@@ -49,7 +50,7 @@ getVersion :: String
 getVersion = showVersion version
 
 entryFunction :: Options -> IO ()
-entryFunction (Options False dmpIR memorySize False file) = do
+entryFunction (Options False dmpIR memorySize False False file) = do
     finalState <- compileFromFile file dmpIR memorySize
     case finalState of
         Right state -> do
@@ -57,7 +58,7 @@ entryFunction (Options False dmpIR memorySize False file) = do
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
         Left errorMessage -> print errorMessage
 
-entryFunction (Options True dmpIR memorySize False file) = do
+entryFunction (Options True dmpIR memorySize False False file) = do
     finalState <- compileFromFile file dmpIR memorySize
     case finalState of
         Right state -> do
@@ -67,4 +68,13 @@ entryFunction (Options True dmpIR memorySize False file) = do
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
         Left errorMessage -> print errorMessage
 
-entryFunction (Options _ _ _ True _) = putStrLn ("avr-emulator v" ++ getVersion)
+entryFunction (Options _ _ memorySize True False file) = do
+    maybeInstructions <- assembleProgramFromFile file
+    case maybeInstructions of
+        Just instructions -> do
+            state <- replLoop instructions memorySize
+            putStrLn "geagre"
+        Nothing -> putStrLn "Nothing ever worked right, idk"
+    
+
+entryFunction (Options _ _ _ _ True _) = putStrLn ("avr-emulator v" ++ getVersion)

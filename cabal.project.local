@@ -1,4 +1,5 @@
 tests: True
+optimization: 2
 package *
   coverage: True
   library-coverage: True
