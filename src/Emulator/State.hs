@@ -13,11 +13,11 @@ type StackPointer = Word16          -- ^ The stack pointer is also 2 bytes, sinc
 -- Data type for holding everything about the current state of the emulator
 -- TODO: registers should be part of memory, mapped to the first 32 bytes of memory
 data EmulatorState = EmulatorState {
-    registers :: Registers,             -- ^ General purpose registers R0 through R31
-    flags :: StatusFlags,               -- ^ SREG or status flags for keeping track of certain conditions 
-    programCounter :: ProgramCounter,   -- ^ Program counter for keeping track of the next instruction to execute
-    sp :: StackPointer,                 -- ^ Stack pointer - it always points to the top of the stack, in memory
-    memory :: Memory                    -- ^ Memory array for SRAM (LD or ST operations write to memory)
+    registers :: !Registers,             -- ^ General purpose registers R0 through R31
+    flags :: !StatusFlags,               -- ^ SREG or status flags for keeping track of certain conditions 
+    programCounter :: !ProgramCounter,   -- ^ Program counter for keeping track of the next instruction to execute
+    sp :: !StackPointer,                 -- ^ Stack pointer - it always points to the top of the stack, in memory
+    memory :: !Memory                    -- ^ Memory array for SRAM (LD or ST operations write to memory)
 } deriving (Show)
 
 -- | Data type for holding the status flags. Otherwise called the SREG

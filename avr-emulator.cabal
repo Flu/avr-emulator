@@ -53,6 +53,7 @@ extra-doc-files:    CHANGELOG.md
 -- Library component
 library
     exposed-modules:    Parser, Emulator, Repl, Options
+    ghc-options:        -fspecialise-aggressively -fexpose-all-unfoldings
     other-modules:      Emulator.Core, Emulator.State, Emulator.Instructions, Emulator.Utils
     hs-source-dirs:     src
     build-depends:      base >=4.16.2.1
@@ -69,7 +70,7 @@ library
 -- Executable component
 executable avr-emulator
     -- Import common warning flags and optimization flags.
-    ghc-options:        -O2
+    ghc-options:        -fspecialise-aggressively -fexpose-all-unfoldings
 
     -- .hs or .lhs file containing the Main module.
     main-is:            Main.hs
