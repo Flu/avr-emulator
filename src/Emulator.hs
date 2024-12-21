@@ -18,7 +18,7 @@ import Data.Array
     If there are no more instructions in the list (PC has surpassed the upper bound of the instruction list), execution is considered
     done and the function returns the most recent EmulatorState.
 -}
-runProgram :: [Instruction] -> EmulatorState -> EmulatorState
+runProgram :: Array Int Instruction -> EmulatorState -> EmulatorState
 runProgram initialInstructions = go -- Call recursive helper function go
   where
     go state =
@@ -26,7 +26,7 @@ runProgram initialInstructions = go -- Call recursive helper function go
       in if pc >= length initialInstructions -- If PC bigger than the list, it means we got to the end of execution
          then state -- So return the state
          else
-           let currentInstruction = initialInstructions !! pc -- Fetch next instruction to be executed from where the PC points to
+           let currentInstruction = initialInstructions ! pc -- Fetch next instruction to be executed from where the PC points to
                newState = executeInstruction currentInstruction state -- Decode and execute it, then get the updated emulator state 
            in go newState -- Call recursively with the new state
 
@@ -45,5 +45,6 @@ run :: [Instruction] -> Int -> EmulatorState
 run instructions memorySize =
     let initialState = initEmulatorState memorySize
         instructionsWithAddresses = catMaybes $ replaceLabels instructions -- Resolve labels and filter out Nothings from the list
+        instructionArray = listArray (0, (length instructionsWithAddresses) - 1) instructionsWithAddresses
     in
-        runProgram instructionsWithAddresses initialState -- Start the 'fetch -> decode -> execute' cycle by calling this function with the initial state
+        runProgram instructionArray initialState -- Start the 'fetch -> decode -> execute' cycle by calling this function with the initial state
