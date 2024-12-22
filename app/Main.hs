@@ -50,18 +50,20 @@ getVersion :: String
 getVersion = showVersion version
 
 entryFunction :: Options -> IO ()
-entryFunction (Options _ _ _ _ True _) = putStrLn ("avr-emulator v" ++ getVersion)
+entryFunction (Options _ _ _ _ True Nothing) = putStrLn ("avr-emulator v" ++ getVersion)
 
-entryFunction (Options False dmpIR memorySize False False file) = do
-    finalState <- compileFromFile file dmpIR memorySize
+entryFunction (Options _ _ _ _ False Nothing) = putStrLn "You did not supply a file. Exiting."
+
+entryFunction (Options False dmpIR memorySize False _ (Just filepath)) = do
+    finalState <- compileFromFile filepath dmpIR memorySize
     case finalState of
         Right state -> do
             printRegisterBank $ registers state         -- Pretty print the register banks
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
         Left errorMessage -> print errorMessage
 
-entryFunction (Options True dmpIR memorySize False False file) = do
-    finalState <- compileFromFile file dmpIR memorySize
+entryFunction (Options True dmpIR memorySize False _ (Just filepath)) = do
+    finalState <- compileFromFile filepath dmpIR memorySize
     case finalState of
         Right state -> do
             prettyPrintMemory (memory state)            -- Pretty print the memory
@@ -70,8 +72,8 @@ entryFunction (Options True dmpIR memorySize False False file) = do
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
         Left errorMessage -> print errorMessage
 
-entryFunction (Options _ _ memorySize True False file) = do
-    maybeInstructions <- assembleProgramFromFile file
+entryFunction (Options _ _ memorySize True False (Just filepath)) = do
+    maybeInstructions <- assembleProgramFromFile filepath
     case maybeInstructions of
         Just instructions -> do
             state <- replLoop instructions memorySize

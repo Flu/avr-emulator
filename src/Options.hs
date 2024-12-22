@@ -8,7 +8,7 @@ data Options = Options
     , memorySize :: Int
     , interactive :: Bool
     , displayVersion :: Bool
-    , file :: String }
+    , file :: Maybe FilePath }
 
 options :: Parser Options
 options = Options
@@ -36,8 +36,6 @@ options = Options
         (long "version"
         <> short 'v'
         <> help "Print version of program")
-    <*> strOption
+    <*> optional (strArgument
         (metavar "TARGET"
-        <> short 'f'
-        <> long "file"
-        <> help "Target file for assembling")
+        <> help "Target file for assembling"))
