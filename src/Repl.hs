@@ -24,6 +24,7 @@ type Parser = Parsec Void T.Text
 data UserCommand
     = StepOnce
     | StepMultiple Int
+    | Restart
     | PrintRegisters
     | PrintFlags
     | PrintCurrentInstruction
@@ -47,6 +48,11 @@ stepMultipleCommandParser = do
     input <- some digitParser
     let steps = read input :: Int
     return $ StepMultiple steps
+
+restartCommandParser :: Parser UserCommand
+restartCommandParser = do
+    string "restart" <|> string "re"
+    return Restart
 
 printRegistersCommandParser :: Parser UserCommand
 printRegistersCommandParser = do
@@ -83,6 +89,7 @@ commandParser =
     choice [
         try stepMultipleCommandParser,
         try stepOnceCommandParser,
+        try restartCommandParser,
         try printRegistersCommandParser,
         try printFlagsCommandParser,
         try printProgramCounterCommandParser,
@@ -92,18 +99,24 @@ commandParser =
 
 parseCommand :: String -> Either (ParseErrorBundle T.Text Void) UserCommand
 parseCommand command = runParser commandParser "" $ T.pack command
-    
+
 dispatcher :: UserCommand -> Array Int Instruction -> EmulatorState -> InputT IO (EmulatorState)
 dispatcher StepOnce programMemory state = do
-    let updatedState = stepOneInstruction programMemory state
+    let (isProgramDone, updatedState) = stepOneInstruction programMemory state
     outputStrLn $ "PC: 0x" ++ (toHex4 $ fromIntegral $ programCounter updatedState)
+    printMessageIfProgramIsdone isProgramDone
     return updatedState
 
 dispatcher (StepMultiple n) programMemory state = do
-    let updatedState = stepMultipleInstructions programMemory state n
+    let (isProgramDone, updatedState) = stepMultipleInstructions programMemory state n
     outputStrLn $ "PC: 0x" ++ (toHex4 $ fromIntegral $ programCounter updatedState)
-    outputStrLn $ show n
+    printMessageIfProgramIsdone isProgramDone
     return updatedState
+
+dispatcher (Restart) programMemory state = do
+    let restartState = initEmulatorState (length (memory state))
+    outputStrLn "The emulator has been restarted"
+    return (restartState)
 
 dispatcher PrintRegisters instructions state = do
     lift $ printRegisterBank $ registers state
@@ -132,6 +145,10 @@ dispatcher Quit instructions state = do
     outputStrLn "Exited."
     return state
 
+printMessageIfProgramIsdone :: Bool -> InputT IO ()
+printMessageIfProgramIsdone done
+    | done = outputStrLn "The program finished execution. You can restart or close this REPL"
+    | otherwise = return ()
 
 replLoop :: [Instruction] -> Int -> IO (EmulatorState)
 replLoop instructions memorySize = runInputT defaultSettings (loop initialState)
@@ -145,7 +162,7 @@ replLoop instructions memorySize = runInputT defaultSettings (loop initialState)
       case rawInput of
         Just input -> case parseCommand input of
             Left error -> do
-                outputStrLn "Uknown command. Type 'help' to see available commands"
+                outputStrLn "Unknown command. Type 'help' to see available commands"
                 loop state
                 return ()
             Right parsedCommand -> do
@@ -161,6 +178,7 @@ helpText = unlines
   ["Available commands:"
   , "  step | s           Execute the next instruction in the program"
   , "  step <n> | s <n>   Execute the next n instructions"
+  , "  restart | re       Restart the emulator with the same parameters"
   , "  registers | r      Print the current values of the register"
   , "  flags | f          Print the current values of the status flags"
   , "  pc | p             Print the ccurent value of the program counter"

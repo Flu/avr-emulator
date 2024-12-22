@@ -30,21 +30,24 @@ runProgram initialInstructions = go -- Call recursive helper function go
                newState = executeInstruction currentInstruction state -- Decode and execute it, then get the updated emulator state 
            in go newState -- Call recursively with the new state
 
-stepOneInstruction :: Array Int Instruction -> EmulatorState -> EmulatorState
-stepOneInstruction programMemory lastState =
-    let pc = fromIntegral $ programCounter lastState
+stepOneInstruction :: Array Int Instruction -> EmulatorState -> (Bool, EmulatorState)
+stepOneInstruction programMemory lastState
+    | (fromIntegral $ programCounter lastState) >= length programMemory = (True, lastState)
+    | otherwise = let
+        pc = fromIntegral $ programCounter lastState
         currentInstruction = programMemory ! pc
         updatedState = executeInstruction currentInstruction lastState
-    in updatedState
+        in (False, updatedState)
 
-stepMultipleInstructions :: Array Int Instruction -> EmulatorState -> Int -> EmulatorState
+stepMultipleInstructions :: Array Int Instruction -> EmulatorState -> Int -> (Bool, EmulatorState)
 stepMultipleInstructions programMemory lastState steps = loop lastState steps
     where
-        loop :: EmulatorState -> Int -> EmulatorState
-        loop s 0 = s
-        loop s n = loop (executeInstruction (programMemory ! (fromIntegral $ programCounter s)) s) (n-1)
+        loop :: EmulatorState -> Int -> (Bool, EmulatorState)
+        loop s 0 = (False, s)
+        loop s n
+            | (fromIntegral $ programCounter s) >= length programMemory = (True, s)
+            | otherwise = loop (executeInstruction (programMemory ! (fromIntegral $ programCounter s)) s) (n-1)
     
-
 initEmulatorState :: Int -> EmulatorState
 initEmulatorState memorySize = EmulatorState {
         registers = listArray (0,31) (replicate 32 0),                        -- Initialize all registers to 0
