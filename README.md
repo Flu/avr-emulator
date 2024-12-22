@@ -30,7 +30,7 @@ This will run all the test suites and will tell you if anything failed. In gener
 ### Run the emulator
 
 ```bash
-cabal run exes -- -f /path/to/assembly/file.asm -d -m 500
+cabal run exes -- /path/to/assembly/file.asm -d -m 500
 ```
 
 This tells Cabal that you want to run the application. Here there are also some command line options that you can use to change the emulator's parameters. For example, `-d` dumps and prints the whole memory of the emulator, besides the registers and the flags. `-m 500` specifies the amount of memory to allocate for the emulator in bytes. There are more options, which you can see by using `-h` or `--help`.
