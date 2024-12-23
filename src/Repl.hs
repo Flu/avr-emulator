@@ -22,6 +22,7 @@ import Data.Maybe (catMaybes)
 
 type Parser = Parsec Void T.Text
 
+-- | Data type for user commands that the REPL can receive
 data UserCommand
     = StepOnce
     | StepMultiple Int
@@ -36,15 +37,18 @@ data UserCommand
     | Quit
     | MissingCommand
 
+-- | Parser for single digit numbers
 digitParser :: Parser Char
 digitParser = do 
     oneOf ['0'..'9']
 
+-- | Parser for the step command 
 stepOnceCommandParser :: Parser UserCommand
 stepOnceCommandParser = do
     string "step" <|> string "s"
     return StepOnce
 
+-- | Parser for the step command with the optional number of steps parameter
 stepMultipleCommandParser :: Parser UserCommand
 stepMultipleCommandParser = do
     string "step" <|> string "s"
@@ -53,65 +57,76 @@ stepMultipleCommandParser = do
     let steps = read input :: Int
     return $ StepMultiple steps
 
+-- | Parser for the execute until end of program command
 executeUntilProgramEndCommandParser :: Parser UserCommand
 executeUntilProgramEndCommandParser = do
     string "e"
     lookAhead eof
     return ExecuteUntilProgramEnd
 
+-- | Parser for the execute until current function end command
 executeUntilFunctionEndCommandParser :: Parser UserCommand
 executeUntilFunctionEndCommandParser = do
     string "f"
     lookAhead eof
     return ExecuteUntilFunctionEnd
 
+-- | Parser for the restart command
 restartCommandParser :: Parser UserCommand
 restartCommandParser = do
     string "restart" <|> string "re"
     lookAhead eof
     return Restart
 
+-- | Parser for printing the registers command
 printRegistersCommandParser :: Parser UserCommand
 printRegistersCommandParser = do
     string "registers" <|> string "r"
     lookAhead eof
     return PrintRegisters
 
+-- | Parser for printing the flags command
 printFlagsCommandParser :: Parser UserCommand
 printFlagsCommandParser = do
     string "flags"
     lookAhead eof
     return PrintFlags
 
+-- | Parser for printing the current instructions command
 printCurrentInstructionCommandParser :: Parser UserCommand
 printCurrentInstructionCommandParser = do
     string "instruction" <|> string "i"
     lookAhead eof
     return PrintCurrentInstruction
 
+-- | Parser for printing the program counter command
 printProgramCounterCommandParser :: Parser UserCommand
 printProgramCounterCommandParser = do
     string "pc" <|> string "p"
     lookAhead eof
     return PrintPc
 
+-- | Parser for the help command
 helpCommandParser :: Parser UserCommand
 helpCommandParser = do
     string "help"
     lookAhead eof
     return Help
 
+-- | Parser for the quit command
 quitCommandParser :: Parser UserCommand
 quitCommandParser = do
     (string "quit" <|> string "q")
     lookAhead eof
     return Quit
 
+-- | Parser that matches a lack of command (line of whitespace)
 missingCommand :: Parser UserCommand
 missingCommand = do
     space >> eof
     return MissingCommand
 
+-- | Combinator parser
 commandParser :: Parser UserCommand
 commandParser =
     choice [
@@ -128,12 +143,13 @@ commandParser =
         try quitCommandParser,
         try missingCommand]
 
+-- | Command parser that tries any parser and returns an error if it fails
 parseCommand :: String -> Either (ParseErrorBundle T.Text Void) UserCommand
 parseCommand command = runParser commandParser "" $ T.pack command
 
--- TODO: Add support for no instruction, in which case do nothing and restart the loop
--- TODO: Move printing of PC, instructions, etc. to their own functions
--- FIX: There is a bug somewhere in this fun that crashes the program if stepped on the last instr 
+{-- | Dispatcher function that calls the emulator based on the command given and returns an
+    IO computation with what should be displayed in the REPL
+--}
 dispatcher :: UserCommand -> Array Int Instruction -> EmulatorState -> InputT IO (EmulatorState)
 dispatcher StepOnce programMemory state = do
     let (isProgramDone, updatedState) = stepOneInstruction programMemory state
@@ -153,14 +169,13 @@ dispatcher (StepMultiple n) programMemory state = do
 
 dispatcher (ExecuteUntilProgramEnd) programMemory state = do
     let (isProgramDone, updatedState) = runUntilProgramEnd programMemory state
-    outputStrLn $ "PC: 0x" ++ (toHex4 $ fromIntegral $ programCounter updatedState)
+    printPcAndInstruction programMemory state
     printMessageIfProgramIsDone isProgramDone
     return updatedState
 
--- TODO: Only stop at the RET of the calling function, e.g. ignore other functions that the current function is calling
 dispatcher (ExecuteUntilFunctionEnd) programMemory state = do
     let (isProgramDone, updatedState) = runUntilFunctionEnd programMemory state
-    outputStrLn $ "PC: 0x" ++ (toHex4 $ fromIntegral $ programCounter updatedState)
+    printPcAndInstruction programMemory state
     printMessageIfProgramIsDone isProgramDone
     return updatedState
 
@@ -177,9 +192,8 @@ dispatcher PrintFlags instructions state = do
     outputStrLn $ showStatusFlags $ flags state
     return state
 
--- TODO: Instead of showing a single instruction, show the last 3-4 and the next 3-4 instructions and make it an argument
 dispatcher PrintPc instructions state = do
-    outputStrLn $ "0x" ++ (toHex4 $ fromIntegral $ programCounter state)
+    printProgramCounter $ fromIntegral (programCounter state)
     return state
 
 dispatcher PrintCurrentInstruction instructions state = do
@@ -203,6 +217,10 @@ printMessageIfProgramIsDone done
     | done = outputStrLn "The program finished execution. You can restart or close this REPL"
     | otherwise = return ()
 
+{-- | Main REPL loop
+    It waits for input from the user, parses the command and calls the dispatcher to deal with the command. Depending
+    on the dispatcher's state it either calls itself recursively or it terminates the loop.
+--}
 replLoop :: [Instruction] -> Int -> IO (EmulatorState)
 replLoop instructions memorySize = runInputT defaultSettings (loop initialState)
   where
@@ -228,8 +246,12 @@ replLoop instructions memorySize = runInputT defaultSettings (loop initialState)
 
 printPcAndInstruction :: Array Int Instruction -> EmulatorState -> InputT IO ()
 printPcAndInstruction programMemory state = do
-    outputStr $ "0x" ++ (toHex4 $ fromIntegral $ programCounter state) ++ ": "
+    outputStr $ "0x" ++ (toHex4 (fromIntegral $ programCounter state)) ++ "     "
     outputStrLn $ show $ programMemory ! (fromIntegral $ programCounter state)
+
+printProgramCounter :: Int -> InputT IO ()
+printProgramCounter pc = do
+    outputStrLn $ "0x" ++ (toHex4 pc)
 
 helpText :: String
 helpText = unlines

@@ -254,15 +254,18 @@ printInstructionsAroundAddress programMemory address n = do
             where (_, end) = bounds programMemory
         lines = zip [startIndex..endIndex] [programMemory ! i| i <- [startIndex..endIndex]]
 
+-- | Returns a String representation of the given instruction along with the PC value
 instructionWithAddressToString :: Int -> Instruction -> String
 instructionWithAddressToString address instruction = printf "0x%04X     %s" address (show instruction)
 
+-- | Same as 'printInstructionWithAddress', but with the color blue, made for terminal use
 printColorInstructionWithAddress :: Int -> Instruction -> IO ()
 printColorInstructionWithAddress address instruction = do
     setSGR [SetColor Foreground Vivid Blue]
     putStrLn $ instructionWithAddressToString address instruction
     setSGR [Reset]
 
+-- | IO computation to print the current instruction and the PC
 printInstructionWithAddress :: Int -> Instruction -> IO ()
 printInstructionWithAddress address instruction = do
     putStrLn $ instructionWithAddressToString address instruction
