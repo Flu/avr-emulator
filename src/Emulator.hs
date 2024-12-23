@@ -1,5 +1,21 @@
-module Emulator(run, Instruction(..), Memory, Register, Registers(..), EmulatorState(..), StatusFlags(..),
-printRegisterBank, registersToString, showStatusFlags, prettyPrintMemory, replaceLabels, initEmulatorState, stepOneInstruction, stepMultipleInstructions) where
+module Emulator
+    ( run
+    , Instruction(..)
+    , Memory
+    , Register
+    , Registers(..)
+    , EmulatorState(..)
+    , StatusFlags(..)
+    , printRegisterBank
+    , registersToString
+    , showStatusFlags
+    , prettyPrintMemory
+    , replaceLabels
+    , initEmulatorState
+    , stepOneInstruction
+    , stepMultipleInstructions
+    , runUntilProgramEnd
+    , runUntilFunctionEnd) where
 
 import Emulator.Core
 import Emulator.Instructions
@@ -32,7 +48,7 @@ runProgram initialInstructions = go -- Call recursive helper function go
 
 stepOneInstruction :: Array Int Instruction -> EmulatorState -> (Bool, EmulatorState)
 stepOneInstruction programMemory lastState
-    | (fromIntegral $ programCounter lastState) >= length programMemory = (True, lastState)
+    | (fromIntegral $ programCounter lastState) >= (length programMemory) - 1 = (True, lastState)
     | otherwise = let
         pc = fromIntegral $ programCounter lastState
         currentInstruction = programMemory ! pc
@@ -47,15 +63,27 @@ stepMultipleInstructions programMemory lastState steps = loop lastState steps
         loop s n
             | (fromIntegral $ programCounter s) >= length programMemory = (True, s)
             | otherwise = loop (executeInstruction (programMemory ! (fromIntegral $ programCounter s)) s) (n-1)
-    
-initEmulatorState :: Int -> EmulatorState
-initEmulatorState memorySize = EmulatorState {
-        registers = listArray (0,31) (replicate 32 0),                        -- Initialize all registers to 0
-        flags = StatusFlags False False False False False False False False,  -- Initialize all status flags to False
-        programCounter = 0,                                                   -- Program counter starts executing from 0x0000
-        memory = listArray (0, memorySize - 1) (replicate memorySize 0),      -- Initialize the memory with the requested size, set to 0
-        sp = fromIntegral (memorySize - 1) :: Word16                          -- The stack pointer should point to the last memory address
-        }
+
+runUntilProgramEnd :: Array Int Instruction -> EmulatorState -> (Bool, EmulatorState)
+runUntilProgramEnd programMemory lastState = loop lastState
+    where
+        pc state = (fromIntegral $ programCounter state)
+        loop :: EmulatorState -> (Bool, EmulatorState)
+        loop s
+            | pc s >= length programMemory = (True, s)
+            | otherwise = loop (executeInstruction (programMemory ! (pc s)) s)
+
+runUntilFunctionEnd :: Array Int Instruction -> EmulatorState -> (Bool, EmulatorState)
+runUntilFunctionEnd programMemory lastState = loop lastState 0
+    where
+        pc state = (fromIntegral $ programCounter state)
+        loop :: EmulatorState -> Int -> (Bool, EmulatorState)
+        loop s depth
+            | pc s >= length programMemory = (True, s)
+            | checkIfEndOfFunctionInstruction (programMemory ! (pc s)) && depth == 0 = (False, s)
+            | checkIfEndOfFunctionInstruction (programMemory ! (pc s)) && depth /= 0 = loop (executeInstruction (programMemory ! (pc s)) s ) (depth - 1)
+            | checkIfFunctionCallInstruction $ programMemory ! (pc s) = loop (executeInstruction (programMemory ! (pc s)) s ) (depth + 1)
+            | otherwise = loop (executeInstruction (programMemory ! (pc s)) s) depth
 
 -- | Gets the list of instructions from the parser and the size of the SRAM as configured by the user.
 -- @returns the final emulator state after finishing execution.

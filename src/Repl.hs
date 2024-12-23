@@ -49,6 +49,18 @@ stepMultipleCommandParser = do
     let steps = read input :: Int
     return $ StepMultiple steps
 
+executeUntilProgramEndCommandParser :: Parser UserCommand
+executeUntilProgramEndCommandParser = do
+    string "e"
+    lookAhead eof
+    return ExecuteUntilProgramEnd
+
+executeUntilFunctionEndCommandParser :: Parser UserCommand
+executeUntilFunctionEndCommandParser = do
+    string "f"
+    lookAhead eof
+    return ExecuteUntilFunctionEnd
+
 restartCommandParser :: Parser UserCommand
 restartCommandParser = do
     string "restart" <|> string "re"
@@ -89,6 +101,8 @@ commandParser =
     choice [
         try stepMultipleCommandParser,
         try stepOnceCommandParser,
+        try executeUntilProgramEndCommandParser,
+        try executeUntilFunctionEndCommandParser,
         try restartCommandParser,
         try printRegistersCommandParser,
         try printFlagsCommandParser,
@@ -100,17 +114,37 @@ commandParser =
 parseCommand :: String -> Either (ParseErrorBundle T.Text Void) UserCommand
 parseCommand command = runParser commandParser "" $ T.pack command
 
+-- TODO: Add support for no instruction, in which case do nothing and restart the loop
+-- TODO: Move printing of PC, instructions, etc. to their own functions
+-- FIX: There is a bug somewhere in this fun that crashes the program if stepped on the last instr 
 dispatcher :: UserCommand -> Array Int Instruction -> EmulatorState -> InputT IO (EmulatorState)
 dispatcher StepOnce programMemory state = do
     let (isProgramDone, updatedState) = stepOneInstruction programMemory state
-    outputStrLn $ "PC: 0x" ++ (toHex4 $ fromIntegral $ programCounter updatedState)
-    printMessageIfProgramIsdone isProgramDone
+    if isProgramDone then
+        printMessageIfProgramIsDone isProgramDone
+    else
+        printPcAndInstruction programMemory updatedState
     return updatedState
 
 dispatcher (StepMultiple n) programMemory state = do
     let (isProgramDone, updatedState) = stepMultipleInstructions programMemory state n
+    if isProgramDone then
+        printMessageIfProgramIsDone isProgramDone
+    else
+        printPcAndInstruction programMemory updatedState
+    return updatedState
+
+dispatcher (ExecuteUntilProgramEnd) programMemory state = do
+    let (isProgramDone, updatedState) = runUntilProgramEnd programMemory state
     outputStrLn $ "PC: 0x" ++ (toHex4 $ fromIntegral $ programCounter updatedState)
-    printMessageIfProgramIsdone isProgramDone
+    printMessageIfProgramIsDone isProgramDone
+    return updatedState
+
+-- TODO: Only stop at the RET of the calling function, e.g. ignore other functions that the current function is calling
+dispatcher (ExecuteUntilFunctionEnd) programMemory state = do
+    let (isProgramDone, updatedState) = runUntilFunctionEnd programMemory state
+    outputStrLn $ "PC: 0x" ++ (toHex4 $ fromIntegral $ programCounter updatedState)
+    printMessageIfProgramIsDone isProgramDone
     return updatedState
 
 dispatcher (Restart) programMemory state = do
@@ -126,27 +160,29 @@ dispatcher PrintFlags instructions state = do
     outputStrLn $ showStatusFlags $ flags state
     return state
 
+-- TODO: Instead of showing a single instruction, show the last 3-4 and the next 3-4 instructions and make it an argument
 dispatcher PrintPc instructions state = do
     outputStrLn $ "0x" ++ (toHex4 $ fromIntegral $ programCounter state)
     return state
 
 dispatcher PrintCurrentInstruction instructions state = do
-    outputStr $ "0x" ++ (toHex4 $ fromIntegral $ programCounter state) ++ ": "
-    outputStrLn $ show $ instructions ! (fromIntegral $ programCounter state)
+    printPcAndInstructions instructions state 3
     return state
 
 dispatcher Help _ state = do
     outputStrLn helpText
     return state
 
--- TODO: this currently has no effect on the REPL
--- Modify it to actually quit the REPL
+-- TODO: this currently has no effect on the REPL. Modify it to actually quit the REPL.
 dispatcher Quit instructions state = do
     outputStrLn "Exited."
     return state
 
-printMessageIfProgramIsdone :: Bool -> InputT IO ()
-printMessageIfProgramIsdone done
+dispatcher MissingCommand _ state = do
+    return state
+
+printMessageIfProgramIsDone :: Bool -> InputT IO ()
+printMessageIfProgramIsDone done
     | done = outputStrLn "The program finished execution. You can restart or close this REPL"
     | otherwise = return ()
 
@@ -178,6 +214,8 @@ helpText = unlines
   ["Available commands:"
   , "  step | s           Execute the next instruction in the program"
   , "  step <n> | s <n>   Execute the next n instructions"
+  , "  e                  Run until the end of the program"
+  , "  f                  Run until the next RET or RETI instruction"
   , "  restart | re       Restart the emulator with the same parameters"
   , "  registers | r      Print the current values of the register"
   , "  flags | f          Print the current values of the status flags"

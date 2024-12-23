@@ -1224,3 +1224,11 @@ tst oldStatus registers sp memory op1 =
 -- /////////////////////////////////////////////////////
 -- End instruction implementations 
 -- /////////////////////////////////////////////////////
+
+checkIfEndOfFunctionInstruction :: Instruction -> Bool
+checkIfEndOfFunctionInstruction (RET) = True
+checkIfEndOfFunctionInstruction _ = False
+
+checkIfFunctionCallInstruction :: Instruction -> Bool
+checkIfFunctionCallInstruction (CALLR _) = True
+checkIfFunctionCallInstruction _ = False

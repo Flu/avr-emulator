@@ -107,3 +107,12 @@ executeInstruction instruction state =
         sp = updatedSp,
         memory = updatedMemory
     }
+
+initEmulatorState :: Int -> EmulatorState
+initEmulatorState memorySize = EmulatorState {
+        registers = listArray (0,31) (replicate 32 0),                        -- Initialize all registers to 0
+        flags = StatusFlags False False False False False False False False,  -- Initialize all status flags to False
+        programCounter = 0,                                                   -- Program counter starts executing from 0x0000
+        memory = listArray (0, memorySize - 1) (replicate memorySize 0),      -- Initialize the memory with the requested size, set to 0
+        sp = fromIntegral (memorySize - 1) :: Word16                          -- The stack pointer should point to the last memory address
+        }
