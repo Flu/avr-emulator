@@ -709,6 +709,54 @@ ld oldStatus registers sp memory op1 "-X" =
         updatedRegisters = registers // [(rdIndex, memory ! fromIntegral newXRegister), (27, xHigh), (26, xLow)]
     in (updatedRegisters, oldStatus, 0, sp, memory)
 
+ld oldStatus registers sp memory op1 "Y" =
+    let rdIndex = fromIntegral op1
+        address16b = (fromIntegral (registers ! 29) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 28) :: Word16)
+        updatedRegisters = registers // [(rdIndex, memory ! fromIntegral address16b)]
+    in (updatedRegisters, oldStatus, 0, sp, memory)
+
+ld oldStatus registers sp memory op1 "Y+" =
+    let rdIndex = fromIntegral op1
+        address16b = (fromIntegral (registers ! 29) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 28) :: Word16)
+        newYRegister = address16b + 1
+        yHigh = fromIntegral (newYRegister `shiftR` 8) :: Word8
+        yLow = fromIntegral newYRegister :: Word8
+        updatedRegisters = registers // [(rdIndex, memory ! fromIntegral address16b), (29, yHigh), (28, yLow)]
+    in (updatedRegisters, oldStatus, 0, sp, memory)
+
+ld oldStatus registers sp memory op1 "-Y" =
+    let rdIndex = fromIntegral op1
+        address16b = (fromIntegral (registers ! 29) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 28) :: Word16)
+        newYRegister = address16b - 1
+        yHigh = fromIntegral (newYRegister `shiftR` 8) :: Word8
+        yLow = fromIntegral newYRegister :: Word8
+        updatedRegisters = registers // [(rdIndex, memory ! fromIntegral newYRegister), (29, yHigh), (28, yLow)]
+    in (updatedRegisters, oldStatus, 0, sp, memory)
+
+ld oldStatus registers sp memory op1 "Z" =
+    let rdIndex = fromIntegral op1
+        address16b = (fromIntegral (registers ! 31) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 30) :: Word16)
+        updatedRegisters = registers // [(rdIndex, memory ! fromIntegral address16b)]
+    in (updatedRegisters, oldStatus, 0, sp, memory)
+
+ld oldStatus registers sp memory op1 "Z+" =
+    let rdIndex = fromIntegral op1
+        address16b = (fromIntegral (registers ! 31) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 30) :: Word16)
+        newZRegister = address16b + 1
+        zHigh = fromIntegral (newZRegister `shiftR` 8) :: Word8
+        zLow = fromIntegral newZRegister :: Word8
+        updatedRegisters = registers // [(rdIndex, memory ! fromIntegral address16b), (31, zHigh), (30, zLow)]
+    in (updatedRegisters, oldStatus, 0, sp, memory)
+
+ld oldStatus registers sp memory op1 "-Z" =
+    let rdIndex = fromIntegral op1
+        address16b = (fromIntegral (registers ! 31) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 30) :: Word16)
+        newZRegister = address16b - 1
+        zHigh = fromIntegral (newZRegister `shiftR` 8) :: Word8
+        zLow = fromIntegral newZRegister :: Word8
+        updatedRegisters = registers // [(rdIndex, memory ! fromIntegral newZRegister), (31, zHigh), (30, zLow)]
+    in (updatedRegisters, oldStatus, 0, sp, memory)
+
 ldi :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
 ldi oldStatus registers sp memory rd immediate =
     let rdIndex = fromIntegral rd
@@ -1143,6 +1191,63 @@ st oldStatus registers sp memory "-X" op2 =
         xHigh = fromIntegral (newXRegister `shiftR` 8) :: Word8
         xLow = fromIntegral newXRegister :: Word8
         updatedRegisters = registers // [(27, xHigh), (26, xLow)]
+    in (updatedRegisters, oldStatus, 0, sp, updatedMemory)
+st oldStatus registers sp memory "Y" op2 =
+    let rrIndex = fromIntegral op2
+        rr = registers ! rrIndex
+        address16b = (fromIntegral (registers ! 29) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 28) :: Word16)
+        updatedMemory = memory // [(fromIntegral address16b, rr)]
+    in (registers, oldStatus, 0, sp, updatedMemory)
+
+st oldStatus registers sp memory "Y+" op2 =
+    let rrIndex = fromIntegral op2
+        rr = registers ! rrIndex
+        address16b = (fromIntegral (registers ! 29) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 28) :: Word16)
+        updatedMemory = memory // [(fromIntegral address16b, rr)]
+        newYRegister = address16b + 1
+        yHigh = fromIntegral (newYRegister `shiftR` 8) :: Word8
+        yLow = fromIntegral newYRegister :: Word8
+        updatedRegisters = registers // [(29, yHigh), (28, yLow)]
+    in (updatedRegisters, oldStatus, 0, sp, updatedMemory)
+
+st oldStatus registers sp memory "-Y" op2 =
+    let rrIndex = fromIntegral op2
+        rr = registers ! rrIndex
+        address16b = (fromIntegral (registers ! 29) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 28) :: Word16)
+        newYRegister = address16b - 1
+        updatedMemory = memory // [(fromIntegral newYRegister, rr)]
+        yHigh = fromIntegral (newYRegister `shiftR` 8) :: Word8
+        yLow = fromIntegral newYRegister :: Word8
+        updatedRegisters = registers // [(29, yHigh), (28, yLow)]
+    in (updatedRegisters, oldStatus, 0, sp, updatedMemory)
+
+st oldStatus registers sp memory "Z" op2 =
+    let rrIndex = fromIntegral op2
+        rr = registers ! rrIndex
+        address16b = (fromIntegral (registers ! 31) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 30) :: Word16)
+        updatedMemory = memory // [(fromIntegral address16b, rr)]
+    in (registers, oldStatus, 0, sp, updatedMemory)
+
+st oldStatus registers sp memory "Z+" op2 =
+    let rrIndex = fromIntegral op2
+        rr = registers ! rrIndex
+        address16b = (fromIntegral (registers ! 31) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 30) :: Word16)
+        updatedMemory = memory // [(fromIntegral address16b, rr)]
+        newZRegister = address16b + 1
+        zHigh = fromIntegral (newZRegister `shiftR` 8) :: Word8
+        zLow = fromIntegral newZRegister :: Word8
+        updatedRegisters = registers // [(31, zHigh), (30, zLow)]
+    in (updatedRegisters, oldStatus, 0, sp, updatedMemory)
+
+st oldStatus registers sp memory "-Z" op2 =
+    let rrIndex = fromIntegral op2
+        rr = registers ! rrIndex
+        address16b = (fromIntegral (registers ! 31) :: Word16) `shiftL` 8 + (fromIntegral (registers ! 30) :: Word16)
+        newZRegister = address16b - 1
+        updatedMemory = memory // [(fromIntegral newZRegister, rr)]
+        zHigh = fromIntegral (newZRegister `shiftR` 8) :: Word8
+        zLow = fromIntegral newZRegister :: Word8
+        updatedRegisters = registers // [(31, zHigh), (30, zLow)]
     in (updatedRegisters, oldStatus, 0, sp, updatedMemory)
 
 sts :: StatusFlags -> Registers -> StackPointer -> Memory -> Word16 -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)

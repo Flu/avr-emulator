@@ -74,6 +74,14 @@ pXRegister :: Parser String
 pXRegister = do
     choice [ try (cistring "-X"), try (cistring "X+"), try (cistring "X") ]
 
+pYRegister :: Parser String
+pYRegister = do
+    choice [ try (cistring "-Y"), try (cistring "Y+"), try (cistring "Y") ]
+
+pZRegister :: Parser String
+pZRegister = do
+    choice [ try (cistring "-Z"), try (cistring "Z+"), try (cistring "Z") ]
+
 pDecimal :: Parser Word8
 pDecimal = do
     digits <- some digitChar
@@ -370,7 +378,7 @@ pLD = do
     cistring "LD" >> space
     rd <- pRegister
     pComma
-    LD rd <$> pXRegister
+    LD rd <$> (pXRegister <|> pYRegister <|> pZRegister)
 
 pLDI :: Parser Instruction
 pLDI = do
@@ -543,7 +551,7 @@ pSEZ = do
 pST :: Parser Instruction
 pST = do
     cistring "ST" >> space
-    x <- pXRegister
+    x <- (pXRegister <|> pYRegister <|> pZRegister)
     pComma
     ST x <$> pRegister
 

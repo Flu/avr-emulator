@@ -160,6 +160,11 @@ main = hspec $ describe "AVR Emulator E2E tests" $ do
         let assemblyFilePath = "test_files/test_bld.asm"
         emulateProgramFromFile assemblyFilePath testBld
 
+    -- Test 26: test_ld.asm
+    it "Should correctly emulate test_ld.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_ld.asm"
+        emulateProgramFromFile assemblyFilePath testLd
+
 testBld:: EmulatorState -> IO()
 testBld state = do
     interruptFlag (flags state) `shouldBe` False
@@ -235,6 +240,7 @@ testAsr state = do
     negativeFlag (flags state) `shouldBe` True
     zeroFlag (flags state) `shouldBe` False
     carryFlag (flags state) `shouldBe` False
+
 
 -- Checking EmulatorState for the "test_brlo.asm"
 testBrlo :: EmulatorState -> IO ()
@@ -393,6 +399,67 @@ testEor state = do
     negativeFlag (flags state) `shouldBe` False
     zeroFlag (flags state) `shouldBe` False
     carryFlag (flags state) `shouldBe` False
+
+-- Checking EmulatorState for the "test_ld.asm"
+testLd :: EmulatorState -> IO ()
+testLd state = do
+    -- Registers
+    let regValue = registers state ! 0
+    regValue `shouldBe`  0x05
+
+    let regValue = registers state ! 1
+    regValue `shouldBe` 0x05
+
+    let regValue = registers state ! 2
+    regValue `shouldBe` 0x06
+
+    let regValue = registers state ! 4
+    regValue `shouldBe`  0x15
+
+    let regValue = registers state ! 5
+    regValue `shouldBe` 0x15
+
+    let regValue = registers state ! 6
+    regValue `shouldBe` 0x16
+
+    let regValue = registers state ! 8
+    regValue `shouldBe`  0x25
+
+    let regValue = registers state ! 9
+    regValue `shouldBe` 0x25
+
+    let regValue = registers state ! 10
+    regValue `shouldBe` 0x26
+
+    -- Memory
+    let memValue = memory state ! 5
+    memValue `shouldBe` 0x05
+
+    let memValue = memory state ! 6
+    memValue `shouldBe` 0x06
+
+    let memValue = memory state ! 21
+    memValue `shouldBe` 0x15
+
+    let memValue = memory state ! 22
+    memValue `shouldBe` 0x16
+
+    let memValue = memory state ! 37
+    memValue `shouldBe` 0x25
+
+    let memValue = memory state ! 38
+    memValue `shouldBe` 0x26
+
+    -- Status flags
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
+
 
 -- Checking EmulatorState for the "test_movw.asm"
 testMovw :: EmulatorState -> IO ()
