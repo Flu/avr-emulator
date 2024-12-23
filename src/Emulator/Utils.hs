@@ -240,3 +240,29 @@ prettyPrintMemory mem = do
     -- Then we map over all elements of rows (the tuples) and give them one by one to printRow, which formattes them
     -- and prints them
     mapM_ (uncurry printRow) rows
+
+-- | Pretty-prints a portion of the program memory around an address
+-- | Parameters are: the array of instructions, the address, and N
+-- | N is the amount of lines before and after the address to print as well
+printInstructionsAroundAddress :: Array Int Instruction -> Int -> Int -> IO ()
+printInstructionsAroundAddress programMemory address n = do
+    mapM_ (\(i,x) -> if i == address then printColorInstructionWithAddress i x else printInstructionWithAddress i x) lines
+    where
+        startIndex = max start (address - n)
+            where (start, _) = bounds programMemory
+        endIndex = min end (address + n)
+            where (_, end) = bounds programMemory
+        lines = zip [startIndex..endIndex] [programMemory ! i| i <- [startIndex..endIndex]]
+
+instructionWithAddressToString :: Int -> Instruction -> String
+instructionWithAddressToString address instruction = printf "0x%04X     %s" address (show instruction)
+
+printColorInstructionWithAddress :: Int -> Instruction -> IO ()
+printColorInstructionWithAddress address instruction = do
+    setSGR [SetColor Foreground Vivid Blue]
+    putStrLn $ instructionWithAddressToString address instruction
+    setSGR [Reset]
+
+printInstructionWithAddress :: Int -> Instruction -> IO ()
+printInstructionWithAddress address instruction = do
+    putStrLn $ instructionWithAddressToString address instruction

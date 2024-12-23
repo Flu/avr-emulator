@@ -15,7 +15,8 @@ module Emulator
     , stepOneInstruction
     , stepMultipleInstructions
     , runUntilProgramEnd
-    , runUntilFunctionEnd) where
+    , runUntilFunctionEnd
+    , printInstructionsAroundAddress) where
 
 import Emulator.Core
 import Emulator.Instructions

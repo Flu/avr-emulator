@@ -13,7 +13,7 @@ import System.Console.Haskeline
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
-import Emulator (Instruction, EmulatorState (..), initEmulatorState, printRegisterBank, registers, showStatusFlags, flags, stepOneInstruction, stepMultipleInstructions, replaceLabels, runUntilProgramEnd, runUntilFunctionEnd)
+import Emulator (Instruction, EmulatorState (..), initEmulatorState, printRegisterBank, registers, showStatusFlags, flags, stepOneInstruction, stepMultipleInstructions, replaceLabels, runUntilProgramEnd, runUntilFunctionEnd, printInstructionsAroundAddress)
 import Emulator.State (EmulatorState(EmulatorState))
 import Emulator.Utils (toHex4)
 import Data.Text.Internal.Builder.Int.Digits (digits)
@@ -183,7 +183,7 @@ dispatcher PrintPc instructions state = do
     return state
 
 dispatcher PrintCurrentInstruction instructions state = do
-    printPcAndInstructions instructions state 3
+    lift $ printInstructionsAroundAddress instructions (fromIntegral $ programCounter state) 3
     return state
 
 dispatcher Help _ state = do
@@ -230,16 +230,6 @@ printPcAndInstruction :: Array Int Instruction -> EmulatorState -> InputT IO ()
 printPcAndInstruction programMemory state = do
     outputStr $ "0x" ++ (toHex4 $ fromIntegral $ programCounter state) ++ ": "
     outputStrLn $ show $ programMemory ! (fromIntegral $ programCounter state)
-
-printPcAndInstructions :: Array Int Instruction -> EmulatorState -> Int -> InputT IO ()
-printPcAndInstructions programMemory state n = do
-    outputStrLn $ unlines [printf "0x%04X     %s" i (show (programMemory ! i)) | i <- [startIndex..endIndex]]
-    where
-        pc = fromIntegral $ programCounter state
-        startIndex = max start (pc - n)
-            where (start, _) = bounds programMemory
-        endIndex = min end (pc + n)
-            where (_, end) = bounds programMemory
 
 helpText :: String
 helpText = unlines
