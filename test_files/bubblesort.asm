@@ -15,6 +15,11 @@ _main:
     LDI R18, 0x01 ; Register pair for subtracting from R9:R8
     LDI R19, 0x00
 
+    CALL prng_loop
+    CALL BUBBLE_SORT
+    JMP END_OF_PROGRAM
+
+
 prng_loop:
     call PRNG
     ST X+, R16
@@ -32,8 +37,7 @@ prng_loop:
     LDI R8, 0xff
     LDI R9, 0x00
 
-    CALL BUBBLE_SORT
-    JMP END_OF_PROGRAM
+    RET
 
 ;; Bubble Sort function - sorts a given list of unsigned integers in-place
 ; R12:11 - start address of the list to sort

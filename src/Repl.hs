@@ -6,13 +6,14 @@ import Control.Monad
 import Control.Monad.Trans (lift)
 import Data.Array
 import Data.Char
+import Text.Printf (printf)
 import qualified Data.Text as T
 import Data.Void
 import System.Console.Haskeline
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
-import Emulator (Instruction, EmulatorState (..), initEmulatorState, printRegisterBank, registers, showStatusFlags, flags, stepOneInstruction, stepMultipleInstructions, replaceLabels)
+import Emulator (Instruction, EmulatorState (..), initEmulatorState, printRegisterBank, registers, showStatusFlags, flags, stepOneInstruction, stepMultipleInstructions, replaceLabels, runUntilProgramEnd, runUntilFunctionEnd)
 import Emulator.State (EmulatorState(EmulatorState))
 import Emulator.Utils (toHex4)
 import Data.Text.Internal.Builder.Int.Digits (digits)
@@ -24,6 +25,8 @@ type Parser = Parsec Void T.Text
 data UserCommand
     = StepOnce
     | StepMultiple Int
+    | ExecuteUntilProgramEnd
+    | ExecuteUntilFunctionEnd
     | Restart
     | PrintRegisters
     | PrintFlags
@@ -31,6 +34,7 @@ data UserCommand
     | PrintPc
     | Help
     | Quit
+    | MissingCommand
 
 digitParser :: Parser Char
 digitParser = do 
@@ -64,37 +68,49 @@ executeUntilFunctionEndCommandParser = do
 restartCommandParser :: Parser UserCommand
 restartCommandParser = do
     string "restart" <|> string "re"
+    lookAhead eof
     return Restart
 
 printRegistersCommandParser :: Parser UserCommand
 printRegistersCommandParser = do
     string "registers" <|> string "r"
+    lookAhead eof
     return PrintRegisters
 
 printFlagsCommandParser :: Parser UserCommand
 printFlagsCommandParser = do
-    string "flags" <|> string "f"
+    string "flags"
+    lookAhead eof
     return PrintFlags
 
 printCurrentInstructionCommandParser :: Parser UserCommand
 printCurrentInstructionCommandParser = do
     string "instruction" <|> string "i"
+    lookAhead eof
     return PrintCurrentInstruction
 
 printProgramCounterCommandParser :: Parser UserCommand
 printProgramCounterCommandParser = do
     string "pc" <|> string "p"
+    lookAhead eof
     return PrintPc
 
 helpCommandParser :: Parser UserCommand
 helpCommandParser = do
     string "help"
+    lookAhead eof
     return Help
 
 quitCommandParser :: Parser UserCommand
 quitCommandParser = do
-    string "quit" <|> string "q"
+    (string "quit" <|> string "q")
+    lookAhead eof
     return Quit
+
+missingCommand :: Parser UserCommand
+missingCommand = do
+    space >> eof
+    return MissingCommand
 
 commandParser :: Parser UserCommand
 commandParser =
@@ -109,7 +125,8 @@ commandParser =
         try printProgramCounterCommandParser,
         try printCurrentInstructionCommandParser,
         try helpCommandParser,
-        try quitCommandParser]
+        try quitCommandParser,
+        try missingCommand]
 
 parseCommand :: String -> Either (ParseErrorBundle T.Text Void) UserCommand
 parseCommand command = runParser commandParser "" $ T.pack command
@@ -208,6 +225,21 @@ replLoop instructions memorySize = runInputT defaultSettings (loop initialState)
         Nothing -> outputStrLn "Exited."
 
       return (state)
+
+printPcAndInstruction :: Array Int Instruction -> EmulatorState -> InputT IO ()
+printPcAndInstruction programMemory state = do
+    outputStr $ "0x" ++ (toHex4 $ fromIntegral $ programCounter state) ++ ": "
+    outputStrLn $ show $ programMemory ! (fromIntegral $ programCounter state)
+
+printPcAndInstructions :: Array Int Instruction -> EmulatorState -> Int -> InputT IO ()
+printPcAndInstructions programMemory state n = do
+    outputStrLn $ unlines [printf "0x%04X     %s" i (show (programMemory ! i)) | i <- [startIndex..endIndex]]
+    where
+        pc = fromIntegral $ programCounter state
+        startIndex = max start (pc - n)
+            where (start, _) = bounds programMemory
+        endIndex = min end (pc + n)
+            where (_, end) = bounds programMemory
 
 helpText :: String
 helpText = unlines
