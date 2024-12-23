@@ -10,7 +10,7 @@ import qualified Data.Text as T
 import Data.Void
 import Data.Binary
 import Data.Char
-import Numeric (readHex, readInt)
+import Numeric (readHex)
 import Data.Maybe (catMaybes)
 
 import Emulator
@@ -21,9 +21,11 @@ type Parser = Parsec Void T.Text
 -- Basic components parsers
 
 -- Match the lowercase or uppercase form of 'c'
+cichar :: (Token s ~ Char, MonadParsec e s f) => Char -> f Char
 cichar c = char (toLower c) <|> char (toUpper c)
 
 -- Match the string 's', accepting either lowercase or uppercase form of each character 
+cistring :: (Token s ~ Char, MonadParsec e s m) => [Char] -> m [Char]
 cistring s = try (mapM cichar s) <?> "\"" ++ s ++ "\""
 
 pRegister :: Parser Register

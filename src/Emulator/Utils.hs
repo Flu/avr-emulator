@@ -4,7 +4,7 @@ import Emulator.State
 import Emulator.Instructions
 
 import Data.Array
-import Data.Binary (Word8, Word16)
+import Data.Binary (Word8)
 import Data.Char (intToDigit)
 import qualified Data.Map as Map
 import Numeric (showHex, showIntAtBase)
@@ -125,7 +125,7 @@ resolveLabels labelMap (address, CALL label)
 
 -- | If the current Instruction is a label or any other instruction, skip
 resolveLabels _labelMap (_, LABEL label) = Just (LABEL label)
-resolveLabels _labelMap (address, otherInstr) = Just otherInstr
+resolveLabels _labelMap (_, otherInstr) = Just otherInstr
 
 -- | Constructs the jump table and then resolves the labels with it
 replaceLabels :: [Instruction] -> [Maybe Instruction]
@@ -160,9 +160,9 @@ printRegisterBank regs = go (assocs regs)
 
 -- | Returns a String representation of the register bank in hexadecimal and binary
 registersToString :: Registers -> String
-registersToString regs =
+registersToString registers =
     let
-        registers = assocs regs         -- Create a list of tuples of index and register value
+        registersWithIndex = assocs registers         -- Create a list of tuples of index and register value
         go::[(Int, Register)] -> String -- unction for iterating through the register bank array
         go regs = case regs of
             -- If arrived at the end of the array, return an empty String
@@ -171,7 +171,7 @@ registersToString regs =
             -- add a newline and call the function recursively on the next element
             ((i, r):rs) -> printf "R%-5s 0x%02x  %08s" (show i) r (showIntAtBase 2 intToDigit r "") ++ "\n" ++ go rs
     in
-        go registers
+        go registersWithIndex
 
 -- | Returns a String representation of the SREG/status flags
 showStatusFlags :: StatusFlags -> String
@@ -246,13 +246,13 @@ prettyPrintMemory mem = do
 -- | N is the amount of lines before and after the address to print as well
 printInstructionsAroundAddress :: Array Int Instruction -> Int -> Int -> IO ()
 printInstructionsAroundAddress programMemory address n = do
-    mapM_ (\(i,x) -> if i == address then printColorInstructionWithAddress i x else printInstructionWithAddress i x) lines
+    mapM_ (\(i,x) -> if i == address then printColorInstructionWithAddress i x else printInstructionWithAddress i x) linesWithAddresses
     where
         startIndex = max start (address - n)
             where (start, _) = bounds programMemory
         endIndex = min end (address + n)
             where (_, end) = bounds programMemory
-        lines = zip [startIndex..endIndex] [programMemory ! i| i <- [startIndex..endIndex]]
+        linesWithAddresses = zip [startIndex..endIndex] [programMemory ! i| i <- [startIndex..endIndex]]
 
 -- | Returns a String representation of the given instruction along with the PC value
 instructionWithAddressToString :: Int -> Instruction -> String

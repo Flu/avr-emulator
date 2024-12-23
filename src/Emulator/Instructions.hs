@@ -469,7 +469,6 @@ cln oldStatus registers sp memory =
 clr :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 clr oldStatus registers sp memory op1 =
     let rdIndex = fromIntegral op1
-        rd = registers ! rdIndex
         result = 0
         updatedRegisters = registers // [(rdIndex, result)]
         updatedFlags = StatusFlags {
@@ -720,7 +719,6 @@ ldi oldStatus registers sp memory rd immediate =
 lds :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Word16 -> (Registers, StatusFlags, Int, StackPointer, Memory)
 lds oldStatus registers sp memory op1 immediate =
     let rdIndex = fromIntegral op1
-        rd = fromIntegral (registers ! rdIndex)
         k = fromIntegral immediate
         updatedRegisters = registers // [(rdIndex, memory ! k)]
     in (updatedRegisters, oldStatus, 0, sp, memory)
@@ -1057,7 +1055,6 @@ sen oldStatus registers sp memory =
 ser :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> (Registers, StatusFlags, Int, StackPointer, Memory)
 ser oldStatus registers sp memory op1 =
     let rdIndex = fromIntegral op1
-        rd = registers ! rdIndex
         result = 255
         updatedRegisters = registers // [(rdIndex, result)]
     in (updatedRegisters, oldStatus, 0, sp, memory)

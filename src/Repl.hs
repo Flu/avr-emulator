@@ -2,11 +2,8 @@
 
 module Repl where
 
-import Control.Monad
 import Control.Monad.Trans (lift)
 import Data.Array
-import Data.Char
-import Text.Printf (printf)
 import qualified Data.Text as T
 import Data.Void
 import System.Console.Haskeline
@@ -14,10 +11,7 @@ import Text.Megaparsec
 import Text.Megaparsec.Char
 
 import Emulator (Instruction, EmulatorState (..), initEmulatorState, printRegisterBank, registers, showStatusFlags, flags, stepOneInstruction, stepMultipleInstructions, replaceLabels, runUntilProgramEnd, runUntilFunctionEnd, printInstructionsAroundAddress)
-import Emulator.State (EmulatorState(EmulatorState))
 import Emulator.Utils (toHex4)
-import Data.Text.Internal.Builder.Int.Digits (digits)
-import Numeric (readInt, readDec)
 import Data.Maybe (catMaybes)
 
 type Parser = Parsec Void T.Text

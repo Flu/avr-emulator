@@ -3,7 +3,6 @@ module Emulator
     , Instruction(..)
     , Memory
     , Register
-    , Registers(..)
     , EmulatorState(..)
     , StatusFlags(..)
     , printRegisterBank
@@ -23,7 +22,6 @@ import Emulator.Instructions
 import Emulator.Utils
 import Emulator.State
 
-import Data.Binary (Word16)
 import Data.Maybe (catMaybes)
 import Data.Array
 

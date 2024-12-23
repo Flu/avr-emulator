@@ -4,7 +4,7 @@ import Emulator.Instructions
 import Emulator.State
 
 import Data.Array
-import Data.Binary (Word8, Word16)
+import Data.Binary (Word16)
 
 {- | Decodes the current instruction and calls its respective function with the current emulator state,
     then records the updated emulator state for the next instruction. For instructions that may jump, it also
