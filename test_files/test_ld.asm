@@ -1,13 +1,17 @@
+    ;; Copyright (2024)
+    ;; Amber van der Graaf
+    ;; MIT License
+
     clr r27
-    ldi r26, 0x05                ;point X register to 0x0005
-    ldi r0, 0x05                 ;set r0 to 0x27
-    st X+, r0                    ;load 0x27 into memory address 0x0005
+    ldi r26, 0x05               ; Point X register to 0x0005
+    ldi r0, 0x05                ; Set r0 to 0x27
+    st X+, r0                   ; Load 0x27 into memory address 0x0005
     ldi r0, 0x06
     st X, r0
-    clr r0                      ;set r0 to 0x00
-    ld r0,-X                    ;load 0x27 into r0 (pre decrement of the pointer at X)
-    ld r1, X+                   ;Load 0x27 into r2 (post increment of the pointer at X)
-    ld r2, X                    ;Load 0x27 into r1
+    clr r0                      ; Set r0 to 0x00
+    ld r0,-X                    ; Load 0x27 into r0 (pre decrement of the pointer at X)
+    ld r1, X+                   ; Load 0x27 into r2 (post increment of the pointer at X)
+    ld r2, X                    ; Load 0x27 into r1
 
     clr r29
     ldi r28, 0x15
