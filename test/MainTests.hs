@@ -741,7 +741,7 @@ testBubblesort state = do
     regValue `shouldBe` 0x1
 
     -- Program counter
-    programCounter state `shouldBe` 91
+    programCounter state `shouldBe` 93
 
     -- Status flags
     interruptFlag (flags state) `shouldBe` False

@@ -1,4 +1,8 @@
 tests: True
-package *
-  coverage: True
-  library-coverage: True
+optimization: 2
+profiling: True
+
+-- Remove code coverage for now
+--package *
+--  coverage: True
+--  library-coverage: True

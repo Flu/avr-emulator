@@ -1,6 +1,5 @@
 module Main where
 
-import System.Environment
 import Options.Applicative
 import Emulator
 import Parser
@@ -8,6 +7,7 @@ import Options
 
 import Data.Version ( showVersion )
 import Paths_avr_emulator ( version )
+import Repl (replLoop)
 
 main :: IO ()
 main = entryFunction =<< execParser opts
@@ -49,11 +49,17 @@ getVersion :: String
 getVersion = showVersion version
 
 entryFunction :: Options -> IO ()
-entryFunction (Options _ _ _ True Nothing) = putStrLn ("avr-emulator v" ++ getVersion)
+-- | Has opion "-v" but no file was given
+entryFunction (Options _ _ _ _ True Nothing) = putStrLn ("avr-emulator v" ++ getVersion)
 
-entryFunction (Options _ _ _  False Nothing) = putStrLn "You did not supply a file. Exiting."
+-- | Has option "-v" but a file was given, ignore the file and just print the version
+entryFunction (Options _ _ _ _ True (Just _)) = putStrLn ("avr-emulator v" ++ getVersion)
 
-entryFunction (Options False dmpIR memorySize _ (Just filepath)) = do
+-- | Supplied arguments but did not provide a file, return error
+entryFunction (Options _ _ _ _ False Nothing) = error "You did not supply a file. Exiting."
+
+-- | Supplied file, does not dump memory to stdout
+entryFunction (Options False dmpIR memorySize False _ (Just filepath)) = do
     finalState <- compileFromFile filepath dmpIR memorySize
     case finalState of
         Right state -> do
@@ -61,7 +67,8 @@ entryFunction (Options False dmpIR memorySize _ (Just filepath)) = do
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
         Left errorMessage -> print errorMessage
 
-entryFunction (Options True dmpIR memorySize _ (Just filepath)) = do
+-- | Supplied file, will dump SRAM to stdout
+entryFunction (Options True dmpIR memorySize False _ (Just filepath)) = do
     finalState <- compileFromFile filepath dmpIR memorySize
     case finalState of
         Right state -> do
@@ -70,3 +77,12 @@ entryFunction (Options True dmpIR memorySize _ (Just filepath)) = do
             printRegisterBank $ registers state         -- Pretty print the register banks
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
         Left errorMessage -> print errorMessage
+
+-- | Ignore dump memory and dump IR flags, start a REPL for an interactive session
+entryFunction (Options _ _ memorySize True False (Just filepath)) = do
+    maybeInstructions <- assembleProgramFromFile filepath
+    case maybeInstructions of
+        Just instructions -> do
+            _ <- replLoop instructions memorySize
+            return ()
+        Nothing -> putStrLn "Assembler error"

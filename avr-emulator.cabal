@@ -20,7 +20,7 @@ name:               avr-emulator
 -- PVP summary:     +-+------- breaking API changes
 --                  | | +----- non-breaking API additions
 --                  | | | +--- code changes with no API change
-version:            0.2.1.1
+version:            0.3.0.0
 
 -- A short (one-line) description of the package.
 -- synopsis:
@@ -52,22 +52,26 @@ extra-doc-files:    CHANGELOG.md
 
 -- Library component
 library
-    exposed-modules:    Parser, Emulator, Options
+    exposed-modules:    Parser, Emulator, Repl, Options
+    ghc-options:        -fspecialise-aggressively -fexpose-all-unfoldings -threaded -Wunused-imports
+    other-modules:      Emulator.Core, Emulator.State, Emulator.Instructions, Emulator.Utils
     hs-source-dirs:     src
     build-depends:      base >=4.16.2.1
                         , binary >=0.8.9.1
-                        , containers >=0.6.7
+                        , containers >=0.6.8
                         , array >=0.5.4.0
                         , text >=2.0.2
                         , megaparsec >=9.7.0
                         , optparse-applicative >=0.18.1.0
                         , ansi-terminal >=1.1.1
+                        , haskeline >= 0.8.2.1
+                        , mtl >=2.3.1
     default-language:   GHC2021
 
 -- Executable component
 executable avr-emulator
     -- Import common warning flags and optimization flags.
-    ghc-options:        -O2
+    ghc-options:        -fspecialise-aggressively -fexpose-all-unfoldings -threaded -Wunused-imports
 
     -- .hs or .lhs file containing the Main module.
     main-is:            Main.hs
@@ -86,15 +90,15 @@ executable avr-emulator
     default-language:   GHC2021
 
 test-suite avr-emulator-test
-  type: exitcode-stdio-1.0
+    type: exitcode-stdio-1.0
 
-  main-is: MainTests.hs
+    main-is: MainTests.hs
 
-  hs-source-dirs: test
+    hs-source-dirs: test
 
-  other-modules: Paths_avr_emulator
+    other-modules: Paths_avr_emulator
 
-  build-depends:
+    build-depends:
         base >=4.16.2.1
         , binary >=0.8.9.1
         , containers >= 0.6.7
@@ -107,4 +111,4 @@ test-suite avr-emulator-test
         , ansi-terminal >= 1.1.2
         , avr-emulator
 
-  default-language: GHC2021
+    default-language: GHC2021
