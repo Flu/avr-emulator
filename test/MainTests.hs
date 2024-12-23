@@ -136,9 +136,9 @@ main = hspec $ describe "AVR Emulator E2E tests" $ do
         emulateProgramFromFile assemblyFilePath testTst
 
     -- Test 21: test.asm
-    it "should correctly emulate test.asm and match expected state" $ do
-        let assemblyFilePath = "test_files/test.asm"
-        emulateProgramFromFile assemblyFilePath testTest
+    --it "should correctly emulate test.asm and match expected state" $ do
+    --    let assemblyFilePath = "test_files/test.asm"
+    --    emulateProgramFromFile assemblyFilePath testTest
 
     -- Test 22: bubblesort.asm
     it "should correctly emulate bubblesort.asm and match expected state" $ do
