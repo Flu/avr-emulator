@@ -13,6 +13,7 @@ import Text.Megaparsec.Char
 import Emulator (Instruction, EmulatorState (..), initEmulatorState, printRegisterBank, registers, showStatusFlags, flags, stepOneInstruction, stepMultipleInstructions, replaceLabels, runUntilProgramEnd, runUntilFunctionEnd, printInstructionsAroundAddress)
 import Emulator.Utils (toHex4)
 import Data.Maybe (catMaybes)
+import Data.List (isPrefixOf)
 
 type Parser = Parsec Void T.Text
 
@@ -40,6 +41,7 @@ digitParser = do
 stepOnceCommandParser :: Parser UserCommand
 stepOnceCommandParser = do
     string "step" <|> string "s"
+    lookAhead (eof <|> (space >> eof))
     return StepOnce
 
 -- | Parser for the step command with the optional number of steps parameter
@@ -55,63 +57,63 @@ stepMultipleCommandParser = do
 executeUntilProgramEndCommandParser :: Parser UserCommand
 executeUntilProgramEndCommandParser = do
     string "e"
-    lookAhead eof
+    lookAhead (eof <|> (space >> eof))
     return ExecuteUntilProgramEnd
 
 -- | Parser for the execute until current function end command
 executeUntilFunctionEndCommandParser :: Parser UserCommand
 executeUntilFunctionEndCommandParser = do
     string "f"
-    lookAhead eof
+    lookAhead (eof <|> (space >> eof))
     return ExecuteUntilFunctionEnd
 
 -- | Parser for the restart command
 restartCommandParser :: Parser UserCommand
 restartCommandParser = do
     string "restart" <|> string "re"
-    lookAhead eof
+    lookAhead (eof <|> (space >> eof))
     return Restart
 
 -- | Parser for printing the registers command
 printRegistersCommandParser :: Parser UserCommand
 printRegistersCommandParser = do
     string "registers" <|> string "r"
-    lookAhead eof
+    lookAhead (eof <|> (space >> eof))
     return PrintRegisters
 
 -- | Parser for printing the flags command
 printFlagsCommandParser :: Parser UserCommand
 printFlagsCommandParser = do
     string "flags"
-    lookAhead eof
+    lookAhead (eof <|> (space >> eof))
     return PrintFlags
 
 -- | Parser for printing the current instructions command
 printCurrentInstructionCommandParser :: Parser UserCommand
 printCurrentInstructionCommandParser = do
     string "instruction" <|> string "i"
-    lookAhead eof
+    lookAhead (eof <|> (space >> eof))
     return PrintCurrentInstruction
 
 -- | Parser for printing the program counter command
 printProgramCounterCommandParser :: Parser UserCommand
 printProgramCounterCommandParser = do
     string "pc" <|> string "p"
-    lookAhead eof
+    lookAhead (eof <|> (space >> eof))
     return PrintPc
 
 -- | Parser for the help command
 helpCommandParser :: Parser UserCommand
 helpCommandParser = do
     string "help"
-    lookAhead eof
+    lookAhead (eof <|> (space >> eof))
     return Help
 
 -- | Parser for the quit command
 quitCommandParser :: Parser UserCommand
 quitCommandParser = do
     (string "quit" <|> string "q")
-    lookAhead eof
+    lookAhead (eof <|> (space >> eof))
     return Quit
 
 -- | Parser that matches a lack of command (line of whitespace)
@@ -206,17 +208,12 @@ dispatcher Quit instructions state = do
 dispatcher MissingCommand _ state = do
     return state
 
-printMessageIfProgramIsDone :: Bool -> InputT IO ()
-printMessageIfProgramIsDone done
-    | done = outputStrLn "The program finished execution. You can restart or close this REPL"
-    | otherwise = return ()
-
 {-- | Main REPL loop
     It waits for input from the user, parses the command and calls the dispatcher to deal with the command. Depending
     on the dispatcher's state it either calls itself recursively or it terminates the loop.
 --}
 replLoop :: [Instruction] -> Int -> IO (EmulatorState)
-replLoop instructions memorySize = runInputT defaultSettings (loop initialState)
+replLoop instructions memorySize = runInputT defaultReplSettings (loop initialState)
   where
     initialState = initEmulatorState memorySize
     resolvedInstructions = catMaybes $ replaceLabels instructions
@@ -237,6 +234,11 @@ replLoop instructions memorySize = runInputT defaultSettings (loop initialState)
         Nothing -> outputStrLn "Exited."
 
       return (state)
+
+printMessageIfProgramIsDone :: Bool -> InputT IO ()
+printMessageIfProgramIsDone done
+    | done = outputStrLn "The program finished execution. You can restart or close this REPL"
+    | otherwise = return ()
 
 printPcAndInstruction :: Array Int Instruction -> EmulatorState -> InputT IO ()
 printPcAndInstruction programMemory state = do
@@ -262,3 +264,16 @@ helpText = unlines
   , "  help               Print this message"
   , "  Control-D          Exit the REPL"
   ]
+
+defaultReplSettings :: Settings IO
+defaultReplSettings = Settings {
+    historyFile = Nothing
+    , complete = completeWord Nothing " \t" $ return . searchFunctionForAutocomplete
+    , autoAddHistory = True
+}
+
+searchFunctionForAutocomplete :: String -> [Completion]
+searchFunctionForAutocomplete query = map simpleCompletion $ filter (query `isPrefixOf`) fullWordCommandList
+
+fullWordCommandList :: [String]
+fullWordCommandList = ["step", "restart", "registers", "instruction", "pc", "help", "quit"]
