@@ -170,6 +170,11 @@ main = hspec $ describe "AVR Emulator E2E tests" $ do
         let assemblyFilePath = "test_files/test_labelled_registers.asm"
         emulateProgramFromFile assemblyFilePath testLabeledRegisters
 
+    -- Test 27: test_ld.asm
+    it "Should correctly emulate test_ld.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_ld.asm"
+        emulateProgramFromFile assemblyFilePath testLd
+
 -- Checking EmulatorState for the "test_adiw.asm"
 testAdiw :: EmulatorState -> IO ()
 testAdiw state = do
