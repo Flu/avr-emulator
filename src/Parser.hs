@@ -28,11 +28,26 @@ cichar c = char (toLower c) <|> char (toUpper c)
 cistring :: (Token s ~ Char, MonadParsec e s m) => [Char] -> m [Char]
 cistring s = try (mapM cichar s) <?> "\"" ++ s ++ "\""
 
-pRegister :: Parser Register
-pRegister = do
+pLabelledRegister :: Parser Register
+pLabelledRegister = do
+  reg <- some alphaNumChar
+  case reg of
+    "XL" -> return 26
+    "XH" -> return 27
+    "YL" -> return 28
+    "YH" -> return 29
+    "ZL" -> return 30
+    "ZH" -> return 31
+
+pNumberedRegister :: Parser Register
+pNumberedRegister = do
     cichar 'R'
     reg <- some digitChar
     return (read reg)
+
+pRegister :: Parser Register
+pRegister = do
+  return (pNumberedRegister <|> pLabelledRegister)
 
 pRegisterPair :: Parser (Register, Register)
 pRegisterPair = do
