@@ -1,0 +1,6 @@
+    LDI XL, 0x01
+    LDI XH, 0x02
+    LDI YL, 0x03
+    LDI YH, 0x04
+    LDI ZL, 0x05
+    LDI ZH, 0x06

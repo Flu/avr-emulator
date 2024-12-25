@@ -38,6 +38,7 @@ pLabelledRegister = do
     "YH" -> return 29
     "ZL" -> return 30
     "ZH" -> return 31
+    _ -> fail "Invalid register label"
 
 pNumberedRegister :: Parser Register
 pNumberedRegister = do
@@ -47,7 +48,8 @@ pNumberedRegister = do
 
 pRegister :: Parser Register
 pRegister = do
-  return (pNumberedRegister <|> pLabelledRegister)
+  reg <- choice [try pNumberedRegister, try pLabelledRegister]
+  return reg
 
 pRegisterPair :: Parser (Register, Register)
 pRegisterPair = do
