@@ -156,14 +156,20 @@ main = hspec $ describe "AVR Emulator E2E tests" $ do
         emulateProgramFromFile assemblyFilePath testBclr
 
     -- Test 25: test_bld.asm
-    it "Should correctly emulate test_bld.asm and match expected state" $ do
+    it "should correctly emulate test_bld.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_bld.asm"
         emulateProgramFromFile assemblyFilePath testBld
 
     -- Test 26: test_ld.asm
-    it "Should correctly emulate test_ld.asm and match expected state" $ do
+    it "should correctly emulate test_ld.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_ld.asm"
         emulateProgramFromFile assemblyFilePath testLd
+
+    -- Test 27: test_adiw.asm
+    it "should correctly emulate test_adiw.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_adiw.asm"
+        emulateProgramFromFile assemblyFilePath testAdiw
+ 
 
 testBld:: EmulatorState -> IO()
 testBld state = do
@@ -836,3 +842,28 @@ testEof state = do
     zeroFlag (flags state) `shouldBe` False
     carryFlag (flags state) `shouldBe` False
 
+-- Checking EmulatorState for the "test_adiw.asm"
+testAdiw :: EmulatorState -> IO ()
+testAdiw state = do
+    -- Registers
+    let regValue = registers state ! 26
+    regValue `shouldBe` 0xff
+
+    let regValue = registers state ! 27
+    regValue `shouldBe` 0xbe
+
+    let regValue = registers state ! 30
+    regValue `shouldBe` 0x10
+
+    let regValue = registers state ! 31
+    regValue `shouldBe` 0x00
+
+    -- Status flags
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False

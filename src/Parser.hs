@@ -115,9 +115,16 @@ pADD = do
 pADIW :: Parser Instruction
 pADIW = do
     cistring "ADIW" >> space
-    (reg1, reg2) <- pRegisterPair
+    reg1 <- pRegister
     pComma
-    ADIW reg1 reg2 <$> pWord8
+    if isValidRegister reg1 then
+        ADIW (reg1 + 1) reg1 <$> pWord8
+    else
+        fail "Must be register 26, 28 or 30."
+    where
+    isValidRegister r
+        | r == 24 || r == 26 || r == 28 || r == 30 = True
+        | otherwise = False
 
 pAND :: Parser Instruction
 pAND = do

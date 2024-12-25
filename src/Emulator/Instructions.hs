@@ -181,23 +181,23 @@ add oldStatus registers sp memory rd rs =
     in (updatedRegisters, updatedFlags, 0, sp, memory)
 
 adiw :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Register -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
-adiw oldStatus registers sp memory op1 op2 k =
-    let rd1Index = fromIntegral op1
-        rdIndex = fromIntegral op2
-        rd1 = registers ! rd1Index
-        rd = registers ! rdIndex
-        result = (fromIntegral rd1 :: Word16) `shiftL` 8 + (fromIntegral rd :: Word16) + (fromIntegral k :: Word16)
+adiw oldStatus registers sp memory oph opl k =
+    let rhIndex = fromIntegral oph
+        rlIndex = fromIntegral opl
+        rh = registers ! rhIndex
+        rl = registers ! rlIndex
+        result = (fromIntegral rh :: Word16) `shiftL` 8 + (fromIntegral rl :: Word16) + (fromIntegral k :: Word16)
         resultH = fromIntegral (result `shiftR` 8) :: Word8
         resultL = fromIntegral result :: Word8
-        updatedRegisters = registers // [(rd1Index, resultH), (rdIndex, resultL)]
+        updatedRegisters = registers // [(rhIndex, resultH), (rlIndex, resultL)]
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
             tFlag = tFlag oldStatus,
             halfCarryFlag = halfCarryFlag oldStatus,
-            overflowFlag = not (testBit rd1 7) && testBit result 15,
+            overflowFlag = not (testBit rh 7) && testBit result 15,
             negativeFlag = testBit result 15,
             zeroFlag = result == 0,
-            carryFlag = not (testBit result 15) && testBit rd1 7,
+            carryFlag = not (testBit result 15) && testBit rh 7,
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
         in (updatedRegisters, updatedFlags, 0, sp, memory)
