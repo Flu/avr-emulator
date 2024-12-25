@@ -165,10 +165,10 @@ main = hspec $ describe "AVR Emulator E2E tests" $ do
         let assemblyFilePath = "test_files/test_ld.asm"
         emulateProgramFromFile assemblyFilePath testLd
 
-    -- Test 27: test_labelled_registers.asm
-    it "Should correctly emulate test_labelled_registers.asm and match expected state" $ do
+    -- Test 27: test_labeled_registers.asm
+    it "Should correctly emulate test_labeled_registers.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_labelled_registers.asm"
-        emulateProgramFromFile assemblyFilePath testLabelledRegisters
+        emulateProgramFromFile assemblyFilePath testLabeledRegisters
 
 -- Checking EmulatorState for the "test_adiw.asm"
 testAdiw :: EmulatorState -> IO ()
@@ -429,9 +429,9 @@ testEor state = do
     zeroFlag (flags state) `shouldBe` False
     carryFlag (flags state) `shouldBe` False
 
--- Checking EmulatorState for the "test_labelled_registers.asm"
-testLabelledRegisters :: EmulatorState -> IO ()
-testLabelledRegisters state = do
+-- Checking EmulatorState for the "test_labeled_registers.asm"
+testLabeledRegisters :: EmulatorState -> IO ()
+testLabeledRegisters state = do
     -- Registers
     let regValue = registers state ! 26
     regValue `shouldBe` 0x01
