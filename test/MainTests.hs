@@ -35,6 +35,11 @@ emulateProgramFromFile filepath checkingFunction = do
 -- Main function for testing
 main :: IO ()
 main = hspec $ describe "AVR Emulator E2E tests" $ do
+    -- Test 0: test_adiw.asm
+    it "should correctly emulate test_adiw.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_adiw.asm"
+        emulateProgramFromFile assemblyFilePath testAdiw
+
     -- Test 1: test_fibonacci.asm
     it "should correctly emulate fibonacci.asm and match expected state" $ do
         let assemblyFilePath = "test_files/fibonacci.asm"
@@ -165,11 +170,31 @@ main = hspec $ describe "AVR Emulator E2E tests" $ do
         let assemblyFilePath = "test_files/test_ld.asm"
         emulateProgramFromFile assemblyFilePath testLd
 
-    -- Test 27: test_adiw.asm
-    it "should correctly emulate test_adiw.asm and match expected state" $ do
-        let assemblyFilePath = "test_files/test_adiw.asm"
-        emulateProgramFromFile assemblyFilePath testAdiw
- 
+-- Checking EmulatorState for the "test_adiw.asm"
+testAdiw :: EmulatorState -> IO ()
+testAdiw state = do
+    -- Registers
+    let regValue = registers state ! 26
+    regValue `shouldBe` 0xff
+
+    let regValue = registers state ! 27
+    regValue `shouldBe` 0xbe
+
+    let regValue = registers state ! 30
+    regValue `shouldBe` 0x10
+
+    let regValue = registers state ! 31
+    regValue `shouldBe` 0x00
+
+    -- Status flags
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
 
 testBld:: EmulatorState -> IO()
 testBld state = do
@@ -184,8 +209,6 @@ testBld state = do
 
     let regValue = registers state ! 31
     regValue `shouldBe` 0xF0
-
-    
 
 testBclr :: EmulatorState -> IO ()
 testBclr state = do
@@ -839,31 +862,5 @@ testEof state = do
     signFlag (flags state) `shouldBe` True
     overflowFlag (flags state) `shouldBe` True
     negativeFlag (flags state) `shouldBe` False
-    zeroFlag (flags state) `shouldBe` False
-    carryFlag (flags state) `shouldBe` False
-
--- Checking EmulatorState for the "test_adiw.asm"
-testAdiw :: EmulatorState -> IO ()
-testAdiw state = do
-    -- Registers
-    let regValue = registers state ! 26
-    regValue `shouldBe` 0xff
-
-    let regValue = registers state ! 27
-    regValue `shouldBe` 0xbe
-
-    let regValue = registers state ! 30
-    regValue `shouldBe` 0x10
-
-    let regValue = registers state ! 31
-    regValue `shouldBe` 0x00
-
-    -- Status flags
-    interruptFlag (flags state) `shouldBe` False
-    tFlag (flags state) `shouldBe` False
-    halfCarryFlag (flags state) `shouldBe` False
-    signFlag (flags state) `shouldBe` True
-    overflowFlag (flags state) `shouldBe` False
-    negativeFlag (flags state) `shouldBe` True
     zeroFlag (flags state) `shouldBe` False
     carryFlag (flags state) `shouldBe` False
