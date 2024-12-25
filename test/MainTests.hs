@@ -140,11 +140,6 @@ main = hspec $ describe "AVR Emulator E2E tests" $ do
         let assemblyFilePath = "test_files/test_tst.asm"
         emulateProgramFromFile assemblyFilePath testTst
 
-    -- Test 21: test.asm
-    --it "should correctly emulate test.asm and match expected state" $ do
-    --    let assemblyFilePath = "test_files/test.asm"
-    --    emulateProgramFromFile assemblyFilePath testTest
-
     -- Test 22: bubblesort.asm
     it "should correctly emulate bubblesort.asm and match expected state" $ do
         let assemblyFilePath = "test_files/bubblesort.asm"
@@ -811,38 +806,6 @@ testTst state = do
     overflowFlag (flags state) `shouldBe` False
     negativeFlag (flags state) `shouldBe` True
     zeroFlag (flags state) `shouldBe` False
-    carryFlag (flags state) `shouldBe` False
-
--- Checking EmulatorState for the "test.asm"
-testTest :: EmulatorState -> IO ()
-testTest state = do
-    -- Registers
-    let regValue = registers state ! 16
-    regValue `shouldBe` 0x21
-
-    let regValue = registers state ! 17
-    regValue `shouldBe` 0x20
-
-    let regValue = registers state ! 18
-    regValue `shouldBe` 0xf0
-
-    let regValue = registers state ! 19
-    regValue `shouldBe` 0x40
-
-    let regValue = registers state ! 27
-    regValue `shouldBe` 0x4
-
-    -- Program counter
-    programCounter state `shouldBe` 46
-
-    -- Status flags
-    interruptFlag (flags state) `shouldBe` False
-    tFlag (flags state) `shouldBe` False
-    halfCarryFlag (flags state) `shouldBe` False
-    signFlag (flags state) `shouldBe` False
-    overflowFlag (flags state) `shouldBe` False
-    negativeFlag (flags state) `shouldBe` False
-    zeroFlag (flags state) `shouldBe` True
     carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "bubblesort.asm"
