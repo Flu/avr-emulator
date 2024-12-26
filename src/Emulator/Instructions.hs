@@ -223,7 +223,7 @@ andInstr oldStatus registers sp memory op1 op2 =
             carryFlag = carryFlag oldStatus,
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
-    in (updatedRegisters, updatedFlags, 0, sp, memory)
+    in (updatedRegisters, updatedFlags, 0, sp, updatedMemory)
 
 andi :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
 andi oldStatus registers sp memory op1 immediate =
@@ -401,14 +401,13 @@ brvs oldStatus registers sp memory relAddress =
         jumpAddress = if shouldJump then relAddress else 0
     in (registers, oldStatus, jumpAddress, sp, memory)
 
--- I cant figure out the magic behind this right now...
---TODO: change this to use memory setters
 call :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> Word16 -> (Registers, StatusFlags, Int, StackPointer, Memory)
 call oldStatus registers sp memory relAddress returnAddress =
     let (high, low) = (fromIntegral (returnAddress `shiftR` 8), fromIntegral (returnAddress .&. 0xFF))
-        updatedMemory = memory // [(fromIntegral sp, high),(fromIntegral (sp - 1), low)]
+        (updatedMemory, updatedRegisters) = setMemory memory registers (fromIntegral sp) high
+        (updatedMemory1, updatedRegisters1) = setMemory updatedMemory updatedRegisters (fromIntegral (sp - 1)) low
         newSp = sp - 2
-        in (registers, oldStatus, relAddress, newSp, updatedMemory)
+        in (updatedRegisters1, oldStatus, relAddress, newSp, updatedMemory1)
 
 cbr :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
 cbr status registers sp mem rb k = andi status registers sp mem rb (0xFF - k)
@@ -888,7 +887,7 @@ muls oldStatus registers sp memory op1 op2 =
         resultH = fromIntegral (result `shiftR` 8) :: Word8
         resultL = fromIntegral result :: Word8
         (updatedMemory, updatedRegisters) = setRegister memory registers 1 resultH
-        (updatedMemory1, updatedRegisters1) = setRegister memory registers 0 resultL
+        (updatedMemory1, updatedRegisters1) = setRegister updatedMemory updatedRegisters 0 resultL
         updatedFlags = StatusFlags {
             interruptFlag = interruptFlag oldStatus,
             tFlag = tFlag oldStatus,
