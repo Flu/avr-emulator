@@ -1,0 +1,3 @@
+; Compare R18 = 0x5C (01011100) with 0xA3 (10100011)
+LDI R18, 0x5C
+CPI R18, 0xA3

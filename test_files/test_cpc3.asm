@@ -1,0 +1,6 @@
+; Clear Carry, then compare 0x7F (01111111) with R20 = 0x7F (01111111)
+LDI R19, 0x7F
+LDI R20, 0x7F
+CLC
+SEZ
+CPC R19, R20
