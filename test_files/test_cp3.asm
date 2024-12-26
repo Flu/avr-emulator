@@ -1,0 +1,4 @@
+; Compare R16 = 0x70 (01110000) with R17 = 0x70 (01110000)
+LDI R16, 0x70
+LDI R17, 0x70
+CP R16, R17

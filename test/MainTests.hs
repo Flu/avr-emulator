@@ -35,142 +35,188 @@ emulateProgramFromFile filepath checkingFunction = do
 -- Main function for testing
 main :: IO ()
 main = hspec $ describe "AVR Emulator E2E tests" $ do
-    -- Test 0: test_adiw.asm
+    -- test_adiw.asm
     it "should correctly emulate test_adiw.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_adiw.asm"
         emulateProgramFromFile assemblyFilePath testAdiw
 
-    -- Test 1: test_fibonacci.asm
+    -- test_fibonacci.asm
     it "should correctly emulate fibonacci.asm and match expected state" $ do
         let assemblyFilePath = "test_files/fibonacci.asm"
         emulateProgramFromFile assemblyFilePath testFibonacci
 
-    -- Test 2: test_asr.asm
+    -- test_asr.asm
     it "should correctly emulate test_asr.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_asr.asm"
         emulateProgramFromFile assemblyFilePath testAsr
 
-    -- Test 3: test_brlo.asm
+    -- test_brlo.asm
     it "should correctly emulate test_brlo.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_brlo.asm"
         emulateProgramFromFile assemblyFilePath testBrlo
 
-    -- Test 4: test_brmi.asm
+    -- test_brmi.asm
     it "should correctly emulate test_brmi.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_brmi.asm"
         emulateProgramFromFile assemblyFilePath testBrmi
 
-    -- Test 5: test_call.asm
+    -- test_call.asm
     it "should correctly emulate test_call.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_call.asm"
         emulateProgramFromFile assemblyFilePath testCall
 
-    -- Test 6: test_clc.asm
+    -- test_clc.asm
     it "should correctly emulate test_clc.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_clc.asm"
         emulateProgramFromFile assemblyFilePath testClc
 
-    -- Test 7: test_clr.asm
+    -- test_clr.asm
     it "should correctly emulate test_clr.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_clr.asm"
         emulateProgramFromFile assemblyFilePath testClr
 
-    -- Test 8: test_clearing.asm
+    -- test_com.asm
+    it "should correctly emulate test_com.asm and match expected state" $ do
+        let assemblyFilePath = "test_files/test_com.asm"
+        emulateProgramFromFile assemblyFilePath testCom
+
+    -- CP instruction
+    it "should correctly emulate the CP instruction and match expected state" $ do
+        let assemblyFilePath = "test_files/test_cp1.asm"
+        emulateProgramFromFile assemblyFilePath testCp1
+
+        let assemblyFilePath = "test_files/test_cp2.asm"
+        emulateProgramFromFile assemblyFilePath testCp2
+
+        let assemblyFilePath = "test_files/test_cp3.asm"
+        emulateProgramFromFile assemblyFilePath testCp3
+
+    -- CPC instruction
+    it "should correctly emulate the CPC instruction and match expected state" $ do
+        let assemblyFilePath = "test_files/test_cpc1.asm"
+        emulateProgramFromFile assemblyFilePath testCpc1
+
+        let assemblyFilePath = "test_files/test_cpc2.asm"
+        emulateProgramFromFile assemblyFilePath testCpc2
+
+        let assemblyFilePath = "test_files/test_cpc3.asm"
+        emulateProgramFromFile assemblyFilePath testCpc3
+
+    -- CPI instruction
+    it "should correctly emulate the CPI instruction and match expected state" $ do
+        let assemblyFilePath = "test_files/test_cpi1.asm"
+        emulateProgramFromFile assemblyFilePath testCpi1
+
+        let assemblyFilePath = "test_files/test_cpi2.asm"
+        emulateProgramFromFile assemblyFilePath testCpi2
+
+        let assemblyFilePath = "test_files/test_cpi3.asm"
+        emulateProgramFromFile assemblyFilePath testCpi3
+
+    -- CPSE instruction
+    it "should correctly emulate the CPSE instruction and match expected state" $ do
+        let assemblyFilePath = "test_files/test_cpse1.asm"
+        emulateProgramFromFile assemblyFilePath testCpse1
+
+        let assemblyFilePath = "test_files/test_cpse2.asm"
+        emulateProgramFromFile assemblyFilePath testCpse2
+
+    -- test_clearing.asm
     it "should correctly emulate test_clearing.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_clearing.asm"
         emulateProgramFromFile assemblyFilePath testClearingFlags
 
-    -- Test 9: test_clr.asm
+    -- test_clr.asm
     it "should correctly emulate test_eor.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_eor.asm"
         emulateProgramFromFile assemblyFilePath testEor
 
-    -- Test 10: test_movw.asm
+    -- test_movw.asm
     it "should correctly emulate test_movw.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_movw.asm"
         emulateProgramFromFile assemblyFilePath testMovw
 
-    -- Test 11: test_mul.asm
+    -- test_mul.asm
     it "should correctly emulate test_mul.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_mul.asm"
         emulateProgramFromFile assemblyFilePath testMul
 
-    -- Test 12: test_or.asm
+    -- test_or.asm
     it "should correctly emulate test_or.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_or.asm"
         emulateProgramFromFile assemblyFilePath testOr
 
-    -- Test 13: test_push.asm
+    -- test_push.asm
     it "should correctly emulate test_push.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_push.asm"
         emulateProgramFromFile assemblyFilePath testPush
 
-    -- Test 14: test_rol_ror.asm
+    -- test_rol_ror.asm
     it "should correctly emulate test_rol_ror.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_rol_ror.asm"
         emulateProgramFromFile assemblyFilePath testRolRor
 
-    -- Test 15: test_sbc.asm
+    -- test_sbc.asm
     it "should correctly emulate test_sbc.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_sbc.asm"
         emulateProgramFromFile assemblyFilePath testSbc
 
-    -- Test 16: test_sbrs.asm
+    -- test_sbrs.asm
     it "should correctly emulate test_sbrs.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_sbrs.asm"
         emulateProgramFromFile assemblyFilePath testSbrs
 
-    -- Test 17: test_setting.asm
+    -- test_setting.asm
     it "should correctly emulate test_setting.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_setting.asm"
         emulateProgramFromFile assemblyFilePath testSettingFlags
 
-    -- Test 18: test_subi.asm
+    -- test_subi.asm
     it "should correctly emulate test_subi.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_subi.asm"
         emulateProgramFromFile assemblyFilePath testSubi
 
-    -- Test 19: test_swap.asm
+    -- test_swap.asm
     it "should correctly emulate test_swap.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_swap.asm"
         emulateProgramFromFile assemblyFilePath testSwap
 
-    -- Test 20: test_tst.asm
+    -- test_tst.asm
     it "should correctly emulate test_tst.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_tst.asm"
         emulateProgramFromFile assemblyFilePath testTst
 
-    -- Test 22: bubblesort.asm
+    -- bubblesort.asm
     it "should correctly emulate bubblesort.asm and match expected state" $ do
         let assemblyFilePath = "test_files/bubblesort.asm"
         emulateProgramFromFile assemblyFilePath testBubblesort
 
-    -- Test 23: test_eof.asm
+    -- test_eof.asm
     it "should correctly emulate test_eof.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_eof.asm"
         emulateProgramFromFile assemblyFilePath testEof
 
-    -- Test 24: test_bclr.asm
+    -- test_bclr.asm
     it "should correctly emulate test_bclr.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_bclr.asm"
         emulateProgramFromFile assemblyFilePath testBclr
 
-    -- Test 25: test_bld.asm
+    -- test_bld.asm
     it "should correctly emulate test_bld.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_bld.asm"
         emulateProgramFromFile assemblyFilePath testBld
 
-    -- Test 26: test_ld.asm
+    -- test_ld.asm
     it "should correctly emulate test_ld.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_ld.asm"
         emulateProgramFromFile assemblyFilePath testLd
 
-    -- Test 27: test_labeled_registers.asm
+    -- test_labeled_registers.asm
     it "Should correctly emulate test_labeled_registers.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_labeled_registers.asm"
         emulateProgramFromFile assemblyFilePath testLabeledRegisters
 
-    -- Test 28: test_ld.asm
+    -- test_ld.asm
     it "Should correctly emulate test_ld.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_ld.asm"
         emulateProgramFromFile assemblyFilePath testLd
@@ -201,8 +247,14 @@ testAdiw state = do
     zeroFlag (flags state) `shouldBe` False
     carryFlag (flags state) `shouldBe` False
 
+-- Checking EmulatorState for the "test_bld.asm"
 testBld:: EmulatorState -> IO()
 testBld state = do
+    -- Registers
+    let regValue = registers state ! 31
+    regValue `shouldBe` 0xf0
+
+    -- Status flags
     interruptFlag (flags state) `shouldBe` False
     tFlag (flags state) `shouldBe` True
     halfCarryFlag (flags state) `shouldBe` False
@@ -212,11 +264,10 @@ testBld state = do
     zeroFlag (flags state) `shouldBe` False
     carryFlag (flags state) `shouldBe` False
 
-    let regValue = registers state ! 31
-    regValue `shouldBe` 0xF0
-
+-- Checking EmulatorState for the "test_bclr.asm"
 testBclr :: EmulatorState -> IO ()
 testBclr state = do
+    -- Status flags
     interruptFlag (flags state) `shouldBe` False
     tFlag (flags state) `shouldBe` False
     halfCarryFlag (flags state) `shouldBe` False
@@ -412,6 +463,227 @@ testClr state = do
     overflowFlag (flags state) `shouldBe` False
     negativeFlag (flags state) `shouldBe` False
     zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
+
+-- Checking EmulatorState for the "test_adiw.asm"
+testCom :: EmulatorState -> IO ()
+testCom state = do
+    -- Registers
+    let regValue = registers state ! 16
+    regValue `shouldBe` 0xba
+
+    let regValue = registers state ! 17
+    regValue `shouldBe` 0x7f
+
+    let regValue = registers state ! 18
+    regValue `shouldBe` 0x0c
+
+    let regValue = registers state ! 19
+    regValue `shouldBe` 0xff
+
+    -- Status flags
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` True
+
+-- Checking EmulatorState for the CP instruction
+testCp1 :: EmulatorState -> IO ()
+testCp1 state = do
+    -- Registers
+    let regValue = registers state ! 16
+    regValue `shouldBe` 0x8f
+
+    let regValue = registers state ! 17
+    regValue `shouldBe` 0x70
+
+    -- Status flags
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` True
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
+    
+-- Checking EmulatorState for the CP instruction
+testCp2 :: EmulatorState -> IO ()
+testCp2 state = do
+    -- Registers
+    let regValue = registers state ! 16
+    regValue `shouldBe` 0x70
+
+    let regValue = registers state ! 17
+    regValue `shouldBe` 0x8f
+
+    -- Status flags
+    halfCarryFlag (flags state) `shouldBe` True
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` True
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` True
+
+-- Checking EmulatorState for the CP instruction
+testCp3 :: EmulatorState -> IO ()
+testCp3 state = do
+    -- Registers
+    let regValue = registers state ! 16
+    regValue `shouldBe` 0x70
+
+    let regValue = registers state ! 17
+    regValue `shouldBe` 0x70
+
+    -- Status flags
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
+
+-- Checking EmulatorState for the CPC instruction
+testCpc1 :: EmulatorState -> IO ()
+testCpc1 state = do
+    -- Registers
+    let regValue = registers state ! 19
+    regValue `shouldBe` 0x7f
+
+    let regValue = registers state ! 20
+    regValue `shouldBe` 0x80
+
+    -- Status flags
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` True
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` True
+    
+-- Checking EmulatorState for the CPC instruction
+testCpc2 :: EmulatorState -> IO ()
+testCpc2 state = do
+    -- Registers
+    let regValue = registers state ! 19
+    regValue `shouldBe` 0x80
+
+    let regValue = registers state ! 20
+    regValue `shouldBe` 0x7f
+
+    -- Status flags
+    halfCarryFlag (flags state) `shouldBe` True
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` True
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
+
+-- Checking EmulatorState for the CPC instruction
+testCpc3 :: EmulatorState -> IO ()
+testCpc3 state = do
+    -- Registers
+    let regValue = registers state ! 19
+    regValue `shouldBe` 0x7f
+
+    let regValue = registers state ! 20
+    regValue `shouldBe` 0x7f
+
+    -- Status flags
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
+
+-- Checking EmulatorState for the CP instruction
+testCpi1 :: EmulatorState -> IO ()
+testCpi1 state = do
+    -- Registers
+    let regValue = registers state ! 18
+    regValue `shouldBe` 0xa3
+
+    -- Status flags
+    halfCarryFlag (flags state) `shouldBe` True
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` True
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
+    
+-- Checking EmulatorState for the CP instruction
+testCpi2 :: EmulatorState -> IO ()
+testCpi2 state = do
+    -- Registers
+    let regValue = registers state ! 18
+    regValue `shouldBe` 0x5c
+
+    -- Status flags
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` True
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` True
+
+-- Checking EmulatorState for the CP instruction
+testCpi3 :: EmulatorState -> IO ()
+testCpi3 state = do
+    -- Registers
+    let regValue = registers state ! 18
+    regValue `shouldBe` 0xa3
+
+    -- Status flags
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
+
+-- Checking EmulatorState for the CPSE instruction
+testCpse1 :: EmulatorState -> IO ()
+testCpse1 state = do
+    -- Registers
+    let regValue = registers state ! 16
+    regValue `shouldBe` 0x00
+
+    let regValue = registers state ! 21
+    regValue `shouldBe` 0x55
+
+    let regValue = registers state ! 22
+    regValue `shouldBe` 0xaa
+
+    -- Status flags
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
+    carryFlag (flags state) `shouldBe` False
+    
+-- Checking EmulatorState for the CPSE instruction
+testCpse2 :: EmulatorState -> IO ()
+testCpse2 state = do
+    -- Registers
+    let regValue = registers state ! 16
+    regValue `shouldBe` 0x00
+
+    let regValue = registers state ! 21
+    regValue `shouldBe` 0xaa
+
+    let regValue = registers state ! 22
+    regValue `shouldBe` 0xaa
+
+    -- Status flags
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` False
     carryFlag (flags state) `shouldBe` False
 
 -- Checking EmulatorState for the "test_eor.asm"
