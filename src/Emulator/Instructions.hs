@@ -723,7 +723,7 @@ ld oldStatus registers sp memory op1 "Y+" =
         yHigh = fromIntegral (newYRegister `shiftR` 8) :: Word8
         yLow = fromIntegral newYRegister :: Word8
         (updatedMemory, updatedRegisters) = setRegister memory registers rdIndex (getMemory memory (fromIntegral address16b))
-        (updatedMemory1, updatedRegisters1) = setRegisters updatedMemory updatedRegisters [(29, yHigh) (28, yLow)]
+        (updatedMemory1, updatedRegisters1) = setRegisters updatedMemory updatedRegisters [(29, yHigh), (28, yLow)]
     in (updatedRegisters1, oldStatus, 0, sp, updatedMemory1)
 
 ld oldStatus registers sp memory op1 "-Y" =
