@@ -404,10 +404,9 @@ brvs oldStatus registers sp memory relAddress =
 call :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> Word16 -> (Registers, StatusFlags, Int, StackPointer, Memory)
 call oldStatus registers sp memory relAddress returnAddress =
     let (high, low) = (fromIntegral (returnAddress `shiftR` 8), fromIntegral (returnAddress .&. 0xFF))
-        (updatedMemory, updatedRegisters) = setMemory memory registers (fromIntegral sp) high
-        (updatedMemory1, updatedRegisters1) = setMemory updatedMemory updatedRegisters (fromIntegral (sp - 1)) low
+        (updatedMemory, updatedRegisters) = setMemoryValues memory registers [((fromIntegral sp), high), ((fromIntegral (sp - 1)), low)]
         newSp = sp - 2
-        in (updatedRegisters1, oldStatus, relAddress, newSp, updatedMemory1)
+        in (updatedRegisters, oldStatus, relAddress, newSp, updatedMemory)
 
 cbr :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
 cbr status registers sp mem rb k = andi status registers sp mem rb (0xFF - k)
@@ -1195,9 +1194,8 @@ st oldStatus registers sp memory "X+" op2 =
         newXRegister = address16b + 1
         xHigh = fromIntegral (newXRegister `shiftR` 8) :: Word8
         xLow = fromIntegral newXRegister :: Word8
-        (updatedMemory1, updatedRegisters1) = setRegister updatedMemory updatedRegisters 27 xHigh
-        (updatedMemory2, updatedRegisters2) = setRegister updatedMemory1 updatedRegisters1 26 xLow
-    in (updatedRegisters2, oldStatus, 0, sp, updatedMemory2)
+        (updatedMemory1, updatedRegisters1) = setRegisters updatedMemory updatedRegisters [(27, xHigh), (26, xLow)]
+    in (updatedRegisters1, oldStatus, 0, sp, updatedMemory1)
 
 st oldStatus registers sp memory "-X" op2 =
     let rrIndex = fromIntegral op2
@@ -1208,9 +1206,8 @@ st oldStatus registers sp memory "-X" op2 =
         xHigh = fromIntegral (newXRegister `shiftR` 8) :: Word8
         xLow = fromIntegral newXRegister :: Word8
         updatedRegisters = registers // [(27, xHigh), (26, xLow)]
-        (updatedMemory1, updatedRegisters1) = setRegister updatedMemory updatedRegisters 27 xHigh
-        (updatedMemory2, updatedRegisters2) = setRegister updatedMemory1 updatedRegisters1 26 xLow
-    in (updatedRegisters2, oldStatus, 0, sp, updatedMemory2)
+        (updatedMemory1, updatedRegisters1) = setRegisters updatedMemory updatedRegisters [(27, xHigh), (26,xLow)] 
+    in (updatedRegisters1, oldStatus, 0, sp, updatedMemory1)
 st oldStatus registers sp memory "Y" op2 =
     let rrIndex = fromIntegral op2
         rr = getRegister registers rrIndex
@@ -1226,9 +1223,8 @@ st oldStatus registers sp memory "Y+" op2 =
         newYRegister = address16b + 1
         yHigh = fromIntegral (newYRegister `shiftR` 8) :: Word8
         yLow = fromIntegral newYRegister :: Word8
-        (updatedMemory1, updatedRegisters1) = setRegister updatedMemory updatedRegisters 29 yHigh
-        (updatedMemory2, updatedRegisters2) = setRegister updatedMemory1 updatedRegisters1 28 yLow
-    in (updatedRegisters2, oldStatus, 0, sp, updatedMemory2)
+        (updatedMemory1, updatedRegisters1) = setRegisters updatedMemory updatedRegisters [(29, yHigh), (28, yLow)]
+    in (updatedRegisters1, oldStatus, 0, sp, updatedMemory1)
 
 st oldStatus registers sp memory "-Y" op2 =
     let rrIndex = fromIntegral op2

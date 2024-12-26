@@ -2,6 +2,7 @@ module Emulator.State where
 
 import Data.Array
 import Data.Binary (Word8, Word16)
+import Data.List.NonEmpty (NonEmpty ((:|)))
 
 type Register = Word8               -- ^ Registers are 1 byte in AVR processors
 type Label = String                 -- ^ Labels as they come from parsing
@@ -39,6 +40,13 @@ setMemory memory registers memoryAddress value
   |  0 <= memoryAddress && memoryAddress < 32  = (memory // [(memoryAddress, value)], registers // [(memoryAddress, value)])
   | otherwise = (memory // [(memoryAddress, value)], registers)
 
+setMemoryValues :: Memory -> Registers -> [(Int,Word8)] -> (Memory, Registers)
+setMemoryValues memory registers (x:xs) = loop (memory, registers) (x :| xs)
+    where
+        loop :: (Memory, Registers) -> NonEmpty (Int,Word8) -> (Memory, Registers)
+        loop (memory, registers) (x :| []) = setMemory memory registers (fst x) (snd x)
+        loop (memory, registers) (x :| y:ys) = loop (setMemory memory registers (fst x) (snd x)) (y :| ys)
+
 getRegister :: Registers -> Int -> Word8
 getRegister registers registerIndex = registers ! registerIndex
 
@@ -46,3 +54,10 @@ setRegister :: Memory -> Registers -> Int -> Word8 -> (Memory, Registers)
 setRegister memory registers registerIndex value
     | 0 <= registerIndex && registerIndex < 32 = (memory // [(registerIndex, value)], registers // [(registerIndex, value)])
     | otherwise = error "something has gone terribly wrong, register out of bounds"
+
+setRegisters :: Memory -> Registers -> [(Int,Word8)] -> (Memory, Registers)
+setRegisters memory registers (x:xs) = loop (memory, registers) (x :| xs)
+    where
+        loop :: (Memory, Registers) -> NonEmpty (Int,Word8) -> (Memory, Registers)
+        loop (memory, registers) (x :| []) = setRegister memory registers (fst x) (snd x)
+        loop (memory, registers) (x :| y:ys) = loop (setRegister memory registers (fst x) (snd x)) (y :| ys)
