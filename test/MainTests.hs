@@ -771,16 +771,16 @@ testLd state = do
     regValue `shouldBe` 0x26
 
     -- Memory
-    let memValue = memory state ! 5
+    let memValue = memory state ! 128
     memValue `shouldBe` 0x05
 
-    let memValue = memory state ! 6
+    let memValue = memory state ! 129
     memValue `shouldBe` 0x06
 
-    let memValue = memory state ! 21
+    let memValue = memory state ! 144
     memValue `shouldBe` 0x15
 
-    let memValue = memory state ! 22
+    let memValue = memory state ! 145
     memValue `shouldBe` 0x16
 
     let memValue = memory state ! 37

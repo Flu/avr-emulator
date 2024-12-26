@@ -290,7 +290,7 @@ bld flags registers sp memory rd b =
         updatedValue
             | t = setBit value b
             | otherwise = clearBit value b
-        (updatedRegisters, updatedMemory) = setRegister memory registers rdIndex updatedValue
+        (updatedMemory, updatedRegisters) = setRegister memory registers rdIndex updatedValue
     in (updatedRegisters, flags, 0, sp, updatedMemory)
 
 brcc :: StatusFlags -> Registers -> StackPointer -> Memory -> Int -> (Registers, StatusFlags, Int, StackPointer, Memory)
@@ -709,7 +709,7 @@ ld oldStatus registers sp memory op1 "-X" =
         newXRegister = address16b - 1
         xHigh = fromIntegral (newXRegister `shiftR` 8) :: Word8
         xLow = fromIntegral newXRegister :: Word8
-        (updatedRegisters, updatedMemory) = setRegister memory registers rdIndex (getMemory memory (fromIntegral newXRegister))
+        (updatedMemory, updatedRegisters) = setRegister memory registers rdIndex (getMemory memory (fromIntegral newXRegister))
         (updatedMemory1, updatedRegisters1) = setRegister updatedMemory updatedRegisters 27 xHigh
         (updatedMemory2, updatedRegisters2) = setRegister updatedMemory1 updatedRegisters1 26 xLow
     in (updatedRegisters2, oldStatus, 0, sp, updatedMemory2)

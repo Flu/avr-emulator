@@ -37,7 +37,7 @@ getMemory memory memoryAddress =  memory ! memoryAddress
 
 setMemory :: Memory -> Registers -> Int -> Word8 -> (Memory, Registers)
 setMemory memory registers memoryAddress value
-  |  0 <= memoryAddress && memoryAddress < 32  = (memory // [(memoryAddress, value)], registers // [(memoryAddress, value)])
+  | memoryAddress >= 0 && memoryAddress < 32  = (memory // [(memoryAddress, value)], registers // [(memoryAddress, value)])
   | otherwise = (memory // [(memoryAddress, value)], registers)
 
 setMemoryValues :: Memory -> Registers -> [(Int,Word8)] -> (Memory, Registers)
