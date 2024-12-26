@@ -11,7 +11,6 @@ type Memory = Array Int Word8       -- ^ Memory is an array of Word8 as well, bu
 type StackPointer = Word16          -- ^ The stack pointer is also 2 bytes, since it points to a location in SRAM
 
 -- Data type for holding everything about the current state of the emulator
--- TODO: registers should be part of memory, mapped to the first 32 bytes of memory
 data EmulatorState = EmulatorState {
     registers :: !Registers,             -- ^ General purpose registers R0 through R31
     flags :: !StatusFlags,               -- ^ SREG or status flags for keeping track of certain conditions 
@@ -31,3 +30,19 @@ data StatusFlags = StatusFlags {
     zeroFlag :: Bool,       -- ^ Zero flag
     carryFlag :: Bool       -- ^ Carry flag
 } deriving (Show)
+
+getMemory :: Memory -> Int -> Word8
+getMemory memory memoryAddress =  memory ! memoryAddress
+
+setMemory :: Memory -> Registers -> Int -> Word8 -> (Memory, Registers)
+setMemory memory registers memoryAddress value
+  |  0 <= memoryAddress && memoryAddress < 32  = (memory // [(memoryAddress, value)], registers // [(memoryAddress, value)])
+  | otherwise = (memory // [(memoryAddress, value)], registers)
+
+getRegister :: Registers -> Int -> Word8
+getRegister registers registerIndex = registers ! registerIndex
+
+setRegister :: Memory -> Registers -> Int -> Word8 -> (Memory, Registers)
+setRegister memory registers registerIndex value
+    | 0 <= registerIndex && registerIndex < 32 = (memory // [(registerIndex, value)], registers // [(registerIndex, value)])
+    | otherwise = error "something has gone terribly wrong, register out of bounds"
