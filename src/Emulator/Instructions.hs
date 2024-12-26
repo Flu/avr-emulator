@@ -124,7 +124,7 @@ data Instruction
     | SUBI Register Word8
     | SWAP Register
     | TST Register
-    deriving (Show)
+    deriving (Show, Eq)
 
 -- /////////////////////////////////////////////////////
 -- Instruction implementations

@@ -21,6 +21,7 @@ emulateProgramFromFile :: FilePath -> (EmulatorState -> IO ()) -> IO ()
 emulateProgramFromFile filepath checkingFunction = do
     -- Parse assembly file
     maybeInstructions <- assembleProgramFromFile filepath
+    maybeInstructions `shouldNotBe` Nothing
     case maybeInstructions of
         Just instructions -> do
             -- Emulate the parsed program
