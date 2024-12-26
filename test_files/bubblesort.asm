@@ -6,36 +6,42 @@
 _main:
 
     ; Start by filling the memory with random numbers
-    LDI R26, 0x0  ; Start address of the list
+    LDI R26, 0x20  ; Start address of the list
     LDI R27, 0x0
+
     LDI R16, 0xa7 ; Seed for the PRNG
     LDI R17, 0x45 ; Feedback constant for the PRNG
-    LDI R8, 0xff  ; Register pair for how many random values we want
-    LDI R9, 0x00
+
+    LDI R25, 0xff
+    MOV R8, R25  ; Register pair for how many random values we want
+    CLR R9
+
     LDI R18, 0x01 ; Register pair for subtracting from R9:R8
     LDI R19, 0x00
 
-    CALL prng_loop
-    CALL BUBBLE_SORT
-    JMP END_OF_PROGRAM
+    CALL func_fill_array
+    CALL func_bubblesort
+    JMP end_of_program
 
 
-prng_loop:
+func_fill_array:
     call PRNG
     ST X+, R16
     INC R16
     SUB R8, R18 ; decrement loop counter
     SBC R9, R19
-    BRNE prng_loop
+    BRNE func_fill_array
 
-    LDI R12, 0x00
-    LDI R11, 0x00
+    CLR R21
+    LDI R25, 0x20
+    MOV R11, R25
 
     LDI R26, 0x00
     LDI R27, 0x00
     
-    LDI R8, 0xff
-    LDI R9, 0x00
+    LDI R25, 0xff
+    MOV R8, R25
+    CLR R9
 
     RET
 
@@ -43,7 +49,7 @@ prng_loop:
 ; R12:11 - start address of the list to sort
 ; R9:8 - length of the list
 ; No return value
-BUBBLE_SORT:
+func_bubblesort:
     ; Save registers we are going to use
     PUSH R19
     PUSH R18
@@ -136,5 +142,5 @@ PRNG_done:
 
     ret                     ; Return to caller with R16 as the new pseudo-random number
 
-END_OF_PROGRAM:
+end_of_program:
     NOP
