@@ -136,7 +136,7 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - [x] `CALL` and `RET` instructions.
   - [x] Maybe (?) move to MegaParsec for input parsing.
   - [x] Implement nicer formatting for the emulator state after the program ended.
-  - [ ] Registers should be mapped to the first 32 memory locations.
+  - [x] Registers should be mapped to the first 32 memory locations.
   - [x] Fix Parser returning an error when last line of input file is an empty line or a comment.
   - [x] Implementing step by step emulation of instructions.
   - [x] Implement Parser support for lowercase instructions.
