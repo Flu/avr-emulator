@@ -193,24 +193,34 @@ toHex4 x = let h = showHex x "" in replicate (4 - length h) '0' ++ h
 toHex2 :: Word8 -> String
 toHex2 x = let h = showHex x "" in replicate (2 - length h) '0' ++ h
 
+-- | Converts an Int to a zero-padded hex string of length 4 (e.g., "0000")
+toHex4WithPrefix :: Int -> String
+toHex4WithPrefix x = "0x" ++ toHex4 x
+
+-- | Converts a Word8 to a zero-padded hex string of length 2 (e.g., "00")
+toHex2WithPrefix :: Word8 -> String
+toHex2WithPrefix x = "0x" ++ toHex2 x
+
 {- | Prints a single row of memory, starting with the address of the first byte to be printed and then a number of bytes
-depending on the values given. The bytes are grouped 2-by-2 and colored if non-zero 
+depending on the values given. The bytes are grouped 2-by-2 and colored if non-zero.
 -}
-printRow :: Int -> [Word8] -> IO ()
+printRow :: Int -> [Maybe Word8] -> IO ()
 printRow addr values = do
     putStr $ "0x" ++ toHex4 addr ++ "    " -- Print the address
     mapM_ printPair (groupPairs values)    -- Print the byte pair for every pair after groupinh
     putStrLn ""
   where
     -- | Groups the list of bytes into pairs
-    groupPairs :: [Word8] -> [[Word8]]
+    groupPairs :: [Maybe Word8] -> [[Maybe Word8]]
     groupPairs []       = []
     groupPairs (x:y:xs) = [x, y] : groupPairs xs
     groupPairs [x]      = [[x]] -- Handle odd-sized memory gracefully
 
     -- | Prints a single pair of bytes, with non-zero highlighting
-    printPair :: [Word8] -> IO ()
-    printPair [a, b] = do
+    printPair :: [Maybe Word8] -> IO ()
+    printPair [Nothing, Nothing] = putStr "     "
+    printPair [Nothing] = putStr "  "
+    printPair [Just a, Just b] = do
         if a /= 0 || b /= 0 -- If either of the bytes is not zero, color the whole group
             then do
                 setSGR [SetColor Foreground Vivid Red]
@@ -219,7 +229,25 @@ printRow addr values = do
             else            -- Else don't color them
                 putStr $ toHex2 a ++ toHex2 b
         putStr " "
-    printPair [a] = do -- Handle the last unpaired byte if any
+    printPair [Just a, Nothing] = do
+        if a /= 0
+            then do
+                setSGR [SetColor Foreground Vivid Red]
+                putStr $ toHex2 a ++ "  "
+                setSGR [Reset]
+            else
+                putStr $ toHex2 a ++ "  "
+        putStr " "
+    printPair [Nothing, Just b] = do
+        if b /= 0
+            then do
+                setSGR [SetColor Foreground Vivid Red]
+                putStr $ "  " ++ toHex2 b
+                setSGR [Reset]
+            else
+                putStr $ "  " ++ toHex2 b
+        putStr " "
+    printPair [Just a] = do -- Handle the last unpaired byte if any
         let pair = toHex2 a ++ "00"
         if a /= 0   -- If either of the bytes is not zero, color the whole group
             then do
@@ -235,11 +263,40 @@ prettyPrintMemory :: Memory -> IO ()
 prettyPrintMemory mem = do
     let (_, end) = bounds mem -- Get the length of the memory in bytes
         -- Get every 16th address and pair it with the next 16 bytes of memory
-        rows = [(addr, [mem ! i | i <- [addr .. min (addr + 15) end]]) | addr <- [0, 16 .. end]]
+        rows = [(addr, [Just (mem ! i) | i <- [addr .. min (addr + 15) end]]) | addr <- [0, 16 .. end]]
     -- Because printRow needs two arguments, we need to uncurry it so it can receive a tuple instead
     -- Then we map over all elements of rows (the tuples) and give them one by one to printRow, which formattes them
     -- and prints them
     mapM_ (uncurry printRow) rows
+
+-- | Pretty-prints the memory starting with address `start`
+prettyPrintMemoryFromStart :: Memory -> Int -> IO ()
+prettyPrintMemoryFromStart mem start = do
+    let (_, end) = bounds mem -- Get the length of the memory in bytes
+        -- Get every 16th address and pair it with the next 16 bytes of memory
+        floorStartTo16 = start - (start `mod` 16) -- Get the closest multiple of 16 going down
+        nothings = replicate (start `mod` 16) Nothing
+        firstRow = (floorStartTo16, nothings ++ [Just (mem ! i) | i <- [floorStartTo16 .. min (floorStartTo16 + 15) end], i >= start])
+        rows = [(addr, [Just (mem ! i) | i <- [addr .. min (addr + 15) end]]) | addr <- [0, 16 .. end], addr > start]
+    -- Because printRow needs two arguments, we need to uncurry it so it can receive a tuple instead
+    -- Then we map over all elements of rows (the tuples) and give them one by one to printRow, which formattes them
+    -- and prints them
+    mapM_ (uncurry printRow) (firstRow:rows)
+
+
+-- | Pretty-prints the memory starting with address `start`
+prettyPrintMemoryFromStartToEnd :: Memory -> Int -> Int -> IO ()
+prettyPrintMemoryFromStartToEnd mem start end = do
+    let (_, endBound) = bounds mem -- Get the length of the memory in bytes
+        -- Get every 16th address and pair it with the next 16 bytes of memory
+        floorStartTo16 = start - (start `mod` 16) -- Get the closest multiple of 16 going down
+        startNothings = replicate (start `mod` 16) Nothing -- Generate a list of Nothings for the first row
+        firstRow = (floorStartTo16, startNothings ++ [Just (mem ! i) | i <- [floorStartTo16 .. min (floorStartTo16 + 15) endBound], i >= start])
+        rows = [(addr, [Just (mem ! i) | i <- [addr .. min (addr + 15) endBound]]) | addr <- [0, 16 .. endBound], addr > start && addr < end]
+    -- Because printRow needs two arguments, we need to uncurry it so it can receive a tuple instead
+    -- Then we map over all elements of rows (the tuples) and give them one by one to printRow, which formattes them
+    -- and prints them
+    mapM_ (uncurry printRow) (firstRow:rows)
 
 -- | Pretty-prints a portion of the program memory around an address
 -- | Parameters are: the array of instructions, the address, and N
