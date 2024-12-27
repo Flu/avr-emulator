@@ -39,7 +39,7 @@ _main:
 
 
 func_fill_array:
-    call PRNG
+    CALL PRNG
     ST X+, R16
     INC R16
     SUB R8, R18 ; decrement loop counter
@@ -128,22 +128,22 @@ NO_SWAP:
 ; Clobbers: R18, carry flag
 ; Preserves: All other registers
 PRNG:
-    push    R17             ; Save k
-    push    R18             ; Save temporary register
+    PUSH    R17             ; Save k
+    PUSH    R18             ; Save temporary register
 
-    mov     R18, R16        ; Copy seed to R18 for manipulation
+    MOV     R18, R16        ; Copy seed to R18 for manipulation
 
-    lsr     R16             ; Logical shift right (LSB goes into carry)
-    brcc    PRNG_done       ; If no carry, no need for feedback XOR
+    LSR     R16             ; Logical shift right (LSB goes into carry)
+    BRCC    PRNG_done       ; If no carry, no need for feedback XOR
 
     ; XOR feedback based on carry (i.e., if LSB was 1)
-    eor     R16, R17        ; XOR seed with feedback constant k
+    EOR     R16, R17        ; XOR seed with feedback constant k
 
 PRNG_done:
-    pop     R18             ; Restore R18
-    pop     R17             ; Restore k
+    POP     R18             ; Restore R18
+    POP     R17             ; Restore k
 
-    ret                     ; Return to caller with R16 as the new pseudo-random number
+    RET                     ; Return to caller with R16 as the new pseudo-random number
 
 end_of_program:
     NOP
