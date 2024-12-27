@@ -6,8 +6,8 @@
 _main:
 
     ; Start by filling the memory with random numbers
-    LDI R26, 0x20  ; Start address of the list
-    LDI R27, 0x0
+    LDI R26, 0x00  ; Start address of the list
+    LDI R27, 0x01
 
     LDI R16, 0xa7 ; Seed for the PRNG
     LDI R17, 0x45 ; Feedback constant for the PRNG
@@ -20,6 +20,20 @@ _main:
     LDI R19, 0x00
 
     CALL func_fill_array
+
+    ; Prepare registers for bubblesort - R12:11 for the start of the list, R26:27 for traversing the list
+    ; and R8:9 for the length of the list
+    CLR R11
+    LDI R25, 0x01
+    MOV R12, R25
+
+    LDI R26, 0x00
+    LDI R27, 0x00
+    
+    LDI R25, 0xff
+    MOV R8, R25
+    CLR R9
+
     CALL func_bubblesort
     JMP end_of_program
 
@@ -31,17 +45,6 @@ func_fill_array:
     SUB R8, R18 ; decrement loop counter
     SBC R9, R19
     BRNE func_fill_array
-
-    CLR R21
-    LDI R25, 0x20
-    MOV R11, R25
-
-    LDI R26, 0x00
-    LDI R27, 0x00
-    
-    LDI R25, 0xff
-    MOV R8, R25
-    CLR R9
 
     RET
 

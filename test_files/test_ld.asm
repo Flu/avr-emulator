@@ -3,7 +3,7 @@
     ;; MIT License
 
     clr r27
-    ldi r26, 0x05               ; Point X register to 0x0005
+    ldi r26, 0x80               ; Point X register to 0x0080
     ldi r0, 0x05                ; Set r0 to 0x27
     st X+, r0                   ; Load 0x27 into memory address 0x0005
     ldi r0, 0x06
@@ -14,7 +14,7 @@
     ld r2, X                    ; Load 0x27 into r1
 
     clr r29
-    ldi r28, 0x15
+    ldi r28, 0x90
     ldi r3, 0x15
     st Y+, r3
     ldi r3, 0x16
