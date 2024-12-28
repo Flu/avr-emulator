@@ -11,7 +11,6 @@ import Data.Void
 import Data.Binary
 import Data.Char
 import Numeric (readHex)
-import Data.Maybe (catMaybes)
 
 import Emulator
 
@@ -612,115 +611,117 @@ pTST = do
 
 -- Main parsers
 
-instructionParser :: Parser (Maybe Instruction)
+instructionParser :: Parser (Instruction)
 instructionParser = do
     space
     choice
         [
-        try (Just <$> pADC),
-        try (Just <$> pADD),
-        try (Just <$> pADIW),
-        try (Just <$> pAND),
-        try (Just <$> pANDI),
-        try (Just <$> pASR),
-        try (Just <$> pBCLR),
-        try (Just <$> pBLD),
-        try (Just <$> pBRCC),
-        try (Just <$> pBRCS),
-        try (Just <$> pBREQ),
-        try (Just <$> pBRGE),
-        try (Just <$> pBRHC),
-        try (Just <$> pBRHS),
-        try (Just <$> pBRID),
-        try (Just <$> pBRIE),
-        try (Just <$> pBRLO),
-        try (Just <$> pBRLT),
-        try (Just <$> pBRMI),
-        try (Just <$> pBRNE),
-        try (Just <$> pBRPL),
-        try (Just <$> pBRSH),
-        try (Just <$> pBRTC),
-        try (Just <$> pBRTS),
-        try (Just <$> pBRVC),
-        try (Just <$> pBRVS),
-        try (Just <$> pCALL),
-        try (Just <$> pCBR),
-        try (Just <$> pCLC),
-        try (Just <$> pCLH),
-        try (Just <$> pCLI),
-        try (Just <$> pCLN),
-        try (Just <$> pCLR),
-        try (Just <$> pCLS),
-        try (Just <$> pCLT),
-        try (Just <$> pCLV),
-        try (Just <$> pCLZ),
-        try (Just <$> pCOM),
-        try (Just <$> pCP),
-        try (Just <$> pCPC),
-        try (Just <$> pCPI),
-        try (Just <$> pCPSE),
-        try (Just <$> pDEC),
-        try (Just <$> pEOR),
-        try (Just <$> pINC),
-        try (Just <$> pJMP),
-        try (Just <$> pLD),
-        try (Just <$> pLabel),
-        try (Just <$> pLDI),
-        try (Just <$> pLDS),
-        try (Just <$> pLSL),
-        try (Just <$> pLSR),
-        try (Just <$> pMOV),
-        try (Just <$> pMOVW),
-        try (Just <$> pMUL),
-        try (Just <$> pMULS),
-        try (Just <$> pNEG),
-        try (Just <$> pNOP),
-        try (Just <$> pOR),
-        try (Just <$> pORI),
-        try (Just <$> pPOP),
-        try (Just <$> pPUSH),
-        try (Just <$> pRET),
-        try (Just <$> pROL),
-        try (Just <$> pROR),
-        try (Just <$> pSBC),
-        try (Just <$> pSBRC),
-        try (Just <$> pSBRS),
-        try (Just <$> pSEC),
-        try (Just <$> pSEH),
-        try (Just <$> pSEI),
-        try (Just <$> pSEN),
-        try (Just <$> pSER),
-        try (Just <$> pSES),
-        try (Just <$> pSET),
-        try (Just <$> pSEV),
-        try (Just <$> pSEZ),
-        try (Just <$> pST),
-        try (Just <$> pSTS),
-        try (Just <$> pSUB),
-        try (Just <$> pSUBI),
-        try (Just <$> pSWAP),
-        try (Just <$> pTST)
+        pADC,
+        pADD,
+        pADIW,
+        pANDI,
+        pAND,
+        pASR,
+        pBCLR,
+        pBLD,
+        pBRCC,
+        pBRCS,
+        pBREQ,
+        pBRGE,
+        pBRHC,
+        pBRHS,
+        pBRID,
+        pBRIE,
+        pBRLO,
+        pBRLT,
+        pBRMI,
+        pBRNE,
+        pBRPL,
+        pBRSH,
+        pBRTC,
+        pBRTS,
+        pBRVC,
+        pBRVS,
+        pCALL,
+        pCBR,
+        pCLC,
+        pCLH,
+        pCLI,
+        pCLN,
+        pCLR,
+        pCLS,
+        pCLT,
+        pCLV,
+        pCLZ,
+        pCOM,
+        pCPSE,
+        pCPC,
+        pCPI,
+        pCP,
+        pDEC,
+        pEOR,
+        pINC,
+        pJMP,
+        pLDI,
+        pLDS,
+        pLD,
+        pLSL,
+        pLSR,
+        pMOVW,
+        pMOV,
+        pMULS,
+        pMUL,
+        pNEG,
+        pNOP,
+        pORI,
+        pOR,
+        pPOP,
+        pPUSH,
+        pRET,
+        pROL,
+        pROR,
+        pSBC,
+        pSBRC,
+        pSBRS,
+        pSEC,
+        pSEH,
+        pSEI,
+        pSEN,
+        pSER,
+        pSES,
+        pSET,
+        pSEV,
+        pSEZ,
+        pSTS,
+        pST,
+        pSUBI,
+        pSUB,
+        pSWAP,
+        pTST
         ]
 
 -- Parser for comments
-commentParser :: Parser (Maybe Instruction)
+commentParser :: Parser (Instruction)
 commentParser = do
     _ <- char ';'  -- Skip the comment start
     choice [
         try (manyTill printChar eol),
         manyTill printChar eof]  -- Consume the comment content
-    return Nothing  -- Always return Nothing for comments
+    return (Comment)  -- Always return Nothing for comments
 
 -- Parser for a line (either an instruction or a comment)
-lineParser :: Parser (Maybe Instruction)
-lineParser = try instructionParser <|> try commentParser
+lineParser :: Parser (Instruction)
+lineParser = (try pLabel) <|> (instructionParser <?> "instruction") <|> (commentParser <?> "comment")
 
 -- Parser for a list of instructions
 programParser :: Parser [Instruction]
 programParser = do
     instructions <- many (space *> lineParser <* space)
     eof
-    return (catMaybes instructions)
+    return (filter isNotComment instructions)
+    where
+        isNotComment (Comment) = False
+        isNotComment _ = True
 
 -- Run the parser on the input
 parseAssembly :: String -> Either (ParseErrorBundle T.Text Void) [Instruction]

@@ -77,6 +77,7 @@ data Instruction
     | CLV
     | CLZ
     | COM Register
+    | Comment
     | CP Register Register
     | CPC Register Register
     | CPI Register Word8
