@@ -153,7 +153,7 @@ adc oldStatus registers sp memory rd rs =
             overflowFlag = testBit op1 7 && testBit op2 7 && not (testBit result 7) || not (testBit op1 7) && not (testBit op2 7) && testBit result 7,
             negativeFlag = testBit result 7,
             zeroFlag = result == 0,
-            carryFlag = testBit op1 7 && testBit op2 7 || testBit op1 7 && not (testBit result 7) || not (testBit result 7) && testBit op1 7,
+            carryFlag = testBit op1 7 && testBit op2 7 || testBit op2 7 && not (testBit result 7) || not (testBit result 7) && testBit op1 7,
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
     in (updatedRegisters, updatedFlags, 0, sp, updatedMemory)
@@ -174,7 +174,7 @@ add oldStatus registers sp memory rd rs =
             overflowFlag = testBit op1 7 && testBit op2 7 && not (testBit result 7) || not (testBit op1 7) && not (testBit op2 7) && testBit result 7,
             negativeFlag = testBit result 7,
             zeroFlag = result == 0,
-            carryFlag = testBit op1 7 && testBit op2 7 || testBit op1 7 && not (testBit result 7) || not (testBit result 7) && testBit op1 7,
+            carryFlag = testBit op1 7 && testBit op2 7 || testBit op2 7 && not (testBit result 7) || not (testBit result 7) && testBit op1 7,
             signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
         }
     in (updatedRegisters, updatedFlags, 0, sp, updatedMemory)
