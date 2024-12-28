@@ -47,8 +47,11 @@ pNumberedRegister = do
 
 pRegister :: Parser Register
 pRegister = do
-  reg <- choice [try pNumberedRegister, try pLabelledRegister]
-  return reg
+  reg <- choice [try pNumberedRegister , try pLabelledRegister] <?> "register"
+  if reg < 0 || reg >= 32 then
+    fail "Register number can't be outside the range [0..31]"
+  else
+    return reg
 
 pRegisterPair :: Parser (Register, Register)
 pRegisterPair = do
@@ -64,16 +67,26 @@ pHexDigit = oneOf ['0'..'9'] <|> oneOf ['a'..'f'] <|> oneOf ['A'..'F']
 pFlagDigit :: Parser Int
 pFlagDigit = digitToInt <$> oneOf ['0'..'7']
 
-pWord8 :: Parser Word8
-pWord8 = do
+pHexWord8 :: Parser Word8
+pHexWord8 = do
     string "0x" <|> string "$"
     hexDigits <- some pHexDigit
     case readHex hexDigits of
-        [(value, "")] ->
-            if 0 <= value && value <= 0xFF
-                then return (fromInteger value)
-            else fail "Hexadecimal value out of range for Word8"
-        _ -> fail "Invalid hexadecimal format"
+        [(value, "")] -> return (fromInteger value)
+        _ -> fail "Invalid hexadecimal number format"
+
+pDecWord8 :: Parser Word8
+pDecWord8 = do
+    digits <- some digitChar
+    return $ read digits
+
+pWord8 :: Parser Word8
+pWord8 = do
+    byte <- pHexWord8 <|> pDecWord8 <?> "number in hexadecimal or decimal format"
+    if 0 <= byte && byte <= 0xFF then
+        return byte
+    else
+        fail "Value out of range for a byte"
 
 pWord16 :: Parser Word16
 pWord16 = do
