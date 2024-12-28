@@ -3,8 +3,8 @@
 ;; MIT License
 
     ; First, put some values in the 'array' so we can search for it
-    LDI R26, 0x00
-    LDI R27, 0x01
+    LDI R26, 0xa0
+    LDI R27, 0x00
 
     LDI R16, 0x3c
     ST X+, R16
@@ -26,8 +26,8 @@
     ST X+, R16
 
 ; Find the maximum value in an array
-    LDI R26, 0x00  ; Address of the array
-    LDI R27, 0x01
+    LDI R26, 0xa0  ; Address of the array
+    LDI R27, 0x00
     LDI R16, 0x9 ; Array length
     CALL func_find_max
 

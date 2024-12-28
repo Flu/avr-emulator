@@ -3,6 +3,7 @@ import Parser
 import Data.Array
 import qualified Data.Vector as V
 import Emulator
+import Data.Bits (shiftL)
 
 -- Takes the path of a program and parses it into an intermediary form that the Emulator can understand
 -- If parsing fails, returns Nothing
@@ -25,7 +26,7 @@ emulateProgramFromFile filepath checkingFunction = do
     case maybeInstructions of
         Just instructions -> do
             -- Emulate the parsed program
-            let finalState = run instructions 700            -- Restrict memory to 700 bytes to make tests faster and less resource intensive
+            let finalState = run instructions 600            -- Restrict memory to 600 bytes to make tests faster and less resource intensive
             prettyPrintMemory $ memory finalState            -- Pretty print the memory
             printRegisterBank $ registers finalState         -- Pretty print the register banks
             putStrLn (showStatusFlags $ flags finalState)    -- Print the final status flags
@@ -36,6 +37,26 @@ emulateProgramFromFile filepath checkingFunction = do
 -- Main function for testing
 main :: IO ()
 main = hspec $ describe "AVR Emulator E2E tests" $ do
+    -- array_merge.asm
+    it "should correctly merge two arrays and match the expected final state" $ do
+        let assemblyFilePath = "test_files/array_merge.asm"
+        emulateProgramFromFile assemblyFilePath testArrayMerge
+
+    -- collatz.asm
+    it "should correctly calculate how many steps it takes when applying the collatz function to a given number" $ do
+        let assemblyFilePath = "test_files/collatz.asm"
+        emulateProgramFromFile assemblyFilePath testCollatz
+
+    -- factorial.asm
+    it "should correctly calculate the factorial to a given number" $ do
+        let assemblyFilePath = "test_files/factorial.asm"
+        emulateProgramFromFile assemblyFilePath testFactorial
+
+    -- find_maximum.asm
+    it "should correctly find the maximum in an array" $ do
+        let assemblyFilePath = "test_files/find_maximum.asm"
+        emulateProgramFromFile assemblyFilePath testFindMaximum
+
     -- test_adiw.asm
     it "should correctly emulate test_adiw.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_adiw.asm"
@@ -221,6 +242,99 @@ main = hspec $ describe "AVR Emulator E2E tests" $ do
     it "Should correctly emulate test_ld.asm and match expected state" $ do
         let assemblyFilePath = "test_files/test_ld.asm"
         emulateProgramFromFile assemblyFilePath testLd
+
+-- Checking emulator state for array_merge.asm
+testArrayMerge :: EmulatorState -> IO ()
+testArrayMerge state = do
+    -- Memory
+    let firstArray = V.slice 256 17 $ V.fromList $ elems (memory state)
+    let firstArrayExpected = V.fromList [0x01, 0x14, 0x20, 0x23, 0x24, 0x25, 0x3b, 0x44, 0x5c, 0x7b, 0x82, 0x84, 0xa9, 0xaf, 0xb1, 0xb2, 0xb3]
+    firstArray `shouldBe` firstArrayExpected
+
+    let secondArray = V.slice 336 21 $ V.fromList $ elems (memory state)
+    let secondArrayExpected = V.fromList [0x02, 0x0a, 0x2e, 0x2f, 0x31, 0x37, 0x4f, 0x54, 0x65, 0x78, 0x88, 0x89, 0x93, 0x9f, 0xb9, 0xba, 0xca, 0xcd, 0xce, 0xed, 0xff]
+    secondArray `shouldBe` secondArrayExpected
+
+    let mergedArrayExpected = V.fromList $ merge (V.toList firstArray) (V.toList secondArray)
+    let mergedArray = V.slice 416 38 $ V.fromList $ elems (memory state)
+
+    mergedArray `shouldBe` mergedArrayExpected
+
+    -- Status flags
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
+    where
+        merge :: (Ord a) => [a] -> [a] -> [a]
+        merge x [] = x
+        merge [] x = x
+        merge allX@(x:xs) allY@(y:ys)
+            | x < y = x:(merge xs allY)
+            | otherwise = y:(merge allX ys)
+
+testCollatz :: EmulatorState -> IO ()
+testCollatz state = do
+    -- Registers
+    let n = (fromIntegral ((registers state) ! 1) `shiftL` 8 :: Int) + (fromIntegral ((registers state) ! 0) :: Int)
+    let stepsExpected = collatz n 0
+    let steps = (fromIntegral ((registers state) ! 31) `shiftL` 8 :: Int) + (fromIntegral ((registers state) ! 30) :: Int)
+    steps `shouldBe` stepsExpected
+
+    -- Status flags
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
+    where
+        collatz :: Int -> Int -> Int
+        collatz 1 steps = steps
+        collatz n steps
+            | even n = collatz (n `div` 2) (steps + 1)
+            | odd n = collatz (3*n + 1) (steps + 1)
+
+testFactorial :: EmulatorState -> IO ()
+testFactorial state = do
+    -- Registers
+    ((registers state) ! 16) `shouldBe` 0x05
+    ((registers state) ! 24) `shouldBe` 0x78
+
+    -- Status flags
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
+
+testFindMaximum :: EmulatorState -> IO ()
+testFindMaximum state = do
+    -- Memory
+    let array = V.slice 160 9 $ V.fromList $ elems (memory state)
+    let maxNumber = findMaxInList (V.toList array)
+
+    maxNumber `shouldBe` (registers state) ! 18
+    -- Status flags
+    interruptFlag (flags state) `shouldBe` False
+    tFlag (flags state) `shouldBe` False
+    halfCarryFlag (flags state) `shouldBe` False
+    signFlag (flags state) `shouldBe` False
+    overflowFlag (flags state) `shouldBe` False
+    negativeFlag (flags state) `shouldBe` False
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` False
+    where
+        findMaxInList = foldr (\x y -> if x > y then x else y) 0
 
 -- Checking EmulatorState for the "test_adiw.asm"
 testAdiw :: EmulatorState -> IO ()

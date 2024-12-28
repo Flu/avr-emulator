@@ -7,6 +7,9 @@
 LDI R26, 0x89         ; Initialize low byte of starting value
 LDI R27, 0x02         ; Initialize high byte of starting value
 
+MOV R0, R26           ; Move values in R0:1 for testing purposes
+MOV R1, R27
+
 LDI R30, 0x00         ; Number of steps for this specific number to get to 1
 LDI R31, 0x00
 
