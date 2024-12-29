@@ -28,14 +28,14 @@ assembleProgramFromFile filename = do
             return Nothing
         Right instructions -> return (Just instructions)
 
-compileFromFile :: FilePath -> Bool -> Int -> IO (Either String EmulatorState)
+compileFromFile :: FilePath -> Bool -> Int -> IO (Maybe EmulatorState)
 compileFromFile input False memorySize = do
     maybeInstructions <- assembleProgramFromFile input
     case maybeInstructions of
         Just instructions -> do
             let finalState = run instructions memorySize
-            return (Right finalState)
-        Nothing -> (return (Left "Error assembling the program"))
+            return (Just finalState)
+        Nothing -> return Nothing
 
 compileFromFile input True memorySize = do
     maybeInstructions <- assembleProgramFromFile input
@@ -43,8 +43,8 @@ compileFromFile input True memorySize = do
         Just instructions -> do
             mapM_ print (replaceLabels instructions)
             let finalState = run instructions memorySize
-            return (Right finalState)
-        Nothing -> (return (Left "Error assembling the program"))
+            return (Just finalState)
+        Nothing -> return Nothing
 
 getVersion :: String
 getVersion = showVersion version
@@ -63,21 +63,21 @@ entryFunction (Options _ _ _ _ False Nothing) = error "You did not supply a file
 entryFunction (Options False dmpIR memorySize False _ (Just filepath)) = do
     finalState <- compileFromFile filepath dmpIR memorySize
     case finalState of
-        Right state -> do
+        Just state -> do
             printRegisterBank $ registers state         -- Pretty print the register banks
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
-        Left errorMessage -> print errorMessage
+        Nothing -> return ()
 
 -- | Supplied file, will dump SRAM to stdout
 entryFunction (Options True dmpIR memorySize False _ (Just filepath)) = do
     finalState <- compileFromFile filepath dmpIR memorySize
     case finalState of
-        Right state -> do
+        Just state -> do
             prettyPrintMemory (memory state)            -- Pretty print the memory
             putStrLn ""
             printRegisterBank $ registers state         -- Pretty print the register banks
             putStrLn (showStatusFlags $ flags state)    -- Print the final status flags
-        Left errorMessage -> print errorMessage
+        Nothing -> return ()
 
 -- | Ignore dump memory and dump IR flags, start a REPL for an interactive session
 entryFunction (Options _ _ memorySize True False (Just filepath)) = do
