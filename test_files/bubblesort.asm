@@ -21,11 +21,11 @@ _main:
 
     CALL func_fill_array
 
-    ; Prepare registers for bubblesort - R12:11 for the start of the list, R26:27 for traversing the list
+    ; Prepare registers for bubblesort - R12:13 for the start of the list, R26:27 for traversing the list
     ; and R8:9 for the length of the list
-    CLR R11
+    CLR R12
     LDI R25, 0x01
-    MOV R12, R25
+    MOV R13, R25
 
     LDI R26, 0x00
     LDI R27, 0x00
@@ -49,7 +49,7 @@ func_fill_array:
     RET
 
 ;; Bubble Sort function - sorts a given list of unsigned integers in-place
-; R12:11 - start address of the list to sort
+; R12:13 - start address of the list to sort
 ; R9:8 - length of the list
 ; No return value
 func_bubblesort:
@@ -57,7 +57,7 @@ func_bubblesort:
     PUSH R19
     PUSH R18
     PUSH R12
-    PUSH R11
+    PUSH R13
     PUSH R9
     PUSH R8
     PUSH R27
@@ -73,8 +73,8 @@ func_bubblesort:
     LDI R29, 0x00
 OUTER_LOOP:
 
-    MOVW R19:18, R9:8   ; Inner loop counter
-    MOVW R27:26, R12:11 ; Reset X to point at the start of the array
+    MOVW R18, R8   ; Inner loop counter
+    MOVW R26, R12 ; Reset X to point at the start of the array
 
     LDI R20, 0x00  ; Clear swap flag by setting R20 to 0
 
@@ -115,7 +115,7 @@ NO_SWAP:
     POP R27
     POP R8
     POP R9
-    POP R11
+    POP R13
     POP R12
     POP R18
     POP R19

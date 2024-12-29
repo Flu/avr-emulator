@@ -24,7 +24,7 @@ func_factorial:
 
 factorial_loop:
     MUL R16, R24 ; Multiply R16 to the accumulator
-    MOVW R25:24, R1:0 ; Move result to the accumulator
+    MOVW R24, R0 ; Move result to the accumulator
     DEC R16
     BRNE factorial_loop ; If R16 is not 0 yet, we do another loop
 

@@ -55,11 +55,8 @@ pRegister = do
 
 pRegisterPair :: Parser (Register, Register)
 pRegisterPair = do
-    cichar 'R'
-    reg1 <- some digitChar
-    char ':'
-    reg2 <- some digitChar
-    return (read reg1, read reg2)
+    reg <- pRegister
+    return (reg+1, reg)
 
 pHexDigit :: Parser Char
 pHexDigit = oneOf ['0'..'9'] <|> oneOf ['a'..'f'] <|> oneOf ['A'..'F']
@@ -147,12 +144,12 @@ pADD = do
 pADIW :: Parser Instruction
 pADIW = do
     cistring "ADIW" >> space
-    reg1 <- pRegister
+    (reg1, reg2) <- pRegisterPair
     pComma
-    if isValidRegister reg1 then
-        ADIW (reg1 + 1) reg1 <$> pWord8
+    if isValidRegister reg2 then
+        ADIW reg1 reg2 <$> pWord8
     else
-        fail "Must be register 26, 28 or 30."
+        fail "Register must be R24, R26, R28 or R30."
     where
     isValidRegister r
         | r == 24 || r == 26 || r == 28 || r == 30 = True
@@ -456,7 +453,14 @@ pMOVW = do
     (reg1, reg2) <- pRegisterPair
     pComma
     (reg3, reg4) <- pRegisterPair
-    return (MOVW reg1 reg2 reg3 reg4)
+    if isValidRegister reg2 && isValidRegister reg4 then
+        return (MOVW reg1 reg2 reg3 reg4)
+    else
+        fail "Register has to be R{0,2,..,30}"
+    where
+    isValidRegister r
+        | r `mod` 2 == 0 && r >= 0 && r < 32 = True
+        | otherwise = False
 
 pMUL :: Parser Instruction
 pMUL = do
