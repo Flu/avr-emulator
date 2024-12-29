@@ -116,9 +116,12 @@ pDecimal = do
     digits <- some digitChar
     return (read digits)
 
+pLabelValue :: Parser String
+pLabelValue = some (alphaNumChar <|> char '_')
+
 pLabel :: Parser Instruction
 pLabel = do
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     char ':'
     return (LABEL label)
 
@@ -189,115 +192,115 @@ pBLD = do
 pBRCC :: Parser Instruction
 pBRCC = do
     cistring "BRCC" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRCC label)
 
 pBRCS :: Parser Instruction
 pBRCS = do
     cistring "BRCS" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRCS label)
 
 pBREQ :: Parser Instruction
 pBREQ = do
     cistring "BREQ" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BREQ label)
 
 pBRGE :: Parser Instruction
 pBRGE = do
     cistring "BRGE" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRGE label)
 
 pBRHC :: Parser Instruction
 pBRHC = do
     cistring "BRHC" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRHC label)
 
 pBRHS :: Parser Instruction
 pBRHS = do
     cistring "BRHS" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRHS label)
 
 pBRID :: Parser Instruction
 pBRID = do
     cistring "BRID" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRID label)
 
 pBRIE :: Parser Instruction
 pBRIE = do
     cistring "BRIE" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRIE label)
 
 pBRLO :: Parser Instruction
 pBRLO = do
     cistring "BRLO" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRLO label)
 
 pBRLT :: Parser Instruction
 pBRLT = do
     cistring "BRLT" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRLT label)
 
 pBRMI :: Parser Instruction
 pBRMI = do
     cistring "BRMI" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRMI label)
 
 pBRNE :: Parser Instruction
 pBRNE = do
     cistring "BRNE" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRNE label)
 
 pBRPL :: Parser Instruction
 pBRPL = do
     cistring "BRPL" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRPL label)
 
 pBRSH :: Parser Instruction
 pBRSH = do
     cistring "BRSH" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRSH label)
 
 pBRTC :: Parser Instruction
 pBRTC = do
     cistring "BRTC" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRTC label)
 
 pBRTS :: Parser Instruction
 pBRTS = do
     cistring "BRTS" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRTS label)
 
 pBRVC :: Parser Instruction
 pBRVC = do
     cistring "BRVC" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRVC label)
 
 pBRVS :: Parser Instruction
 pBRVS = do
     cistring "BRVS" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (BRVS label)
 
 pCALL :: Parser Instruction
 pCALL = do
     cistring "CALL" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (CALL label)
 
 pCBR :: Parser Instruction
@@ -406,7 +409,7 @@ pINC = do
 pJMP :: Parser Instruction
 pJMP = do
     cistring "JMP" >> space
-    label <- some (alphaNumChar <|> char '_')
+    label <- pLabelValue
     return (JMP label)
 
 pLD :: Parser Instruction
@@ -713,20 +716,20 @@ instructionParser = do
         pTST
         ]
 
--- Parser for comments
+-- | Parser for comments
 commentParser :: Parser (Instruction)
 commentParser = do
     _ <- char ';'  -- Skip the comment start
     choice [
         try (manyTill printChar eol),
         manyTill printChar eof]  -- Consume the comment content
-    return (Comment)  -- Always return Nothing for comments
+    return (Comment)  -- Return the comment instruction type, which will get filtered out
 
--- Parser for a line (either an instruction or a comment)
+-- | Parser for a line. First tries a label, if that fails, it backtracks and tries either an instruction or a comment
 lineParser :: Parser (Instruction)
 lineParser = (try pLabel) <|> (instructionParser <?> "instruction") <|> (commentParser <?> "comment")
 
--- Parser for a list of instructions
+-- | Parser for a list of instructions
 programParser :: Parser [Instruction]
 programParser = do
     instructions <- many (space *> lineParser <* space)
