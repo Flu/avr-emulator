@@ -142,8 +142,8 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - [x] Implement Parser support for lowercase instructions.
   - [x] Implementing `ADIW`.
   - [x] Unit tests for instructions.
+  - [x] Better error reporting.
   - [ ] Implement limitations to instructions similar to real hardware.
-  - [ ] Better error reporting
   - [ ] Add more to the roadmap.
   - [ ] Buy Grolsch beer when this is all done :tada: :beer:
 
