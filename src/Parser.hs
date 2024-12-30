@@ -64,7 +64,7 @@ pHexDigit = oneOf ['0'..'9'] <|> oneOf ['a'..'f'] <|> oneOf ['A'..'F']
 pFlagDigit :: Parser Int
 pFlagDigit = digitToInt <$> oneOf ['0'..'7']
 
-pHexWord8 :: Parser Word8
+pHexWord8 :: Parser Int
 pHexWord8 = do
     string "0x" <|> string "$"
     hexDigits <- some pHexDigit
@@ -72,7 +72,7 @@ pHexWord8 = do
         [(value, "")] -> return (fromInteger value)
         _ -> fail "Invalid hexadecimal number format"
 
-pDecWord8 :: Parser Word8
+pDecWord8 :: Parser Int
 pDecWord8 = do
     digits <- some digitChar
     return $ read digits
@@ -81,7 +81,7 @@ pWord8 :: Parser Word8
 pWord8 = do
     byte <- pHexWord8 <|> pDecWord8 <?> "number in hexadecimal or decimal format"
     if 0 <= byte && byte <= 0xFF then
-        return byte
+        return (fromIntegral byte)
     else
         fail "Value out of range for a byte"
 
