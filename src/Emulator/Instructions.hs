@@ -404,7 +404,7 @@ call oldStatus registers sp memory relAddress returnAddress =
     let (high, low) = (fromIntegral (returnAddress `shiftR` 8), fromIntegral (returnAddress .&. 0xFF))
         (updatedMemory, updatedRegisters) = setMemoryValues memory registers [((fromIntegral sp), high), ((fromIntegral (sp - 1)), low)]
         newSp = sp - 2
-        in (updatedRegisters, oldStatus, relAddress, newSp, updatedMemory)
+    in (updatedRegisters, oldStatus, relAddress, newSp, updatedMemory)
 
 cbr :: StatusFlags -> Registers -> StackPointer -> Memory -> Register -> Word8 -> (Registers, StatusFlags, Int, StackPointer, Memory)
 cbr status registers sp mem rb k = andi status registers sp mem rb (0xFF - k)

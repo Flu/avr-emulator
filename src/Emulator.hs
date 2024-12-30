@@ -23,7 +23,8 @@ import Emulator.Utils
 import Emulator.State
 
 import Data.Maybe (catMaybes)
-import Data.Array
+import qualified Data.Vector as V
+import Data.Vector ((!), Vector)
 
 {- | After resolving the labels, this is the heart of the emulator. It fetches the instruction from memory with the PC,
     loads the state from the previous instruction and call executeInstruction. After the execution is done, it calls itself
@@ -33,7 +34,7 @@ import Data.Array
     If there are no more instructions in the list (PC has surpassed the upper bound of the instruction list), execution is considered
     done and the function returns the most recent EmulatorState.
 -}
-runProgram :: Array Int Instruction -> EmulatorState -> EmulatorState
+runProgram :: Vector Instruction -> EmulatorState -> EmulatorState
 runProgram initialInstructions = go -- Call recursive helper function go
   where
     go state =
@@ -45,7 +46,7 @@ runProgram initialInstructions = go -- Call recursive helper function go
                newState = executeInstruction currentInstruction state -- Decode and execute it, then get the updated emulator state 
            in go newState -- Call recursively with the new state
 
-stepOneInstruction :: Array Int Instruction -> EmulatorState -> (Bool, EmulatorState)
+stepOneInstruction :: Vector Instruction -> EmulatorState -> (Bool, EmulatorState)
 stepOneInstruction programMemory lastState
     | (fromIntegral $ programCounter lastState) >= (length programMemory) - 1 = (True, lastState)
     | otherwise = let
@@ -54,7 +55,7 @@ stepOneInstruction programMemory lastState
         updatedState = executeInstruction currentInstruction lastState
         in (False, updatedState)
 
-stepMultipleInstructions :: Array Int Instruction -> EmulatorState -> Int -> (Bool, EmulatorState)
+stepMultipleInstructions :: Vector Instruction -> EmulatorState -> Int -> (Bool, EmulatorState)
 stepMultipleInstructions programMemory lastState steps = loop lastState steps
     where
         loop :: EmulatorState -> Int -> (Bool, EmulatorState)
@@ -63,7 +64,7 @@ stepMultipleInstructions programMemory lastState steps = loop lastState steps
             | (fromIntegral $ programCounter s) >= length programMemory = (True, s)
             | otherwise = loop (executeInstruction (programMemory ! (fromIntegral $ programCounter s)) s) (n-1)
 
-runUntilProgramEnd :: Array Int Instruction -> EmulatorState -> (Bool, EmulatorState)
+runUntilProgramEnd :: Vector Instruction -> EmulatorState -> (Bool, EmulatorState)
 runUntilProgramEnd programMemory lastState = loop lastState
     where
         pc state = (fromIntegral $ programCounter state)
@@ -72,7 +73,7 @@ runUntilProgramEnd programMemory lastState = loop lastState
             | pc s >= length programMemory = (True, s)
             | otherwise = loop (executeInstruction (programMemory ! (pc s)) s)
 
-runUntilFunctionEnd :: Array Int Instruction -> EmulatorState -> (Bool, EmulatorState)
+runUntilFunctionEnd :: Vector Instruction -> EmulatorState -> (Bool, EmulatorState)
 runUntilFunctionEnd programMemory lastState = loop lastState 0
     where
         pc state = (fromIntegral $ programCounter state)
@@ -90,6 +91,6 @@ run :: [Instruction] -> Int -> EmulatorState
 run instructions memorySize =
     let initialState = initEmulatorState memorySize
         instructionsWithAddresses = catMaybes $ replaceLabels instructions -- Resolve labels and filter out Nothings from the list
-        instructionArray = listArray (0, (length instructionsWithAddresses) - 1) instructionsWithAddresses
+        instructionVector = V.fromList instructionsWithAddresses
     in
-        runProgram instructionArray initialState -- Start the 'fetch -> decode -> execute' cycle by calling this function with the initial state
+        runProgram instructionVector initialState -- Start the 'fetch -> decode -> execute' cycle by calling this function with the initial state

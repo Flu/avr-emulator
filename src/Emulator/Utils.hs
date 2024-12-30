@@ -3,10 +3,11 @@ module Emulator.Utils where
 import Emulator.State
 import Emulator.Instructions
 
-import Data.Array
 import Data.Binary (Word8)
 import Data.Char (intToDigit)
 import qualified Data.Map as Map
+import qualified Data.Vector as V
+import Data.Vector((!), Vector)
 import Numeric (showHex, showIntAtBase)
 import System.Console.ANSI
 import Text.Printf
@@ -135,7 +136,7 @@ replaceLabels instructions =
 
 -- | Pretty prints the register bank to stdout and colors non-zero values so they can be easier to see
 printRegisterBank :: Registers -> IO ()
-printRegisterBank regs = go (assocs regs)
+printRegisterBank regs = go (V.toList $ V.zip (V.fromList [0..]) regs)
     where
         go::[(Int, Register)] -> IO ()
         go [] = return ()
@@ -162,7 +163,7 @@ printRegisterBank regs = go (assocs regs)
 registersToString :: Registers -> String
 registersToString registers =
     let
-        registersWithIndex = assocs registers         -- Create a list of tuples of index and register value
+        registersWithIndex = (V.toList $ V.zip (V.fromList [0..]) registers)         -- Create a list of tuples of index and register value
         go::[(Int, Register)] -> String -- unction for iterating through the register bank array
         go regs = case regs of
             -- If arrived at the end of the array, return an empty String
@@ -261,7 +262,7 @@ printRow addr values = do
 -- | Pretty-prints the entire memory
 prettyPrintMemory :: Memory -> IO ()
 prettyPrintMemory mem = do
-    let (_, end) = bounds mem -- Get the length of the memory in bytes
+    let end = (V.length mem) - 1 -- Get the length of the memory in bytes
         -- Get every 16th address and pair it with the next 16 bytes of memory
         rows = [(addr, [Just (mem ! i) | i <- [addr .. min (addr + 15) end]]) | addr <- [0, 16 .. end]]
     -- Because printRow needs two arguments, we need to uncurry it so it can receive a tuple instead
@@ -272,7 +273,7 @@ prettyPrintMemory mem = do
 -- | Pretty-prints the memory starting with address `start`
 prettyPrintMemoryFromStart :: Memory -> Int -> IO ()
 prettyPrintMemoryFromStart mem start = do
-    let (_, end) = bounds mem -- Get the length of the memory in bytes
+    let end = (V.length mem) - 1 -- Get the length of the memory in bytes
         -- Get every 16th address and pair it with the next 16 bytes of memory
         floorStartTo16 = start - (start `mod` 16) -- Get the closest multiple of 16 going down
         nothings = replicate (start `mod` 16) Nothing
@@ -287,7 +288,7 @@ prettyPrintMemoryFromStart mem start = do
 -- | Pretty-prints the memory starting with address `start`
 prettyPrintMemoryFromStartToEnd :: Memory -> Int -> Int -> IO ()
 prettyPrintMemoryFromStartToEnd mem start end = do
-    let (_, endBound) = bounds mem -- Get the length of the memory in bytes
+    let endBound = (V.length mem) - 1 -- Get the length of the memory in bytes
         -- Get every 16th address and pair it with the next 16 bytes of memory
         floorStartTo16 = start - (start `mod` 16) -- Get the closest multiple of 16 going down
         startNothings = replicate (start `mod` 16) Nothing -- Generate a list of Nothings for the first row
@@ -301,14 +302,13 @@ prettyPrintMemoryFromStartToEnd mem start end = do
 -- | Pretty-prints a portion of the program memory around an address
 -- | Parameters are: the array of instructions, the address, and N
 -- | N is the amount of lines before and after the address to print as well
-printInstructionsAroundAddress :: Array Int Instruction -> Int -> Int -> IO ()
+printInstructionsAroundAddress :: Vector Instruction -> Int -> Int -> IO ()
 printInstructionsAroundAddress programMemory address n = do
     mapM_ (\(i,x) -> if i == address then printColorInstructionWithAddress i x else printInstructionWithAddress i x) linesWithAddresses
     where
-        startIndex = max start (address - n)
-            where (start, _) = bounds programMemory
+        startIndex = max 0 (address - n)
         endIndex = min end (address + n)
-            where (_, end) = bounds programMemory
+            where end = (V.length programMemory) - 1
         linesWithAddresses = zip [startIndex..endIndex] [programMemory ! i| i <- [startIndex..endIndex]]
 
 -- | Returns a String representation of the given instruction along with the PC value

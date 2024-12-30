@@ -3,8 +3,9 @@
 module Repl where
 
 import Control.Monad.Trans (lift)
-import Data.Array
 import qualified Data.Text as T
+import Data.Vector ((!), Vector)
+import qualified Data.Vector as V
 import Data.Void
 import System.Console.Haskeline
 import Text.Megaparsec
@@ -181,7 +182,7 @@ parseCommand command = runParser commandParser "" $ T.pack command
 {-- | Dispatcher function that calls the emulator based on the command given and returns an
     IO computation with what should be displayed in the REPL
 --}
-dispatcher :: UserCommand -> Array Int Instruction -> EmulatorState -> InputT IO (EmulatorState)
+dispatcher :: UserCommand -> Vector Instruction -> EmulatorState -> InputT IO (EmulatorState)
 dispatcher StepOnce programMemory state = do
     let (isProgramDone, updatedState) = stepOneInstruction programMemory state
     if isProgramDone then
@@ -210,7 +211,7 @@ dispatcher (ExecuteUntilFunctionEnd) programMemory state = do
     return updatedState
 
 dispatcher (Restart) programMemory state = do
-    let restartState = initEmulatorState (length (memory state))
+    let restartState = initEmulatorState (V.length (memory state))
     outputStrLn "The emulator has been restarted."
     return (restartState)
 
@@ -227,15 +228,15 @@ dispatcher PrintPc instructions state = do
     return state
 
 dispatcher (PrintMemory start end) instructions state = do
-    if start >= end || start >= length (memory state) then
-        printMessageIfAddressIsInvalid (length (memory state))
+    if start >= end || start >= V.length (memory state) then
+        printMessageIfAddressIsInvalid (V.length (memory state))
     else
         lift $ prettyPrintMemoryFromStartToEnd (memory state) start end
     return state
 
 dispatcher (PrintMemoryFromStart start) instructions state = do
-    if start >= length (memory state) then
-        printMessageIfAddressIsInvalid (length (memory state))
+    if start >= V.length (memory state) then
+        printMessageIfAddressIsInvalid (V.length (memory state))
     else
         lift $ prettyPrintMemoryFromStart (memory state) start
     return state
@@ -269,7 +270,7 @@ replLoop instructions memorySize = runInputT defaultReplSettings (loop initialSt
     where
     initialState = initEmulatorState memorySize
     resolvedInstructions = catMaybes $ replaceLabels instructions
-    programMemory = listArray (0, (length resolvedInstructions) - 1) resolvedInstructions
+    programMemory = V.fromList resolvedInstructions
     loop :: EmulatorState -> InputT IO (EmulatorState)
     loop state = do
         lift printPrompt
@@ -304,7 +305,7 @@ printMessageIfAddressIsInvalid memoryLength = do
     outputStrLn $ "Invalid addresses"
     outputStrLn $ "You can't print memory greater than " ++ toHex4WithPrefix memoryLength ++ " or have the start address bigger than the end address."
 
-printPcAndInstruction :: Array Int Instruction -> EmulatorState -> InputT IO ()
+printPcAndInstruction :: Vector Instruction -> EmulatorState -> InputT IO ()
 printPcAndInstruction programMemory state = do
     outputStr $ (toHex4WithPrefix (fromIntegral $ programCounter state)) ++ "     "
     outputStrLn $ show $ programMemory ! (fromIntegral $ programCounter state)
