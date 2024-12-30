@@ -1,7 +1,6 @@
 module Main where
 
 import Options.Applicative
-import Text.Megaparsec.Error
 import Emulator
 import Parser
 import Options
@@ -24,7 +23,7 @@ assembleProgramFromFile filename = do
     contents <- readFile filename
     case parseAssembly contents of
         Left err -> do
-            putStrLn $ errorBundlePretty err
+            putStrLn $ prettyPrintErrorBundle err
             return Nothing
         Right instructions -> return (Just instructions)
 

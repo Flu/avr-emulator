@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 
-module Parser(parseAssembly) where
+module Parser(parseAssembly, prettyPrintErrorBundle) where
 
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -742,6 +742,9 @@ programParser = do
     where
         isNotComment (Comment) = False
         isNotComment _ = True
+
+prettyPrintErrorBundle :: ParseErrorBundle T.Text Void -> String
+prettyPrintErrorBundle = errorBundlePretty
 
 -- Run the parser on the input
 parseAssembly :: String -> Either (ParseErrorBundle T.Text Void) [Instruction]

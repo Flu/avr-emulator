@@ -84,7 +84,6 @@ executable avr-emulator
     -- Other library packages from which modules are imported.
     build-depends:      base >=4.16.2.1
                         , optparse-applicative >= 0.18.1.0
-                        , megaparsec >=9.7.0
                         , avr-emulator
 
     -- Base language which the package is written in.
