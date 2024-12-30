@@ -206,7 +206,7 @@ dispatcher (ExecuteUntilProgramEnd) programMemory state = do
 
 dispatcher (ExecuteUntilFunctionEnd) programMemory state = do
     let (isProgramDone, updatedState) = runUntilFunctionEnd programMemory state
-    printPcAndInstruction programMemory state
+    printPcAndInstruction programMemory updatedState
     printMessageIfProgramIsDone isProgramDone
     return updatedState
 
