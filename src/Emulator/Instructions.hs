@@ -145,7 +145,7 @@ adc registers memory oldStatus sp rd rs = do
     op1 <- getRegister registers rdIndex
     op2 <- getRegister registers rsIndex
     let result = op1 + op2 + (if carryFlag oldStatus then 1 else 0)
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         halfCarryFlag = testBit op1 3 && testBit op2 3 || testBit op1 3 && not (testBit result 3) || not (testBit result 3) && testBit op1 3,
         overflowFlag = testBit op1 7 && testBit op2 7 && not (testBit result 7) || not (testBit op1 7) && not (testBit op2 7) && testBit result 7,
@@ -163,7 +163,7 @@ add registers memory oldStatus sp rd rs = do
     op1 <- getRegister registers rdIndex
     op2 <- getRegister registers rsIndex
     let result = op1 + op2
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         halfCarryFlag = testBit op1 3 && testBit op2 3 || testBit op1 3 && not (testBit result 3) || not (testBit result 3) && testBit op1 3,
         overflowFlag = testBit op1 7 && testBit op2 7 && not (testBit result 7) || not (testBit op1 7) && not (testBit op2 7) && testBit result 7,
@@ -183,7 +183,7 @@ adiw  registers memory oldStatus sp oph opl k = do
     let result = (fromIntegral rh :: Word16) `shiftL` 8 + (fromIntegral rl :: Word16) + (fromIntegral k :: Word16)
     let resultH = fromIntegral (result `shiftR` 8) :: Word8
     let resultL = fromIntegral result :: Word8
-    setRegisters memory registers [(rhIndex, resultH), (rlIndex, resultL)]
+    setRegisters registers memory [(rhIndex, resultH), (rlIndex, resultL)]
     let updatedFlags = oldStatus {
         overflowFlag = not (testBit rh 7) && testBit result 15,
         negativeFlag = testBit result 15,
@@ -200,7 +200,7 @@ andInstr registers memory oldStatus sp op1 op2 = do
     rd <- getRegister registers rdIndex
     rr <- getRegister registers rrIndex
     let result = rd .&. rr
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         overflowFlag = False,
         negativeFlag = testBit result 7,
@@ -215,7 +215,7 @@ andi registers memory oldStatus sp op1 immediate = do
     rd <- getRegister registers rdIndex
     let k = immediate
     let result = rd .&. k
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         overflowFlag = False,
         negativeFlag = testBit result 7,
@@ -231,7 +231,7 @@ asr registers memory oldStatus sp op1 = do
     let lsb = testBit rd 0
     let msb = testBit rd 7
     let result = if msb then rd `shiftR` 1 .|. 0x80 else rd `shiftR` 1 .&. 0xBF
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         negativeFlag = testBit result 7,
         zeroFlag = result == 0,
@@ -261,7 +261,7 @@ bld registers memory flags sp rd b = do
     let t = tFlag flags
     value <- getRegister registers rdIndex
     let updatedValue = if t then setBit value b else clearBit value b
-    setRegister memory registers rdIndex updatedValue
+    setRegister registers memory rdIndex updatedValue
     return (flags, 0, sp)
 
 brcc :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
@@ -375,7 +375,7 @@ brvs oldStatus sp relAddress = do
 call :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Int -> Word16 -> ST s (StatusFlags, Int, StackPointer)
 call registers memory oldStatus sp relAddress returnAddress = do 
     let (high, low) = (fromIntegral (returnAddress `shiftR` 8), fromIntegral (returnAddress .&. 0xFF))
-    setMemoryValues memory registers [((fromIntegral sp), high), ((fromIntegral (sp - 1)), low)]
+    setMemoryValues registers memory [((fromIntegral sp), high), ((fromIntegral (sp - 1)), low)]
     let newSp = sp - 2
     return (oldStatus, relAddress, newSp)
 
@@ -406,7 +406,7 @@ clr :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register 
 clr registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     let result = 0
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         overflowFlag = False,
         negativeFlag = False,
@@ -440,7 +440,7 @@ com registers memory oldStatus sp op1 = do
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let result = 255 - rd
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         overflowFlag = False,
         negativeFlag = testBit result 7,
@@ -516,7 +516,7 @@ dec registers memory oldStatus sp op1 = do
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let result = rd - 1
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         overflowFlag = rd == 128,
         negativeFlag = testBit result 7,
@@ -532,7 +532,7 @@ eor registers memory oldStatus sp op1 op2 = do
     rd <- getRegister registers rdIndex
     rr <- getRegister registers rrIndex
     let result = xor rd rr
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         overflowFlag = False,
         negativeFlag = testBit result 7,
@@ -546,7 +546,7 @@ inc registers memory oldStatus sp op1 = do
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let result = rd + 1
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         overflowFlag = rd == 127,
         negativeFlag = testBit result 7,
@@ -565,7 +565,7 @@ ld registers memory oldStatus sp op1 "X" = do
     r26 <- getRegister registers 26
     let address16b = (fromIntegral r27 :: Word16) `shiftL` 8 + (fromIntegral r26 :: Word16)
     loadValue <- (getMemory memory (fromIntegral address16b))
-    setRegister memory registers rdIndex loadValue
+    setRegister registers memory rdIndex loadValue
     return (oldStatus, 0, sp)
 
 ld registers memory oldStatus sp op1 "X+" = do 
@@ -577,8 +577,8 @@ ld registers memory oldStatus sp op1 "X+" = do
     let xHigh = fromIntegral (newXRegister `shiftR` 8) :: Word8
     let xLow = fromIntegral newXRegister :: Word8
     loadValue <- getMemory memory (fromIntegral address16b)
-    setRegister memory registers rdIndex loadValue
-    setRegisters memory registers [(27, xHigh),(26, xLow)]
+    setRegister registers memory rdIndex loadValue
+    setRegisters registers memory [(27, xHigh),(26, xLow)]
     return (oldStatus, 0, sp)
 
 ld registers memory oldStatus sp op1 "-X" = do 
@@ -590,8 +590,8 @@ ld registers memory oldStatus sp op1 "-X" = do
     let xHigh = fromIntegral (newXRegister `shiftR` 8) :: Word8
     let xLow = fromIntegral newXRegister :: Word8
     value <- getMemory memory (fromIntegral newXRegister)
-    setRegister memory registers rdIndex value
-    setRegisters memory registers [(27, xHigh), (26, xLow)]
+    setRegister registers memory rdIndex value
+    setRegisters registers memory [(27, xHigh), (26, xLow)]
     return (oldStatus, 0, sp)
 
 ld registers memory oldStatus sp op1 "Y" = do 
@@ -600,7 +600,7 @@ ld registers memory oldStatus sp op1 "Y" = do
     r28 <- getRegister registers 28
     let address16b = (fromIntegral r29 :: Word16) `shiftL` 8 + (fromIntegral r28 :: Word16)
     value <- getMemory memory (fromIntegral address16b)
-    setRegister memory registers rdIndex value
+    setRegister registers memory rdIndex value
     return (oldStatus, 0, sp)
 
 ld registers memory oldStatus sp op1 "Y+" = do 
@@ -612,8 +612,8 @@ ld registers memory oldStatus sp op1 "Y+" = do
     let yHigh = fromIntegral (newYRegister `shiftR` 8) :: Word8
     let yLow = fromIntegral newYRegister :: Word8
     value <- getMemory memory (fromIntegral address16b)
-    setRegister memory registers rdIndex value
-    setRegisters memory registers [(29, yHigh), (28, yLow)]
+    setRegister registers memory rdIndex value
+    setRegisters registers memory [(29, yHigh), (28, yLow)]
     return (oldStatus, 0, sp)
 
 ld registers memory oldStatus sp op1 "-Y" = do 
@@ -625,8 +625,8 @@ ld registers memory oldStatus sp op1 "-Y" = do
     let yHigh = fromIntegral (newYRegister `shiftR` 8) :: Word8
     let yLow = fromIntegral newYRegister :: Word8
     yRegisterValue <- getMemory memory (fromIntegral newYRegister)
-    setRegister memory registers rdIndex yRegisterValue
-    setRegisters memory registers [(29, yHigh), (28, yLow)]
+    setRegister registers memory rdIndex yRegisterValue
+    setRegisters registers memory [(29, yHigh), (28, yLow)]
     return (oldStatus, 0, sp)
 
 ld registers memory oldStatus sp op1 "Z" = do 
@@ -635,7 +635,7 @@ ld registers memory oldStatus sp op1 "Z" = do
     r30 <- getRegister registers 30
     let address16b = (fromIntegral r31 :: Word16) `shiftL` 8 + (fromIntegral r30 :: Word16)
     value <- getMemory memory (fromIntegral address16b)
-    setRegister memory registers rdIndex value 
+    setRegister registers memory rdIndex value 
     return (oldStatus, 0, sp)
 
 ld registers memory oldStatus sp op1 "Z+" = do 
@@ -647,8 +647,8 @@ ld registers memory oldStatus sp op1 "Z+" = do
     let zHigh = fromIntegral (newZRegister `shiftR` 8) :: Word8
     let zLow = fromIntegral newZRegister :: Word8
     value <- getMemory memory (fromIntegral address16b)
-    setRegister memory registers rdIndex value
-    setRegisters memory registers [(31, zHigh), (30, zLow)]
+    setRegister registers memory rdIndex value
+    setRegisters registers memory [(31, zHigh), (30, zLow)]
     return (oldStatus, 0, sp)
 
 ld registers memory oldStatus sp op1 "-Z" = do
@@ -660,14 +660,14 @@ ld registers memory oldStatus sp op1 "-Z" = do
     let zHigh = fromIntegral (newZRegister `shiftR` 8) :: Word8
     let zLow = fromIntegral newZRegister :: Word8
     zRegisterValue <- getMemory memory (fromIntegral newZRegister)
-    setRegister memory registers rdIndex zRegisterValue
-    setRegisters memory registers [(31, zHigh), (30, zLow)]
+    setRegister registers memory rdIndex zRegisterValue
+    setRegisters registers memory [(31, zHigh), (30, zLow)]
     return (oldStatus, 0, sp)
 
 ldi :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
 ldi registers memory oldStatus sp rd immediate = do 
     let rdIndex = fromIntegral rd
-    setRegister memory registers rdIndex immediate
+    setRegister registers memory rdIndex immediate
     return (oldStatus, 0, sp)
 
 lds :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Word16 -> ST s (StatusFlags, Int, StackPointer)
@@ -675,7 +675,7 @@ lds registers memory oldStatus sp op1 immediate = do
     let rdIndex = fromIntegral op1
     let k = fromIntegral immediate
     value <- getMemory memory k
-    setRegister memory registers rdIndex value
+    setRegister registers memory rdIndex value
     return (oldStatus, 0, sp)
 
 lsl :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
@@ -684,7 +684,7 @@ lsl registers memory oldStatus sp op1 = do
     rd <- getRegister registers rdIndex
     let msb = testBit rd 7
     let result = rd `shiftL` 1
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         halfCarryFlag = testBit rd 3,
         negativeFlag = testBit result 7,
@@ -701,7 +701,7 @@ lsr registers memory oldStatus sp op1 = do
     rd <- getRegister registers rdIndex
     let lsb = testBit rd 0
     let result = rd `shiftR` 1
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         negativeFlag = False,
         zeroFlag = result == 0,
@@ -716,7 +716,7 @@ mov registers memory oldStatus sp rd rs = do
     let rdIndex = fromIntegral rd
     let rsIndex = fromIntegral rs
     value <- getRegister registers rsIndex
-    setRegister memory registers rdIndex value
+    setRegister registers memory rdIndex value
     return (oldStatus, 0, sp)
 
 movw :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
@@ -727,7 +727,7 @@ movw registers memory oldStatus sp rd1 rd rr1 rr = do
     let rrIndex = fromIntegral rr
     valueH <- getRegister registers rr1Index
     valueL <- getRegister registers rrIndex
-    setRegisters memory registers [(rd1Index, valueH), (rdIndex, valueL)]
+    setRegisters registers memory [(rd1Index, valueH), (rdIndex, valueL)]
     return (oldStatus, 0, sp)
 
 mul :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
@@ -739,7 +739,7 @@ mul registers memory oldStatus sp op1 op2 = do
     let result = (fromIntegral rd :: Word16)*(fromIntegral rr :: Word16)
     let resultH = fromIntegral (result `shiftR` 8) :: Word8
     let resultL = fromIntegral result :: Word8
-    setRegisters memory registers [(1, resultH), (0, resultL)]
+    setRegisters registers memory [(1, resultH), (0, resultL)]
     let updatedFlags = oldStatus {
         signFlag = signFlag oldStatus,
         overflowFlag = overflowFlag oldStatus,
@@ -759,7 +759,7 @@ muls registers memory oldStatus sp op1 op2 = do
     let result = multiplySigned rd rr
     let resultH = fromIntegral (result `shiftR` 8) :: Word8
     let resultL = fromIntegral result :: Word8
-    setRegisters memory registers [(1, resultH), (0, resultL)]
+    setRegisters registers memory [(1, resultH), (0, resultL)]
     let updatedFlags = oldStatus {
         signFlag = signFlag oldStatus,
         overflowFlag = overflowFlag oldStatus,
@@ -783,7 +783,7 @@ neg registers memory oldStatus sp op1 = do
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let result = negate rd
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         halfCarryFlag = testBit result 3 || not (testBit rd 3),
         overflowFlag = testBit result 7 && not (testBit result 6) && not (testBit result 5) && not (testBit result 4) && not (testBit result 3) && not (testBit result 2) && not (testBit result 1) && not (testBit result 0),
@@ -801,7 +801,7 @@ orInstr registers memory oldStatus sp op1 op2 = do
     rd <- getRegister registers rdIndex
     rs <- getRegister registers rsIndex
     let result = rd .|. rs
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         overflowFlag = False,
         negativeFlag = testBit result 7,
@@ -816,7 +816,7 @@ ori registers memory oldStatus sp op1 immediate = do
     rd <- getRegister registers rdIndex
     let k = immediate
     let result = rd .|. k
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         overflowFlag = False,
         negativeFlag = testBit result 7,
@@ -830,14 +830,14 @@ pop registers memory oldStatus sp op1 = do
     let rdIndex = fromIntegral op1
     let newSp = sp + 1
     poppedValue <- getMemory memory (fromIntegral newSp)
-    setRegister memory registers rdIndex poppedValue
+    setRegister registers memory rdIndex poppedValue
     return (oldStatus, 0, newSp)
 
 push :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
 push registers memory oldStatus sp op1 = do 
     let rrIndex = fromIntegral op1
     rr <- getRegister registers rrIndex
-    setMemory memory registers (fromIntegral sp) rr
+    setMemory registers memory (fromIntegral sp) rr
     return (oldStatus, 0, sp - 1)
 
 ret ::  MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> ProgramCounter -> ST s (StatusFlags, Int, StackPointer)
@@ -855,7 +855,7 @@ rol registers memory oldStatus sp op1 = do
     rd <- getRegister registers rdIndex
     let msb = testBit rd 7
     let result = if carryFlag oldStatus then rd `shiftL` 1 .|. 0x01 else rd `shiftL` 1
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         halfCarryFlag = testBit rd 3,
         negativeFlag = testBit result 7,
@@ -872,7 +872,7 @@ ror registers memory oldStatus sp op1 = do
     rd <- getRegister registers rdIndex
     let lsb = testBit rd 0
     let result = if carryFlag oldStatus then rd `shiftR` 1 .|. 0x80 else rd `shiftR` 1
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         negativeFlag = False,
         zeroFlag = result == 0,
@@ -890,7 +890,7 @@ sbc registers memory oldStatus sp op1 op2 = do
     rr <- getRegister registers rsIndex
     let carry = if carryFlag oldStatus then 1 else 0
     let result = rd - rr - carry
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         halfCarryFlag = not (testBit rd 3) && testBit rr 3 || testBit rr 3 && testBit result 3 || testBit result 3 && not (testBit rd 3),
         overflowFlag = testBit rd 7 && not (testBit rr 7) && not (testBit result 7) || not (testBit rd 7) && testBit rr 7 && testBit result 7,
@@ -942,7 +942,7 @@ sen oldStatus sp = do
 ser :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
 ser registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
-    setRegister memory registers rdIndex 255
+    setRegister registers memory rdIndex 255
     return (oldStatus, 0, sp)
 
 ses :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
@@ -972,7 +972,7 @@ st registers memory oldStatus sp "X" op2 = do
     r27 <- getRegister registers 27
     r26 <- getRegister registers 26
     let address16b = (fromIntegral r27 :: Word16) `shiftL` 8 + (fromIntegral r26 :: Word16)
-    setMemory memory registers (fromIntegral address16b) rr
+    setMemory registers memory (fromIntegral address16b) rr
     return (oldStatus, 0, sp)
 
 st registers memory oldStatus sp "X+" op2 = do 
@@ -981,11 +981,11 @@ st registers memory oldStatus sp "X+" op2 = do
     r27 <- getRegister registers 27
     r26 <- getRegister registers 26
     let address16b = (fromIntegral r27 :: Word16) `shiftL` 8 + (fromIntegral r26 :: Word16)
-    setMemory memory registers (fromIntegral address16b) rr
+    setMemory registers memory (fromIntegral address16b) rr
     let newXRegister = address16b + 1
     let xHigh = fromIntegral (newXRegister `shiftR` 8) :: Word8
     let xLow = fromIntegral newXRegister :: Word8
-    setRegisters memory registers [(27, xHigh), (26, xLow)]
+    setRegisters registers memory [(27, xHigh), (26, xLow)]
     return (oldStatus, 0, sp)
 
 st registers memory oldStatus sp "-X" op2 = do 
@@ -995,10 +995,10 @@ st registers memory oldStatus sp "-X" op2 = do
     r26 <- getRegister registers 26
     let address16b = (fromIntegral r27 :: Word16) `shiftL` 8 + (fromIntegral r26 :: Word16)
     let newXRegister = address16b - 1
-    setMemory memory registers (fromIntegral newXRegister) rr
+    setMemory registers memory (fromIntegral newXRegister) rr
     let xHigh = fromIntegral (newXRegister `shiftR` 8) :: Word8
     let xLow = fromIntegral newXRegister :: Word8
-    setRegisters memory registers [(27, xHigh), (26,xLow)]
+    setRegisters registers memory [(27, xHigh), (26,xLow)]
     return (oldStatus, 0, sp)
 
 st registers memory oldStatus sp "Y" op2 = do 
@@ -1007,7 +1007,7 @@ st registers memory oldStatus sp "Y" op2 = do
     r29 <- getRegister registers 29
     r28 <- getRegister registers 28
     let address16b = (fromIntegral r29 :: Word16) `shiftL` 8 + (fromIntegral r28 :: Word16)
-    setMemory memory registers (fromIntegral address16b) rr
+    setMemory registers memory (fromIntegral address16b) rr
     return (oldStatus, 0, sp)
 
 st registers memory oldStatus sp "Y+" op2 = do 
@@ -1016,11 +1016,11 @@ st registers memory oldStatus sp "Y+" op2 = do
     r29 <- getRegister registers 29
     r28 <- getRegister registers 28
     let address16b = (fromIntegral r29 :: Word16) `shiftL` 8 + (fromIntegral r28 :: Word16)
-    setMemory memory registers (fromIntegral address16b) rr
+    setMemory registers memory (fromIntegral address16b) rr
     let newYRegister = address16b + 1
     let yHigh = fromIntegral (newYRegister `shiftR` 8) :: Word8
     let yLow = fromIntegral newYRegister :: Word8
-    setRegisters memory registers [(29, yHigh), (28, yLow)]
+    setRegisters registers memory [(29, yHigh), (28, yLow)]
     return (oldStatus, 0, sp)
 
 st registers memory oldStatus sp "-Y" op2 = do 
@@ -1030,10 +1030,10 @@ st registers memory oldStatus sp "-Y" op2 = do
     r28 <- getRegister registers 28
     let address16b = (fromIntegral r29 :: Word16) `shiftL` 8 + (fromIntegral r28 :: Word16)
     let newYRegister = address16b - 1
-    setMemory memory registers (fromIntegral newYRegister) rr
+    setMemory registers memory (fromIntegral newYRegister) rr
     let yHigh = fromIntegral (newYRegister `shiftR` 8) :: Word8
     let yLow = fromIntegral newYRegister :: Word8
-    setRegisters memory registers [(29, yHigh), (28, yLow)]
+    setRegisters registers memory [(29, yHigh), (28, yLow)]
     return (oldStatus, 0, sp)
 
 st registers memory oldStatus sp "Z" op2 = do 
@@ -1042,7 +1042,7 @@ st registers memory oldStatus sp "Z" op2 = do
     r31 <- getRegister registers 31
     r30 <- getRegister registers 30
     let address16b = (fromIntegral r31 :: Word16) `shiftL` 8 + (fromIntegral r30 :: Word16)
-    setMemory memory registers (fromIntegral address16b) rr
+    setMemory registers memory (fromIntegral address16b) rr
     return (oldStatus, 0, sp)
 
 st registers memory oldStatus sp "Z+" op2 = do 
@@ -1051,11 +1051,11 @@ st registers memory oldStatus sp "Z+" op2 = do
     r31 <- getRegister registers 31
     r30 <- getRegister registers 30
     let address16b = (fromIntegral r31 :: Word16) `shiftL` 8 + (fromIntegral r30 :: Word16)
-    setMemory memory registers (fromIntegral address16b) rr
+    setMemory registers memory (fromIntegral address16b) rr
     let newZRegister = address16b + 1
     let zHigh = fromIntegral (newZRegister `shiftR` 8) :: Word8
     let zLow = fromIntegral newZRegister :: Word8
-    setRegisters memory registers [(31, zHigh), (30, zLow)]
+    setRegisters registers memory [(31, zHigh), (30, zLow)]
     return (oldStatus, 0, sp)
 
 st registers memory oldStatus sp "-Z" op2 = do 
@@ -1065,10 +1065,10 @@ st registers memory oldStatus sp "-Z" op2 = do
     r30 <- getRegister registers 30
     let address16b = (fromIntegral r31 :: Word16) `shiftL` 8 + (fromIntegral r30 :: Word16)
     let newZRegister = address16b - 1
-    setMemory memory registers (fromIntegral newZRegister) rr
+    setMemory registers memory (fromIntegral newZRegister) rr
     let zHigh = fromIntegral (newZRegister `shiftR` 8) :: Word8
     let zLow = fromIntegral newZRegister :: Word8
-    setRegisters memory registers [(31, zHigh), (30, zLow)]
+    setRegisters registers memory [(31, zHigh), (30, zLow)]
     return (oldStatus, 0, sp)
 
 sts :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Word16 -> Register -> ST s (StatusFlags, Int, StackPointer)
@@ -1076,7 +1076,7 @@ sts registers memory oldStatus sp immediate op2 = do
     let rrIndex = fromIntegral op2
     rr <- getRegister registers rrIndex
     let k = fromIntegral immediate
-    setMemory memory registers k rr
+    setMemory registers memory k rr
     return (oldStatus, 0, sp)
 
 sub :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
@@ -1086,7 +1086,7 @@ sub registers memory oldStatus sp op1 op2 = do
     rd <- getRegister registers rdIndex
     rr <- getRegister registers rsIndex
     let result = rd - rr
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         halfCarryFlag = not (testBit rd 3) && testBit rr 3 || testBit rr 3 && testBit result 3 || testBit result 3 && not (testBit rd 3),
         overflowFlag = testBit rd 7 && not (testBit rr 7) && not (testBit result 7) || not (testBit rd 7) && testBit rr 7 && testBit result 7,
@@ -1102,7 +1102,7 @@ subi registers memory oldStatus sp op1 k = do
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let result = rd - k
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     let updatedFlags = oldStatus {
         halfCarryFlag = not (testBit rd 3) && testBit k 3 || testBit k 3 && testBit result 3 || testBit result 3 && not (testBit rd 3),
         overflowFlag = testBit rd 7 && not (testBit k 7) && not (testBit result 7) || not (testBit rd 7) && testBit k 7 && testBit result 7,
@@ -1118,7 +1118,7 @@ swap registers memory oldStatus sp op1 = do
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let result = rd `shiftR` 4 .|. rd `shiftL` 4
-    setRegister memory registers rdIndex result
+    setRegister registers memory rdIndex result
     return (oldStatus, 0, sp)
 
 tst :: MutRegisters s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
