@@ -14,89 +14,89 @@ import Control.Monad.ST (ST)
 executeInstruction :: MutRegisters s -> MutMemory s -> StatusFlags -> ProgramCounter -> StackPointer -> Instruction -> ST s (StatusFlags, ProgramCounter, StackPointer)
 executeInstruction mutRegisters mutMemory flags pc sp instruction = do
     (updatedFlags, relativeJump, updatedSp) <- case instruction of
-        ADC rd rs -> adc flags mutRegisters sp mutMemory rd rs
-        ADD rd rs -> add flags mutRegisters sp mutMemory rd rs
-        ADIW rdh rdl immediate -> adiw flags mutRegisters sp mutMemory rdh rdl immediate
-        AND rd rr -> andInstr flags mutRegisters sp mutMemory rd rr
-        ANDI rd k -> andi flags mutRegisters sp mutMemory rd k
-        ASR rd -> asr flags mutRegisters sp mutMemory rd
-        BCLR s -> bclr flags mutRegisters sp mutMemory s
-        BLD rd b -> bld flags mutRegisters sp mutMemory rd b
-        BRCCR relativeAddress -> brcc flags mutRegisters sp mutMemory relativeAddress
-        BRCSR relativeAddress -> brcs flags mutRegisters sp mutMemory relativeAddress
-        BREQR relativeAddress -> breq flags mutRegisters sp mutMemory relativeAddress
-        BRGER relativeAddress -> brge flags mutRegisters sp mutMemory relativeAddress
-        BRHCR relativeAddress -> brhc flags mutRegisters sp mutMemory relativeAddress
-        BRHSR relativeAddress -> brhs flags mutRegisters sp mutMemory relativeAddress
-        BRIDR relativeAddress -> brid flags mutRegisters sp mutMemory relativeAddress
-        BRIER relativeAddress -> brie flags mutRegisters sp mutMemory relativeAddress
-        BRLOR relativeAddress -> brlo flags mutRegisters sp mutMemory relativeAddress
-        BRLTR relativeAddress -> brlt flags mutRegisters sp mutMemory relativeAddress
-        BRMIR relativeAddress -> brmi flags mutRegisters sp mutMemory relativeAddress
-        BRNER relativeAddress -> brne flags mutRegisters sp mutMemory relativeAddress
-        BRPLR relativeAddress -> brpl flags mutRegisters sp mutMemory relativeAddress
-        BRSHR relativeAddress -> brsh flags mutRegisters sp mutMemory relativeAddress
-        BRTCR relativeAddress -> brtc flags mutRegisters sp mutMemory relativeAddress
-        BRTSR relativeAddress -> brts flags mutRegisters sp mutMemory relativeAddress
-        BRVCR relativeAddress -> brvc flags mutRegisters sp mutMemory relativeAddress
-        BRVSR relativeAddress -> brvs flags mutRegisters sp mutMemory relativeAddress
-        CALLR relativeAddress -> call flags mutRegisters sp mutMemory relativeAddress pc
-        CBR rd k -> cbr flags mutRegisters sp mutMemory rd k
-        CLC -> clc flags mutRegisters sp mutMemory
-        CLH -> clh flags mutRegisters sp mutMemory
-        CLI -> cli flags mutRegisters sp mutMemory
-        CLN -> cln flags mutRegisters sp mutMemory
-        CLR rd -> clr flags mutRegisters sp mutMemory rd
-        CLS -> cls flags mutRegisters sp mutMemory
-        CLT -> clt flags mutRegisters sp mutMemory
-        CLV -> clv flags mutRegisters sp mutMemory
-        CLZ -> clz flags mutRegisters sp mutMemory
-        COM rd -> com flags mutRegisters sp mutMemory rd
-        CP rd rr -> cp flags mutRegisters sp mutMemory rd rr
-        CPC rd rr -> cpc flags mutRegisters sp mutMemory rd rr
-        CPI rd k -> cpi flags mutRegisters sp mutMemory rd k
-        CPSE rd rr -> cpse flags mutRegisters sp mutMemory rd rr
-        DEC rd -> dec flags mutRegisters sp mutMemory rd
-        EOR rd rr -> eor flags mutRegisters sp mutMemory rd rr
-        INC rd -> inc flags mutRegisters sp mutMemory rd
-        JMPR relativeAddress -> jmp flags mutRegisters sp mutMemory relativeAddress
-        LD rd xregister -> ld flags mutRegisters sp mutMemory rd xregister
+        ADC rd rs -> adc mutRegisters mutMemory flags sp rd rs
+        ADD rd rs -> add mutRegisters mutMemory flags sp rd rs
+        ADIW rdh rdl immediate -> adiw mutRegisters mutMemory flags sp rdh rdl immediate
+        AND rd rr -> andInstr mutRegisters mutMemory flags sp rd rr
+        ANDI rd k -> andi mutRegisters mutMemory flags sp rd k
+        ASR rd -> asr mutRegisters mutMemory flags sp rd
+        BCLR s -> bclr flags sp s
+        BLD rd b -> bld mutRegisters mutMemory flags sp rd b
+        BRCCR relativeAddress -> brcc flags sp relativeAddress
+        BRCSR relativeAddress -> brcs flags sp relativeAddress
+        BREQR relativeAddress -> breq flags sp relativeAddress
+        BRGER relativeAddress -> brge flags sp relativeAddress
+        BRHCR relativeAddress -> brhc flags sp relativeAddress
+        BRHSR relativeAddress -> brhs flags sp relativeAddress
+        BRIDR relativeAddress -> brid flags sp relativeAddress
+        BRIER relativeAddress -> brie flags sp relativeAddress
+        BRLOR relativeAddress -> brlo flags sp relativeAddress
+        BRLTR relativeAddress -> brlt flags sp relativeAddress
+        BRMIR relativeAddress -> brmi flags sp relativeAddress
+        BRNER relativeAddress -> brne flags sp relativeAddress
+        BRPLR relativeAddress -> brpl flags sp relativeAddress
+        BRSHR relativeAddress -> brsh flags sp relativeAddress
+        BRTCR relativeAddress -> brtc flags sp relativeAddress
+        BRTSR relativeAddress -> brts flags sp relativeAddress
+        BRVCR relativeAddress -> brvc flags sp relativeAddress
+        BRVSR relativeAddress -> brvs flags sp relativeAddress
+        CALLR relativeAddress -> call mutRegisters mutMemory flags sp relativeAddress pc
+        CBR rd k -> cbr mutRegisters mutMemory flags sp rd k
+        CLC -> clc flags sp
+        CLH -> clh flags sp
+        CLI -> cli flags sp
+        CLN -> cln flags sp
+        CLR rd -> clr mutRegisters mutMemory flags sp rd
+        CLS -> cls flags sp
+        CLT -> clt flags sp
+        CLV -> clv flags sp
+        CLZ -> clz flags sp
+        COM rd -> com mutRegisters mutMemory flags sp rd
+        CP rd rr -> cp mutRegisters flags sp rd rr
+        CPC rd rr -> cpc mutRegisters flags sp rd rr
+        CPI rd k -> cpi mutRegisters flags sp rd k
+        CPSE rd rr -> cpse mutRegisters flags sp rd rr
+        DEC rd -> dec mutRegisters mutMemory flags sp rd
+        EOR rd rr -> eor mutRegisters mutMemory flags sp rd rr
+        INC rd -> inc mutRegisters mutMemory flags sp rd
+        JMPR relativeAddress -> jmp flags sp relativeAddress
+        LD rd xregister -> ld mutRegisters mutMemory flags sp rd xregister
         LABEL label -> return (flags, 0, sp)
-        LDI rd immediate -> ldi flags mutRegisters sp mutMemory rd immediate
-        LDS rd k -> lds flags mutRegisters sp mutMemory rd k
-        LSL rd -> lsl flags mutRegisters sp mutMemory rd
-        LSR rd -> lsr flags mutRegisters sp mutMemory rd
-        MOV rd rs -> mov flags mutRegisters sp mutMemory rd rs
-        MOVW rdh rdl rrh rrl -> movw flags mutRegisters sp mutMemory rdh rdl rrh rrl
-        MUL rd rs -> mul flags mutRegisters sp mutMemory rd rs
-        MULS rd rs -> muls flags mutRegisters sp mutMemory rd rs
-        NEG rd -> neg flags mutRegisters sp mutMemory rd
+        LDI rd immediate -> ldi mutRegisters mutMemory flags sp rd immediate
+        LDS rd k -> lds mutRegisters mutMemory flags sp rd k
+        LSL rd -> lsl mutRegisters mutMemory flags sp rd
+        LSR rd -> lsr mutRegisters mutMemory flags sp rd
+        MOV rd rs -> mov mutRegisters mutMemory flags sp rd rs
+        MOVW rdh rdl rrh rrl -> movw mutRegisters mutMemory flags sp rdh rdl rrh rrl
+        MUL rd rs -> mul mutRegisters mutMemory flags sp rd rs
+        MULS rd rs -> muls mutRegisters mutMemory flags sp rd rs
+        NEG rd -> neg mutRegisters mutMemory flags sp rd
         NOP -> return (flags, 0, sp)
-        OR rd rr -> orInstr flags mutRegisters sp mutMemory rd rr
-        ORI rd k -> ori flags mutRegisters sp mutMemory rd k
-        POP rd -> pop flags mutRegisters sp mutMemory rd
-        PUSH rr -> push flags mutRegisters sp mutMemory rr
-        RET -> ret flags mutRegisters sp mutMemory pc
-        ROL rd -> rol flags mutRegisters sp mutMemory rd
-        ROR rd -> ror flags mutRegisters sp mutMemory rd
-        SBC rd rr -> sbc flags mutRegisters sp mutMemory rd rr
-        SBRC rd b -> sbrc flags mutRegisters sp mutMemory rd b
-        SBRS rd b -> sbrs flags mutRegisters sp mutMemory rd b
-        SEC -> sec flags mutRegisters sp mutMemory
-        SEH -> seh flags mutRegisters sp mutMemory
-        SEI -> sei flags mutRegisters sp mutMemory
-        SEN -> sen flags mutRegisters sp mutMemory
-        SER rd -> ser flags mutRegisters sp mutMemory rd
-        SES -> ses flags mutRegisters sp mutMemory
-        SET -> set flags mutRegisters sp mutMemory
-        SEV -> sev flags mutRegisters sp mutMemory
-        SEZ -> sez flags mutRegisters sp mutMemory
-        ST xregister rr -> st flags mutRegisters sp mutMemory xregister rr
-        STS k rr -> sts flags mutRegisters sp mutMemory k rr
-        SUB rd rr -> sub flags mutRegisters sp mutMemory rd rr
-        SUBI rd k -> subi flags mutRegisters sp mutMemory rd k
-        SWAP rd -> swap flags mutRegisters sp mutMemory rd
-        TST rd -> tst flags mutRegisters sp mutMemory rd
+        OR rd rr -> orInstr mutRegisters mutMemory flags sp rd rr
+        ORI rd k -> ori mutRegisters mutMemory flags sp rd k
+        POP rd -> pop mutRegisters mutMemory flags sp rd
+        PUSH rr -> push mutRegisters mutMemory flags sp rr
+        RET -> ret mutRegisters mutMemory flags sp pc
+        ROL rd -> rol mutRegisters mutMemory flags sp rd
+        ROR rd -> ror mutRegisters mutMemory flags sp rd
+        SBC rd rr -> sbc mutRegisters mutMemory flags sp rd rr
+        SBRC rd b -> sbrc mutRegisters flags sp rd b
+        SBRS rd b -> sbrs mutRegisters flags sp rd b
+        SEC -> sec flags sp
+        SEH -> seh flags sp
+        SEI -> sei flags sp
+        SEN -> sen flags sp
+        SER rd -> ser mutRegisters mutMemory flags sp rd
+        SES -> ses flags sp
+        SET -> set flags sp
+        SEV -> sev flags sp
+        SEZ -> sez flags sp
+        ST xregister rr -> st mutRegisters mutMemory flags sp xregister rr
+        STS k rr -> sts mutRegisters mutMemory flags sp k rr
+        SUB rd rr -> sub mutRegisters mutMemory flags sp rd rr
+        SUBI rd k -> subi mutRegisters mutMemory flags sp rd k
+        SWAP rd -> swap mutRegisters mutMemory flags sp rd
+        TST rd -> tst mutRegisters flags sp rd
     return (updatedFlags, pc + fromIntegral relativeJump + 1, updatedSp)
 
 initEmulatorState :: Int -> EmulatorState

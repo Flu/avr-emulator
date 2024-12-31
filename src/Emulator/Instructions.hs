@@ -138,8 +138,8 @@ data Instruction
     you need to change the return type for all the functions.
 -}
 
-adc :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-adc oldStatus registers sp memory rd rs = do 
+adc :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+adc registers memory oldStatus sp rd rs = do 
     let rdIndex = fromIntegral rd
     let rsIndex = fromIntegral rs
     op1 <- getRegister registers rdIndex
@@ -156,8 +156,8 @@ adc oldStatus registers sp memory rd rs = do
     }
     return (updatedFlags, 0, sp)
 
-add :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-add oldStatus registers sp memory rd rs = do 
+add :: MutRegisters s ->  MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+add registers memory oldStatus sp rd rs = do 
     let rdIndex = fromIntegral rd
     let rsIndex = fromIntegral rs
     op1 <- getRegister registers rdIndex
@@ -174,8 +174,8 @@ add oldStatus registers sp memory rd rs = do
     }
     return (updatedFlags, 0, sp)
 
-adiw :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
-adiw oldStatus registers sp memory oph opl k = do 
+adiw :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
+adiw  registers memory oldStatus sp oph opl k = do 
     let rhIndex = fromIntegral oph
     let rlIndex = fromIntegral opl
     rh <- getRegister registers rhIndex
@@ -193,8 +193,8 @@ adiw oldStatus registers sp memory oph opl k = do
     }
     return (updatedFlags, 0, sp)
 
-andInstr :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-andInstr oldStatus registers sp memory op1 op2 = do
+andInstr :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+andInstr registers memory oldStatus sp op1 op2 = do
     let rdIndex = fromIntegral op1
     let rrIndex = fromIntegral op2
     rd <- getRegister registers rdIndex
@@ -209,8 +209,8 @@ andInstr oldStatus registers sp memory op1 op2 = do
     }
     return (updatedFlags, 0, sp)
 
-andi :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
-andi oldStatus registers sp memory op1 immediate = do 
+andi :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
+andi registers memory oldStatus sp op1 immediate = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let k = immediate
@@ -224,8 +224,8 @@ andi oldStatus registers sp memory op1 immediate = do
     }
     return (updatedFlags, 0, sp)
 
-asr :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-asr oldStatus registers sp memory op1 = do 
+asr :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+asr registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let lsb = testBit rd 0
@@ -241,8 +241,8 @@ asr oldStatus registers sp memory op1 = do
     }
     return (updatedFlags, 0, sp)
 
-bclr :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-bclr oldStatus registers sp memory flagNumber = do 
+bclr :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+bclr oldStatus sp flagNumber = do 
     let updatedFlags = StatusFlags {
         interruptFlag = interruptFlag oldStatus && (flagNumber /= 7),
         tFlag = tFlag oldStatus && (flagNumber /= 6),
@@ -255,8 +255,8 @@ bclr oldStatus registers sp memory flagNumber = do
     }
     return (updatedFlags, 0, sp)
 
-bld :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Int -> ST s (StatusFlags, Int, StackPointer)
-bld flags registers sp memory rd b = do
+bld :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Int -> ST s (StatusFlags, Int, StackPointer)
+bld registers memory flags sp rd b = do
     let rdIndex = fromIntegral rd
     let t = tFlag flags
     value <- getRegister registers rdIndex
@@ -264,146 +264,146 @@ bld flags registers sp memory rd b = do
     setRegister memory registers rdIndex updatedValue
     return (flags, 0, sp)
 
-brcc :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brcc oldStatus registers sp memory relAddress = do 
+brcc :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brcc oldStatus sp relAddress = do 
     let shouldJump = not (carryFlag oldStatus)
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brcs :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brcs oldStatus registers sp memory relAddress = do 
+brcs :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brcs oldStatus sp relAddress = do 
     let shouldJump = carryFlag oldStatus
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-breq :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-breq oldStatus registers sp memory relAddress = do 
+breq :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+breq oldStatus sp relAddress = do 
     let shouldJump = zeroFlag oldStatus
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brge :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brge oldStatus registers sp memory relAddress = do 
+brge :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brge oldStatus sp relAddress = do 
     let shouldJump = not (signFlag oldStatus)
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brhc :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brhc oldStatus registers sp memory relAddress = do 
+brhc :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brhc oldStatus sp relAddress = do 
     let shouldJump = not (halfCarryFlag oldStatus)
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brhs :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brhs oldStatus registers sp memory relAddress = do 
+brhs :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brhs oldStatus sp relAddress = do 
     let shouldJump = halfCarryFlag oldStatus
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brid :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brid oldStatus registers sp memory relAddress = do 
+brid :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brid oldStatus sp relAddress = do 
     let shouldJump = interruptFlag oldStatus
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brie :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brie oldStatus registers sp memory relAddress = do 
+brie :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brie oldStatus sp relAddress = do 
     let shouldJump = not (interruptFlag oldStatus)
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brlo :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brlo oldStatus registers sp memory relAddress = do 
+brlo :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brlo oldStatus sp relAddress = do 
     let shouldJump = carryFlag oldStatus
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brlt :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brlt oldStatus registers sp memory relAddress = do 
+brlt :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brlt oldStatus sp relAddress = do 
     let shouldJump = signFlag oldStatus
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brmi :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brmi oldStatus registers sp memory relAddress = do 
+brmi :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brmi oldStatus sp relAddress = do 
     let shouldJump = negativeFlag oldStatus
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brne :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brne oldStatus registers sp memory relAddress = do 
+brne :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brne oldStatus sp relAddress = do 
     let shouldJump = zeroFlag oldStatus
     let jumpAddress = if shouldJump then 0 else relAddress
     return (oldStatus, jumpAddress, sp)
 
-brpl :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brpl oldStatus registers sp memory relAddress = do 
+brpl :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brpl oldStatus sp relAddress = do 
     let shouldJump = not (negativeFlag oldStatus)
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brsh :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brsh oldStatus registers sp memory relAddress = do 
+brsh :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brsh oldStatus sp relAddress = do 
     let shouldJump = not (carryFlag oldStatus)
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brtc :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brtc oldStatus registers sp memory relAddress = do 
+brtc :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brtc oldStatus sp relAddress = do 
     let shouldJump = not (tFlag oldStatus)
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brts :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brts oldStatus registers sp memory relAddress = do 
+brts :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brts oldStatus sp relAddress = do 
     let shouldJump = tFlag oldStatus
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brvc :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brvc oldStatus registers sp memory relAddress = do 
+brvc :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brvc oldStatus sp relAddress = do 
     let shouldJump = not (overflowFlag oldStatus)
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-brvs :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-brvs oldStatus registers sp memory relAddress = do 
+brvs :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+brvs oldStatus sp relAddress = do 
     let shouldJump = overflowFlag oldStatus
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldStatus, jumpAddress, sp)
 
-call :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> Word16 -> ST s (StatusFlags, Int, StackPointer)
-call oldStatus registers sp memory relAddress returnAddress = do 
+call :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Int -> Word16 -> ST s (StatusFlags, Int, StackPointer)
+call registers memory oldStatus sp relAddress returnAddress = do 
     let (high, low) = (fromIntegral (returnAddress `shiftR` 8), fromIntegral (returnAddress .&. 0xFF))
     setMemoryValues memory registers [((fromIntegral sp), high), ((fromIntegral (sp - 1)), low)]
     let newSp = sp - 2
     return (oldStatus, relAddress, newSp)
 
-cbr :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
-cbr status registers sp mem rb k = andi status registers sp mem rb (0xFF - k)
+cbr :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
+cbr registers mem status sp rb k = andi registers mem status sp rb (0xFF - k)
 
-clc :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-clc oldStatus registers sp memory = do 
+clc :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+clc oldStatus sp = do 
     let updatedFlags = oldStatus { carryFlag = False }
     return (updatedFlags, 0, sp)
 
-clh :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-clh oldStatus registers sp memory = do 
+clh :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+clh oldStatus sp = do 
     let updatedFlags = oldStatus { halfCarryFlag = False }
     return (updatedFlags, 0, sp)
 
-cli :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-cli oldStatus registers sp memory = do 
+cli :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+cli oldStatus sp = do 
     let updatedFlags = oldStatus { interruptFlag = False }
     return (updatedFlags, 0, sp)
 
-cln :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-cln oldStatus registers sp memory = do 
+cln :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+cln oldStatus sp = do 
     let updatedFlags = oldStatus { negativeFlag = False }
     return (updatedFlags, 0, sp)
 
-clr :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-clr oldStatus registers sp memory op1 = do 
+clr :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+clr registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     let result = 0
     setRegister memory registers rdIndex result
@@ -415,28 +415,28 @@ clr oldStatus registers sp memory op1 = do
     }
     return (updatedFlags, 0, sp)
 
-cls :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-cls oldStatus registers sp memory = do 
+cls :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+cls oldStatus sp = do 
     let updatedFlags = oldStatus { signFlag = False }
     return (updatedFlags, 0, sp)
 
-clt :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-clt oldStatus registers sp memory = do 
+clt :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+clt oldStatus sp = do 
     let updatedFlags = oldStatus { tFlag = False }
     return (updatedFlags, 0, sp)
 
-clv :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-clv oldStatus registers sp memory = do 
+clv :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+clv oldStatus sp = do 
     let updatedFlags = oldStatus { overflowFlag = False }
     return (updatedFlags, 0, sp)
 
-clz :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-clz oldStatus registers sp memory = do 
+clz :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+clz oldStatus sp = do 
     let updatedFlags = oldStatus { zeroFlag = False }
     return (updatedFlags, 0, sp)
 
-com :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-com oldStatus registers sp memory op1 = do 
+com :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+com registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let result = 255 - rd
@@ -450,8 +450,8 @@ com oldStatus registers sp memory op1 = do
     }
     return (updatedFlags, 0, sp)
 
-cp :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-cp oldStatus registers sp memory op1 op2 = do 
+cp :: MutRegisters s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+cp registers oldStatus sp op1 op2 = do 
     let rdIndex = fromIntegral op1
     let rrIndex = fromIntegral op2
     rd <- getRegister registers rdIndex
@@ -467,8 +467,8 @@ cp oldStatus registers sp memory op1 op2 = do
     }
     return (updatedFlags, 0, sp)
 
-cpc :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-cpc oldStatus registers sp memory op1 op2 = do 
+cpc :: MutRegisters s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+cpc registers oldStatus sp op1 op2 = do 
     let rdIndex = fromIntegral op1
     let rrIndex = fromIntegral op2
     rd <- getRegister registers rdIndex
@@ -485,8 +485,8 @@ cpc oldStatus registers sp memory op1 op2 = do
     }
     return (updatedFlags, 0, sp)
 
-cpi :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
-cpi oldStatus registers sp memory op1 immediate = do 
+cpi :: MutRegisters s -> StatusFlags -> StackPointer -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
+cpi registers oldStatus sp op1 immediate = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let k = immediate
@@ -501,8 +501,8 @@ cpi oldStatus registers sp memory op1 immediate = do
     }
     return (updatedFlags, 0, sp)
 
-cpse :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-cpse oldStatus registers sp memory op1 op2 = do 
+cpse :: MutRegisters s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+cpse registers oldStatus sp op1 op2 = do 
     let rdIndex = fromIntegral op1
     let rrIndex = fromIntegral op2
     rd <- getRegister registers rdIndex
@@ -511,8 +511,8 @@ cpse oldStatus registers sp memory op1 op2 = do
     let relativeJump = if shouldJump then 1 else 0
     return (oldStatus, relativeJump, sp)
 
-dec :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-dec oldStatus registers sp memory op1 = do 
+dec :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+dec registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let result = rd - 1
@@ -525,8 +525,8 @@ dec oldStatus registers sp memory op1 = do
     }
     return (updatedFlags, 0, sp)
 
-eor :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-eor oldStatus registers sp memory op1 op2 = do 
+eor :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+eor registers memory oldStatus sp op1 op2 = do 
     let rdIndex = fromIntegral op1
     let rrIndex = fromIntegral op2
     rd <- getRegister registers rdIndex
@@ -541,8 +541,8 @@ eor oldStatus registers sp memory op1 op2 = do
     }
     return (updatedFlags, 0, sp)
 
-inc :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-inc oldStatus registers sp memory op1 = do 
+inc :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+inc registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let result = rd + 1
@@ -555,11 +555,11 @@ inc oldStatus registers sp memory op1 = do
     }
     return (updatedFlags, 0, sp)
 
-jmp :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Int -> ST s (StatusFlags, Int, StackPointer)
-jmp oldStatus registers sp memory relAddress = return (oldStatus, relAddress, sp)
+jmp :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+jmp oldStatus sp relAddress = return (oldStatus, relAddress, sp)
 
-ld :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> String -> ST s (StatusFlags, Int, StackPointer)
-ld oldStatus registers sp memory op1 "X" = do 
+ld :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> String -> ST s (StatusFlags, Int, StackPointer)
+ld registers memory oldStatus sp op1 "X" = do 
     let rdIndex = fromIntegral op1
     r27 <- getRegister registers 27
     r26 <- getRegister registers 26
@@ -568,7 +568,7 @@ ld oldStatus registers sp memory op1 "X" = do
     setRegister memory registers rdIndex loadValue
     return (oldStatus, 0, sp)
 
-ld oldStatus registers sp memory op1 "X+" = do 
+ld registers memory oldStatus sp op1 "X+" = do 
     let rdIndex = fromIntegral op1
     r27 <- getRegister registers 27
     r26 <- getRegister registers 26
@@ -581,7 +581,7 @@ ld oldStatus registers sp memory op1 "X+" = do
     setRegisters memory registers [(27, xHigh),(26, xLow)]
     return (oldStatus, 0, sp)
 
-ld oldStatus registers sp memory op1 "-X" = do 
+ld registers memory oldStatus sp op1 "-X" = do 
     let rdIndex = fromIntegral op1
     r27 <- getRegister registers 27
     r26 <- getRegister registers 26
@@ -594,7 +594,7 @@ ld oldStatus registers sp memory op1 "-X" = do
     setRegisters memory registers [(27, xHigh), (26, xLow)]
     return (oldStatus, 0, sp)
 
-ld oldStatus registers sp memory op1 "Y" = do 
+ld registers memory oldStatus sp op1 "Y" = do 
     let rdIndex = fromIntegral op1
     r29 <- getRegister registers 29
     r28 <- getRegister registers 28
@@ -603,7 +603,7 @@ ld oldStatus registers sp memory op1 "Y" = do
     setRegister memory registers rdIndex value
     return (oldStatus, 0, sp)
 
-ld oldStatus registers sp memory op1 "Y+" = do 
+ld registers memory oldStatus sp op1 "Y+" = do 
     let rdIndex = fromIntegral op1
     r29 <- getRegister registers 29
     r28 <- getRegister registers 28
@@ -616,7 +616,7 @@ ld oldStatus registers sp memory op1 "Y+" = do
     setRegisters memory registers [(29, yHigh), (28, yLow)]
     return (oldStatus, 0, sp)
 
-ld oldStatus registers sp memory op1 "-Y" = do 
+ld registers memory oldStatus sp op1 "-Y" = do 
     let rdIndex = fromIntegral op1
     r29 <- getRegister registers 29
     r28 <- getRegister registers 28
@@ -629,7 +629,7 @@ ld oldStatus registers sp memory op1 "-Y" = do
     setRegisters memory registers [(29, yHigh), (28, yLow)]
     return (oldStatus, 0, sp)
 
-ld oldStatus registers sp memory op1 "Z" = do 
+ld registers memory oldStatus sp op1 "Z" = do 
     let rdIndex = fromIntegral op1
     r31 <- getRegister registers 31
     r30 <- getRegister registers 30
@@ -638,7 +638,7 @@ ld oldStatus registers sp memory op1 "Z" = do
     setRegister memory registers rdIndex value 
     return (oldStatus, 0, sp)
 
-ld oldStatus registers sp memory op1 "Z+" = do 
+ld registers memory oldStatus sp op1 "Z+" = do 
     let rdIndex = fromIntegral op1
     r31 <- getRegister registers 31
     r30 <- getRegister registers 30
@@ -651,7 +651,7 @@ ld oldStatus registers sp memory op1 "Z+" = do
     setRegisters memory registers [(31, zHigh), (30, zLow)]
     return (oldStatus, 0, sp)
 
-ld oldStatus registers sp memory op1 "-Z" = do
+ld registers memory oldStatus sp op1 "-Z" = do
     let rdIndex = fromIntegral op1
     r31 <- getRegister registers 31
     r30 <- getRegister registers 30
@@ -664,22 +664,22 @@ ld oldStatus registers sp memory op1 "-Z" = do
     setRegisters memory registers [(31, zHigh), (30, zLow)]
     return (oldStatus, 0, sp)
 
-ldi :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
-ldi oldStatus registers sp memory rd immediate = do 
+ldi :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
+ldi registers memory oldStatus sp rd immediate = do 
     let rdIndex = fromIntegral rd
     setRegister memory registers rdIndex immediate
     return (oldStatus, 0, sp)
 
-lds :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Word16 -> ST s (StatusFlags, Int, StackPointer)
-lds oldStatus registers sp memory op1 immediate = do 
+lds :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Word16 -> ST s (StatusFlags, Int, StackPointer)
+lds registers memory oldStatus sp op1 immediate = do 
     let rdIndex = fromIntegral op1
     let k = fromIntegral immediate
     value <- getMemory memory k
     setRegister memory registers rdIndex value
     return (oldStatus, 0, sp)
 
-lsl :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-lsl oldStatus registers sp memory op1 = do 
+lsl :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+lsl registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let msb = testBit rd 7
@@ -695,8 +695,8 @@ lsl oldStatus registers sp memory op1 = do
     }
     return (updatedFlags, 0, sp)
 
-lsr :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-lsr oldStatus registers sp memory op1 = do 
+lsr :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+lsr registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let lsb = testBit rd 0
@@ -711,16 +711,16 @@ lsr oldStatus registers sp memory op1 = do
     }
     return (updatedFlags, 0, sp)
 
-mov :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-mov oldStatus registers sp memory rd rs = do 
+mov :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+mov registers memory oldStatus sp rd rs = do 
     let rdIndex = fromIntegral rd
     let rsIndex = fromIntegral rs
     value <- getRegister registers rsIndex
     setRegister memory registers rdIndex value
     return (oldStatus, 0, sp)
 
-movw :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-movw oldStatus registers sp memory rd1 rd rr1 rr = do 
+movw :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+movw registers memory oldStatus sp rd1 rd rr1 rr = do 
     let rd1Index = fromIntegral rd1
     let rdIndex = fromIntegral rd
     let rr1Index = fromIntegral rr1
@@ -730,8 +730,8 @@ movw oldStatus registers sp memory rd1 rd rr1 rr = do
     setRegisters memory registers [(rd1Index, valueH), (rdIndex, valueL)]
     return (oldStatus, 0, sp)
 
-mul :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-mul oldStatus registers sp memory op1 op2 = do 
+mul :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+mul registers memory oldStatus sp op1 op2 = do 
     let rdIndex = fromIntegral op1
     let rrIndex = fromIntegral op2
     rd <- getRegister registers rdIndex
@@ -749,8 +749,8 @@ mul oldStatus registers sp memory op1 op2 = do
     }
     return (updatedFlags, 0, sp)
 
-muls :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-muls oldStatus registers sp memory op1 op2 = do 
+muls :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+muls registers memory oldStatus sp op1 op2 = do 
     let rdIndex = fromIntegral op1
     let rrIndex = fromIntegral op2
     rd <- getRegister registers rdIndex
@@ -778,8 +778,8 @@ muls oldStatus registers sp memory op1 op2 = do
             | not (testBit m1 7) && not (testBit m2 7) = (fromIntegral m1 ::Word16)*(fromIntegral m2 ::Word16)
             | testBit m1 7 && testBit m2 7 = (fromIntegral (negate m1) ::Word16)*(fromIntegral (negate m2) ::Word16)
 
-neg :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-neg oldStatus registers sp memory op1 = do 
+neg :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+neg registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let result = negate rd
@@ -794,8 +794,8 @@ neg oldStatus registers sp memory op1 = do
     }
     return (updatedFlags, 0, sp)
 
-orInstr :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-orInstr oldStatus registers sp memory op1 op2 = do 
+orInstr :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+orInstr registers memory oldStatus sp op1 op2 = do 
     let rdIndex = fromIntegral op1
     let rsIndex = fromIntegral op2
     rd <- getRegister registers rdIndex
@@ -810,8 +810,8 @@ orInstr oldStatus registers sp memory op1 op2 = do
     }
     return (updatedFlags, 0, sp)
 
-ori :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
-ori oldStatus registers sp memory op1 immediate = do 
+ori :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
+ori registers memory oldStatus sp op1 immediate = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let k = immediate
@@ -825,23 +825,23 @@ ori oldStatus registers sp memory op1 immediate = do
     }
     return (updatedFlags, 0, sp)
 
-pop :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-pop oldStatus registers sp memory op1 = do 
+pop :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+pop registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     let newSp = sp + 1
     poppedValue <- getMemory memory (fromIntegral newSp)
     setRegister memory registers rdIndex poppedValue
     return (oldStatus, 0, newSp)
 
-push :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-push oldStatus registers sp memory op1 = do 
+push :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+push registers memory oldStatus sp op1 = do 
     let rrIndex = fromIntegral op1
     rr <- getRegister registers rrIndex
     setMemory memory registers (fromIntegral sp) rr
     return (oldStatus, 0, sp - 1)
 
-ret ::  StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ProgramCounter -> ST s (StatusFlags, Int, StackPointer)
-ret oldStatus registers sp memory pc = do 
+ret ::  MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> ProgramCounter -> ST s (StatusFlags, Int, StackPointer)
+ret registers memory oldStatus sp pc = do 
     let newSp = sp + 2
     returnAddressHigh <- getMemory memory (fromIntegral newSp)
     returnAddressLow <- getMemory memory (fromIntegral newSp - 1)
@@ -849,8 +849,8 @@ ret oldStatus registers sp memory pc = do
     let relativeAddress = (fromIntegral returnAddress :: Int) - (fromIntegral pc :: Int)
     return (oldStatus, relativeAddress, newSp)
 
-rol :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-rol oldStatus registers sp memory op1 = do 
+rol :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+rol registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let msb = testBit rd 7
@@ -866,8 +866,8 @@ rol oldStatus registers sp memory op1 = do
     }
     return (updatedFlags, 0, sp)
 
-ror :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-ror oldStatus registers sp memory op1 = do 
+ror :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+ror registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let lsb = testBit rd 0
@@ -882,8 +882,8 @@ ror oldStatus registers sp memory op1 = do
     }
     return (updatedFlags, 0, sp)
 
-sbc :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-sbc oldStatus registers sp memory op1 op2 = do 
+sbc :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+sbc registers memory oldStatus sp op1 op2 = do 
     let rdIndex = fromIntegral op1
     let rsIndex = fromIntegral op2
     rd <- getRegister registers rdIndex
@@ -901,8 +901,8 @@ sbc oldStatus registers sp memory op1 op2 = do
     }
     return (updatedFlags, 0, sp)
 
-sbrc :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
-sbrc oldStatus registers sp memory op1 immediate = do 
+sbrc :: MutRegisters s -> StatusFlags -> StackPointer -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
+sbrc registers oldStatus sp op1 immediate = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let b = fromIntegral immediate
@@ -910,8 +910,8 @@ sbrc oldStatus registers sp memory op1 immediate = do
     let relativeJump = if shouldJump then 1 else 0
     return (oldStatus, relativeJump, sp)
 
-sbrs :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
-sbrs oldStatus registers sp memory op1 immediate = do 
+sbrs :: MutRegisters s -> StatusFlags -> StackPointer -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
+sbrs registers oldStatus sp op1 immediate = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let b = fromIntegral immediate
@@ -919,54 +919,54 @@ sbrs oldStatus registers sp memory op1 immediate = do
     let relativeJump = if shouldJump then 1 else 0
     return (oldStatus, relativeJump, sp)
 
-sec :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-sec oldStatus registers sp memory = do 
+sec :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+sec oldStatus sp = do 
     let updatedFlags = oldStatus { carryFlag = True }
     return (updatedFlags, 0, sp)
 
-seh :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-seh oldStatus registers sp memory = do 
+seh :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+seh oldStatus sp = do 
     let updatedFlags = oldStatus { halfCarryFlag = True }
     return (updatedFlags, 0, sp)
 
-sei :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-sei oldStatus registers sp memory = do 
+sei :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+sei oldStatus sp = do 
     let updatedFlags = oldStatus { interruptFlag = True }
     return (updatedFlags, 0, sp)
 
-sen :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-sen oldStatus registers sp memory = do 
+sen :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+sen oldStatus sp = do 
     let updatedFlags = oldStatus { negativeFlag = True }
     return (updatedFlags, 0, sp)
 
-ser :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-ser oldStatus registers sp memory op1 = do 
+ser :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+ser registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     setRegister memory registers rdIndex 255
     return (oldStatus, 0, sp)
 
-ses :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-ses oldStatus registers sp memory = do 
+ses :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+ses oldStatus sp = do 
     let updatedFlags = oldStatus { signFlag = True }
     return (updatedFlags, 0, sp)
 
-set :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-set oldStatus registers sp memory = do 
+set :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+set oldStatus sp = do 
     let updatedFlags = oldStatus { tFlag = True }
     return (updatedFlags, 0, sp)
 
-sev :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-sev oldStatus registers sp memory = do 
+sev :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+sev oldStatus sp = do 
     let updatedFlags = oldStatus { overflowFlag = True }
     return (updatedFlags, 0, sp)
 
-sez :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> ST s (StatusFlags, Int, StackPointer)
-sez oldStatus registers sp memory = do 
+sez :: StatusFlags -> StackPointer -> ST s (StatusFlags, Int, StackPointer)
+sez oldStatus sp = do 
     let updatedFlags = oldStatus { zeroFlag = True }
     return (updatedFlags, 0, sp)
 
-st :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> String -> Register -> ST s (StatusFlags, Int, StackPointer)
-st oldStatus registers sp memory "X" op2 = do 
+st :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> String -> Register -> ST s (StatusFlags, Int, StackPointer)
+st registers memory oldStatus sp "X" op2 = do 
     let rrIndex = fromIntegral op2
     rr <- getRegister registers rrIndex
     r27 <- getRegister registers 27
@@ -975,7 +975,7 @@ st oldStatus registers sp memory "X" op2 = do
     setMemory memory registers (fromIntegral address16b) rr
     return (oldStatus, 0, sp)
 
-st oldStatus registers sp memory "X+" op2 = do 
+st registers memory oldStatus sp "X+" op2 = do 
     let rrIndex = fromIntegral op2
     rr <- getRegister registers rrIndex
     r27 <- getRegister registers 27
@@ -988,7 +988,7 @@ st oldStatus registers sp memory "X+" op2 = do
     setRegisters memory registers [(27, xHigh), (26, xLow)]
     return (oldStatus, 0, sp)
 
-st oldStatus registers sp memory "-X" op2 = do 
+st registers memory oldStatus sp "-X" op2 = do 
     let rrIndex = fromIntegral op2
     rr <- getRegister registers rrIndex
     r27 <- getRegister registers 27
@@ -1001,7 +1001,7 @@ st oldStatus registers sp memory "-X" op2 = do
     setRegisters memory registers [(27, xHigh), (26,xLow)]
     return (oldStatus, 0, sp)
 
-st oldStatus registers sp memory "Y" op2 = do 
+st registers memory oldStatus sp "Y" op2 = do 
     let rrIndex = fromIntegral op2
     rr <- getRegister registers rrIndex
     r29 <- getRegister registers 29
@@ -1010,7 +1010,7 @@ st oldStatus registers sp memory "Y" op2 = do
     setMemory memory registers (fromIntegral address16b) rr
     return (oldStatus, 0, sp)
 
-st oldStatus registers sp memory "Y+" op2 = do 
+st registers memory oldStatus sp "Y+" op2 = do 
     let rrIndex = fromIntegral op2
     rr <- getRegister registers rrIndex
     r29 <- getRegister registers 29
@@ -1023,7 +1023,7 @@ st oldStatus registers sp memory "Y+" op2 = do
     setRegisters memory registers [(29, yHigh), (28, yLow)]
     return (oldStatus, 0, sp)
 
-st oldStatus registers sp memory "-Y" op2 = do 
+st registers memory oldStatus sp "-Y" op2 = do 
     let rrIndex = fromIntegral op2
     rr <- getRegister registers rrIndex
     r29 <- getRegister registers 29
@@ -1036,7 +1036,7 @@ st oldStatus registers sp memory "-Y" op2 = do
     setRegisters memory registers [(29, yHigh), (28, yLow)]
     return (oldStatus, 0, sp)
 
-st oldStatus registers sp memory "Z" op2 = do 
+st registers memory oldStatus sp "Z" op2 = do 
     let rrIndex = fromIntegral op2
     rr <- getRegister registers rrIndex
     r31 <- getRegister registers 31
@@ -1045,7 +1045,7 @@ st oldStatus registers sp memory "Z" op2 = do
     setMemory memory registers (fromIntegral address16b) rr
     return (oldStatus, 0, sp)
 
-st oldStatus registers sp memory "Z+" op2 = do 
+st registers memory oldStatus sp "Z+" op2 = do 
     let rrIndex = fromIntegral op2
     rr <- getRegister registers rrIndex
     r31 <- getRegister registers 31
@@ -1058,7 +1058,7 @@ st oldStatus registers sp memory "Z+" op2 = do
     setRegisters memory registers [(31, zHigh), (30, zLow)]
     return (oldStatus, 0, sp)
 
-st oldStatus registers sp memory "-Z" op2 = do 
+st registers memory oldStatus sp "-Z" op2 = do 
     let rrIndex = fromIntegral op2
     rr <- getRegister registers rrIndex
     r31 <- getRegister registers 31
@@ -1071,16 +1071,16 @@ st oldStatus registers sp memory "-Z" op2 = do
     setRegisters memory registers [(31, zHigh), (30, zLow)]
     return (oldStatus, 0, sp)
 
-sts :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Word16 -> Register -> ST s (StatusFlags, Int, StackPointer)
-sts oldStatus registers sp memory immediate op2 = do 
+sts :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Word16 -> Register -> ST s (StatusFlags, Int, StackPointer)
+sts registers memory oldStatus sp immediate op2 = do 
     let rrIndex = fromIntegral op2
     rr <- getRegister registers rrIndex
     let k = fromIntegral immediate
     setMemory memory registers k rr
     return (oldStatus, 0, sp)
 
-sub :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
-sub oldStatus registers sp memory op1 op2 = do 
+sub :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Register -> ST s (StatusFlags, Int, StackPointer)
+sub registers memory oldStatus sp op1 op2 = do 
     let rdIndex = fromIntegral op1
     let rsIndex = fromIntegral op2
     rd <- getRegister registers rdIndex
@@ -1097,8 +1097,8 @@ sub oldStatus registers sp memory op1 op2 = do
     }
     return (updatedFlags, 0, sp)
 
-subi :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
-subi oldStatus registers sp memory op1 k = do 
+subi :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
+subi registers memory oldStatus sp op1 k = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let result = rd - k
@@ -1113,16 +1113,16 @@ subi oldStatus registers sp memory op1 k = do
     }
     return (updatedFlags, 0, sp)
 
-swap :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-swap oldStatus registers sp memory op1 = do 
+swap :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+swap registers memory oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let result = rd `shiftR` 4 .|. rd `shiftL` 4
     setRegister memory registers rdIndex result
     return (oldStatus, 0, sp)
 
-tst :: StatusFlags -> MutRegisters s -> StackPointer -> MutMemory s -> Register -> ST s (StatusFlags, Int, StackPointer)
-tst oldStatus registers sp memory op1 = do 
+tst :: MutRegisters s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+tst registers oldStatus sp op1 = do 
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     let updatedFlags = oldStatus {
