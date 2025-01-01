@@ -53,7 +53,7 @@ extra-doc-files:    CHANGELOG.md
 -- Library component
 library
     exposed-modules:    Parser, Emulator, Repl, Options
-    ghc-options:        -fspecialise-aggressively -fexpose-all-unfoldings -threaded -Wunused-imports
+    ghc-options:        -fspecialise-aggressively -fexpose-all-unfoldings -threaded -Wunused-imports -Wunused-binds -fprof-auto "-with-rtsopts=-N -p -s -h -i0.1"
     other-modules:      Emulator.Core, Emulator.State, Emulator.Instructions, Emulator.Utils
     hs-source-dirs:     src
     build-depends:      base >=4.16.2.1
@@ -66,12 +66,13 @@ library
                         , ansi-terminal >=1.1.1
                         , haskeline >= 0.8.2.1
                         , mtl >=2.3.1
+                        , vector >= 0.13.2.0
     default-language:   GHC2021
 
 -- Executable component
 executable avr-emulator
     -- Import common warning flags and optimization flags.
-    ghc-options:        -fspecialise-aggressively -fexpose-all-unfoldings -threaded -Wunused-imports
+    ghc-options:        -fspecialise-aggressively -fexpose-all-unfoldings -threaded -Wunused-imports -Wunused-binds -fprof-auto "-with-rtsopts=-N -p -s -h -i0.1"
 
     -- .hs or .lhs file containing the Main module.
     main-is:            Main.hs

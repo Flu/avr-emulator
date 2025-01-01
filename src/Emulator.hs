@@ -22,8 +22,10 @@ import Emulator.Instructions
 import Emulator.Utils
 import Emulator.State
 
+import Control.Monad.ST
 import Data.Maybe (catMaybes)
-import Data.Array
+import qualified Data.Vector as V
+import Data.Vector ((!), Vector)
 
 {- | After resolving the labels, this is the heart of the emulator. It fetches the instruction from memory with the PC,
     loads the state from the previous instruction and call executeInstruction. After the execution is done, it calls itself
@@ -33,56 +35,123 @@ import Data.Array
     If there are no more instructions in the list (PC has surpassed the upper bound of the instruction list), execution is considered
     done and the function returns the most recent EmulatorState.
 -}
-runProgram :: Array Int Instruction -> EmulatorState -> EmulatorState
-runProgram initialInstructions = go -- Call recursive helper function go
-  where
-    go state =
-      let pc = fromIntegral (programCounter state)
-      in if pc >= length initialInstructions -- If PC bigger than the list, it means we got to the end of execution
-         then state -- So return the state
-         else
-           let currentInstruction = initialInstructions ! pc -- Fetch next instruction to be executed from where the PC points to
-               newState = executeInstruction currentInstruction state -- Decode and execute it, then get the updated emulator state 
-           in go newState -- Call recursively with the new state
+runProgram :: Vector Instruction -> EmulatorState -> EmulatorState
+runProgram initialInstructions state = runST $ do
+    mutMemory <- V.thaw (memory state) :: ST s (MutMemory s)
+    mutRegisters <- V.thaw (registers state) :: ST s (MutRegisters s)
+    (flags, pc, sp) <- go mutRegisters mutMemory (flags state) (programCounter state) (sp state)
+    finalMemory <- V.freeze mutMemory
+    finalRegisters <- V.freeze mutRegisters
+    return EmulatorState {
+        registers = finalRegisters,
+        flags = flags,
+        programCounter = pc,
+        memory = finalMemory,
+        sp = sp
+    }
+    where
+        go :: MutRegisters s -> MutMemory s -> StatusFlags -> ProgramCounter -> StackPointer -> ST s (StatusFlags, ProgramCounter, StackPointer)
+        go mutRegisters mutMemory currFlags currProgramCounter currSp = do
+            let pc = fromIntegral currProgramCounter
+            if pc >= length initialInstructions then
+                return (currFlags, currProgramCounter, currSp)
+            else do
+                (newFlags, newPc, newSp) <- executeInstruction mutRegisters mutMemory currFlags currProgramCounter currSp (initialInstructions ! pc)
+                go mutRegisters mutMemory newFlags newPc newSp
 
-stepOneInstruction :: Array Int Instruction -> EmulatorState -> (Bool, EmulatorState)
-stepOneInstruction programMemory lastState
+stepOneInstruction :: Vector Instruction -> EmulatorState -> (Bool, EmulatorState)
+stepOneInstruction programMemory lastState@(EmulatorState regs flags pcReg sp memory)
     | (fromIntegral $ programCounter lastState) >= (length programMemory) - 1 = (True, lastState)
-    | otherwise = let
-        pc = fromIntegral $ programCounter lastState
-        currentInstruction = programMemory ! pc
-        updatedState = executeInstruction currentInstruction lastState
-        in (False, updatedState)
+    | otherwise = runST $ do
+        let pc = fromIntegral pcReg
+        let currentInstruction = programMemory ! pc
+        mutRegisters <- V.thaw regs :: ST s (MutRegisters s)
+        mutMemory <- V.thaw memory :: ST s (MutMemory s)
+        (newFlags, newPc, newSp) <- executeInstruction mutRegisters mutMemory flags pcReg sp currentInstruction
+        updatedRegisters <- V.freeze mutRegisters
+        updatedMemory <- V.freeze mutMemory
+        return (False, EmulatorState {
+            registers = updatedRegisters,
+            flags = newFlags,
+            programCounter = newPc,
+            memory = updatedMemory,
+            sp = newSp
+        })
 
-stepMultipleInstructions :: Array Int Instruction -> EmulatorState -> Int -> (Bool, EmulatorState)
-stepMultipleInstructions programMemory lastState steps = loop lastState steps
+stepMultipleInstructions :: Vector Instruction -> EmulatorState -> Int -> (Bool, EmulatorState)
+stepMultipleInstructions programMemory lastState@(EmulatorState regs flags pcReg sp memory) steps = runST $ do
+    mutRegisters <- V.thaw regs :: ST s (MutRegisters s)
+    mutMemory <- V.thaw memory :: ST s (MutMemory s)
+    (isDone, newFlags, newPc, newSp) <- loop mutRegisters mutMemory flags pcReg sp steps
+    updatedRegisters <- V.freeze mutRegisters
+    updatedMemory <- V.freeze mutMemory
+    return (isDone, EmulatorState {
+        registers = updatedRegisters,
+        flags = newFlags,
+        programCounter = newPc,
+        memory = updatedMemory,
+        sp = newSp
+    })
     where
-        loop :: EmulatorState -> Int -> (Bool, EmulatorState)
-        loop s 0 = (False, s)
-        loop s n
-            | (fromIntegral $ programCounter s) >= length programMemory = (True, s)
-            | otherwise = loop (executeInstruction (programMemory ! (fromIntegral $ programCounter s)) s) (n-1)
+        loop :: MutRegisters s -> MutMemory s -> StatusFlags -> ProgramCounter -> StackPointer -> Int -> ST s (Bool, StatusFlags, ProgramCounter, StackPointer)
+        loop _ _ f p s 0 = return (False, f, p, s)
+        loop mutRegs mutMem f p s n
+            | (fromIntegral p) >= length programMemory = return (True, f, p, s)
+            | otherwise = do
+                (updatedFlags, updatedPc, updatedSp) <- executeInstruction mutRegs mutMem f p s (programMemory ! (fromIntegral p))
+                loop mutRegs mutMem updatedFlags updatedPc updatedSp (n-1)
 
-runUntilProgramEnd :: Array Int Instruction -> EmulatorState -> (Bool, EmulatorState)
-runUntilProgramEnd programMemory lastState = loop lastState
+runUntilProgramEnd :: Vector Instruction -> EmulatorState -> (Bool, EmulatorState)
+runUntilProgramEnd programMemory lastState@(EmulatorState regs flags pcReg sp memory) = runST $ do
+    mutRegisters <- V.thaw regs :: ST s (MutRegisters s)
+    mutMemory <- V.thaw memory :: ST s (MutMemory s)
+    (isDone, newFlags, newPc, newSp) <- loop mutRegisters mutMemory flags pcReg sp
+    updatedRegisters <- V.freeze mutRegisters
+    updatedMemory <- V.freeze mutMemory
+    return (isDone, EmulatorState {
+        registers = updatedRegisters,
+        flags = newFlags,
+        programCounter = newPc,
+        memory = updatedMemory,
+        sp = newSp
+    })
     where
-        pc state = (fromIntegral $ programCounter state)
-        loop :: EmulatorState -> (Bool, EmulatorState)
-        loop s
-            | pc s >= length programMemory = (True, s)
-            | otherwise = loop (executeInstruction (programMemory ! (pc s)) s)
+        loop :: MutRegisters s -> MutMemory s -> StatusFlags -> ProgramCounter -> StackPointer -> ST s (Bool, StatusFlags, ProgramCounter, StackPointer)
+        loop mutRegs mutMem f p s
+            | fromIntegral p >= length programMemory = return (True, f, p, s)
+            | otherwise = do
+                (updatedFlags, updatedPc, updatedSp) <- executeInstruction mutRegs mutMem f p s (programMemory ! (fromIntegral p))
+                loop mutRegs mutMem updatedFlags updatedPc updatedSp
 
-runUntilFunctionEnd :: Array Int Instruction -> EmulatorState -> (Bool, EmulatorState)
-runUntilFunctionEnd programMemory lastState = loop lastState 0
+runUntilFunctionEnd :: Vector Instruction -> EmulatorState -> (Bool, EmulatorState)
+runUntilFunctionEnd programMemory lastState@(EmulatorState regs flags pcReg sp memory) = runST $ do
+    mutRegisters <- V.thaw regs :: ST s (MutRegisters s)
+    mutMemory <- V.thaw memory :: ST s (MutMemory s)
+    (isDone, newFlags, newPc, newSp) <- loop mutRegisters mutMemory flags pcReg sp 0
+    updatedRegisters <- V.freeze mutRegisters
+    updatedMemory <- V.freeze mutMemory
+    return (isDone, EmulatorState {
+        registers = updatedRegisters,
+        flags = newFlags,
+        programCounter = newPc,
+        memory = updatedMemory,
+        sp = newSp
+    })
     where
-        pc state = (fromIntegral $ programCounter state)
-        loop :: EmulatorState -> Int -> (Bool, EmulatorState)
-        loop s depth
-            | pc s >= length programMemory = (True, s)
-            | checkIfEndOfFunctionInstruction (programMemory ! (pc s)) && depth == 0 = (False, s)
-            | checkIfEndOfFunctionInstruction (programMemory ! (pc s)) && depth /= 0 = loop (executeInstruction (programMemory ! (pc s)) s ) (depth - 1)
-            | checkIfFunctionCallInstruction $ programMemory ! (pc s) = loop (executeInstruction (programMemory ! (pc s)) s ) (depth + 1)
-            | otherwise = loop (executeInstruction (programMemory ! (pc s)) s) depth
+        loop :: MutRegisters s -> MutMemory s -> StatusFlags -> ProgramCounter -> StackPointer -> Int -> ST s (Bool, StatusFlags, ProgramCounter, StackPointer)
+        loop mutRegs mutMem f p s depth
+            | pc >= length programMemory = return (True, f, p, s)
+            | checkIfEndOfFunctionInstruction (programMemory ! pc) && depth == 0 = return (False, f, p, s)
+            | checkIfEndOfFunctionInstruction (programMemory ! pc) && depth /= 0 = do
+                (updatedFlags, updatedPc, updatedSp) <- executeInstruction mutRegs mutMem f p s (programMemory ! pc)
+                loop mutRegs mutMem updatedFlags updatedPc updatedSp (depth - 1)
+            | checkIfFunctionCallInstruction (programMemory ! pc) = do
+                (updatedFlags, updatedPc, updatedSp) <- executeInstruction mutRegs mutMem f p s (programMemory ! pc)
+                loop mutRegs mutMem updatedFlags updatedPc updatedSp (depth + 1)
+            | otherwise = do
+                (updatedFlags, updatedPc, updatedSp) <- executeInstruction mutRegs mutMem f p s (programMemory ! pc)
+                loop mutRegs mutMem updatedFlags updatedPc updatedSp depth
+            where pc = fromIntegral p
 
 -- | Gets the list of instructions from the parser and the size of the SRAM as configured by the user.
 -- @returns the final emulator state after finishing execution.
@@ -90,6 +159,6 @@ run :: [Instruction] -> Int -> EmulatorState
 run instructions memorySize =
     let initialState = initEmulatorState memorySize
         instructionsWithAddresses = catMaybes $ replaceLabels instructions -- Resolve labels and filter out Nothings from the list
-        instructionArray = listArray (0, (length instructionsWithAddresses) - 1) instructionsWithAddresses
+        instructionVector = V.fromList instructionsWithAddresses
     in
-        runProgram instructionArray initialState -- Start the 'fetch -> decode -> execute' cycle by calling this function with the initial state
+        runProgram instructionVector initialState -- Start the 'fetch -> decode -> execute' cycle by calling this function with the initial state
