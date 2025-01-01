@@ -13,17 +13,29 @@ You need to have `Cabal` and `GHC` installed to build and run the emulator. We r
 
 1. Clone the repository and navigate to the project folder.
 2. Run the following command to build the project:
-   ```bash
-   cabal build
-   ```
+
+```bash
+cabal build
+```
+
+3. At this point, if you want to be able to run the emulator from anywhere on your computer, you can run this command inside the project folder:
+
+```bash
+cabal install exe:avr-emulator --overwrite-policy=always
+```
+
+Verify the installation with:
+```bash
+avr-emulator --version
+```
 
 ### Test the Emulator
 
 1. Clone the repository and navigate to the project folder.
 2. Run the following command to run the unit tests for the project:
-   ```bash
-   cabal test all
-   ```
+```bash
+cabal test all
+```
 
 This will run all the test suites and will tell you if anything failed. In general, any commit on the `main` branch should pass all tests. If yours doesn't, open up an issue.
 
@@ -38,6 +50,15 @@ This tells Cabal that you want to run the application. Here there are also some 
 ### Ending the program
 
 The emulator will automatically end when there are no more instructions to execute.
+
+### Interactive session
+
+If you prefer to use the emulator interactively rather than letting it execute your porgram all at once (for debugging purposes for example), you might be interested in the REPL. To bring it up for an assembly file:
+```bash
+cabal run exes -- /path/to/assembly/file.asm -i
+```
+
+The `-i` stands for interactive and will open up a prompt if the file was succesfully parsed. In the prompt, you can type `help` to see what commands are available. You can inspect the register values, the memory, the flags, step one instruction at a time (or multiple), run the program until the function you are in returns and more.
 
 ### Test files
 
