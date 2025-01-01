@@ -1137,7 +1137,7 @@ tst registers oldStatus sp op1 = do
     return (updatedFlags, 0, sp)
 
 xch :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
-xch registers memory oldStatus sp op1 = do
+xch registers memory oldFlags sp op1 = do
     let rdIndex = fromIntegral op1
     rd <- getRegister registers rdIndex
     r31 <- getRegister registers 31
@@ -1146,7 +1146,7 @@ xch registers memory oldStatus sp op1 = do
     memoryValue <- getMemory memory (fromIntegral address16b)
     setMemory registers memory (fromIntegral address16b) rd
     setRegister registers memory rdIndex memoryValue
-    return (oldStatus, 0, sp)
+    return (oldFlags, 0, sp)
 
 -- /////////////////////////////////////////////////////
 -- End instruction implementations 
