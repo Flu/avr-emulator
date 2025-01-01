@@ -125,6 +125,7 @@ data Instruction
     | SUBI Register Word8
     | SWAP Register
     | TST Register
+    | XCH Register
     deriving (Show, Eq)
 
 -- /////////////////////////////////////////////////////
@@ -1134,6 +1135,18 @@ tst registers oldStatus sp op1 = do
         carryFlag = carryFlag oldStatus
     }
     return (updatedFlags, 0, sp)
+
+xch :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> ST s (StatusFlags, Int, StackPointer)
+xch registers memory oldStatus sp op1 = do
+    let rdIndex = fromIntegral op1
+    rd <- getRegister registers rdIndex
+    r31 <- getRegister registers 31
+    r30 <- getRegister registers 30
+    let address16b = (fromIntegral r31 :: Word16) `shiftL` 8 + (fromIntegral r30 :: Word16)
+    memoryValue <- getMemory memory (fromIntegral address16b)
+    setMemory registers memory (fromIntegral address16b) rd
+    setRegister registers memory rdIndex memoryValue
+    return (oldStatus, 0, sp)
 
 -- /////////////////////////////////////////////////////
 -- End instruction implementations 
