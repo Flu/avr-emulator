@@ -36,7 +36,7 @@ collatz_start:
 
 collatz_odd:
     ; Odd case: X = 3 * X + 1
-    MOVW R18:19, R26:27      ; Copy X (R26:R27) to R18:R19 for multiplication
+    MOVW R18, R26      ; Copy X (R26:R27) to R18:R19 for multiplication
     ADD R26, R26       ; Double low byte
     ADC R27, R27       ; Double high byte with carry
     ADD R26, R18       ; Add original low byte

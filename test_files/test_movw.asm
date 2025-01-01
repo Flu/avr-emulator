@@ -1,4 +1,4 @@
     LDI R16, 0xBE
     LDI R17, 0xEF
 
-    MOVW R26:25, R17:16
+    MOVW R26, R16

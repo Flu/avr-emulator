@@ -924,10 +924,10 @@ testMovw state = do
     let regValue = registers state ! 17
     regValue `shouldBe` 0xef
 
-    let regValue = registers state ! 25
+    let regValue = registers state ! 26
     regValue `shouldBe` 0xbe
 
-    let regValue = registers state ! 26
+    let regValue = registers state ! 27
     regValue `shouldBe` 0xef
 
     -- Status flags
