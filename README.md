@@ -150,7 +150,8 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - `SUBI` – Subtract an immediate value from a register.
   - `SWAP` – Swap nibbles of register.
   - `TST` – Test if a register is zero or negative.
-
+  - `XCH` – Exchanges one byte indirect between the register and data space.
+  
 ## Roadmap
   - [x] Configurable memory size through command line arguments.
   - [x] Implement in-memory stack with `PUSH` and `POP` instructions.
