@@ -628,6 +628,15 @@ pTST = do
     cistring "TST" >> space1
     TST <$> pRegister
 
+pXCH :: Parser Instruction
+pXCH = do
+    cistring "XCH" >> space1
+    z <- pZRegister
+    pComma
+    if  z == "Z" || z == "z" then
+        XCH <$> pRegister
+    else fail "Pointer register should be 'Z' register"
+
 -- Main parsers
 
 instructionParser :: Parser (Instruction)
@@ -716,7 +725,8 @@ instructionParser = do
         pSUBI,
         pSUB,
         pSWAP,
-        pTST
+        pTST,
+        pXCH
         ]
 
 -- | Parser for comments

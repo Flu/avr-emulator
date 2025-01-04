@@ -97,6 +97,7 @@ executeInstruction mutRegisters mutMemory flags pc sp instruction = do
         SUBI rd k -> subi mutRegisters mutMemory flags sp rd k
         SWAP rd -> swap mutRegisters mutMemory flags sp rd
         TST rd -> tst mutRegisters flags sp rd
+        XCH rd -> xch mutRegisters mutMemory flags sp rd
     return (updatedFlags, pc + fromIntegral relativeJump + 1, updatedSp)
 
 initEmulatorState :: Int -> EmulatorState
