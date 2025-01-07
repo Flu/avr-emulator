@@ -40,6 +40,7 @@ executeInstruction mutRegisters mutMemory flags pc sp instruction = do
         BRTSR relativeAddress -> brts flags sp relativeAddress
         BRVCR relativeAddress -> brvc flags sp relativeAddress
         BRVSR relativeAddress -> brvs flags sp relativeAddress
+        BSET s -> bset flags sp s
         CALLR relativeAddress -> call mutRegisters mutMemory flags sp relativeAddress pc
         CBR rd k -> cbr mutRegisters mutMemory flags sp rd k
         CLC -> clc flags sp
