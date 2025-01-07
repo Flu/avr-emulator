@@ -250,6 +250,11 @@ main = hspec $ describe "AVR Emulator E2E tests" $ do
       let assemblyFilePath = "test_files/test_xch.asm"
       emulateProgramFromFile assemblyFilePath testXch
 
+    -- test_bset.asm
+    it "Should correctly emulate test_bset.asm and match expected state" $ do
+      let assemblyFilePath = "test_files/test_bset.asm"
+      emulateProgramFromFile assemblyFilePath testBset
+
 -- Checking emulator state for array_merge.asm
 testArrayMerge :: EmulatorState -> IO ()
 testArrayMerge state = do
@@ -1284,3 +1289,16 @@ testXch state = do
 
     let regValue = registers state ! 31
     regValue `shouldBe` 1
+
+-- Checking EmulatorState for the "test_bset.asm"
+testBset :: EmulatorState -> IO ()
+testBset state = do
+    -- Status flags
+    interruptFlag (flags state) `shouldBe` True
+    tFlag (flags state) `shouldBe` True
+    halfCarryFlag (flags state) `shouldBe` True
+    signFlag (flags state) `shouldBe` True
+    overflowFlag (flags state) `shouldBe` True
+    negativeFlag (flags state) `shouldBe` True
+    zeroFlag (flags state) `shouldBe` True
+    carryFlag (flags state) `shouldBe` True
