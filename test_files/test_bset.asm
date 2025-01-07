@@ -4,5 +4,5 @@
     BSET 3
     BSET 4
     BSET 5
-    BSEt 6
+    BSET 6
     BSET 7
