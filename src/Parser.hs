@@ -294,6 +294,12 @@ pBRVS = do
     label <- pLabelValue
     return (BRVS label)
 
+pBSET :: Parser Instruction
+pBSET = do
+    cistring "BSET" >> space1
+    s <- pFlagDigit
+    return (BSET s)
+
 pCALL :: Parser Instruction
 pCALL = do
     cistring "CALL" >> space1
@@ -670,6 +676,7 @@ instructionParser = do
         pBRTS,
         pBRVC,
         pBRVS,
+        pBSET,
         pCALL,
         pCBR,
         pCLC,

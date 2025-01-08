@@ -65,6 +65,7 @@ data Instruction
     | BRVCR Int
     | BRVS Label
     | BRVSR Int
+    | BSET Int
     | CALL Label
     | CALLR Int
     | CBR Register Word8
@@ -373,6 +374,19 @@ brvs oldFlags sp relAddress = do
     let shouldJump = overflowFlag oldFlags
     let jumpAddress = if shouldJump then relAddress else 0
     return (oldFlags, jumpAddress, sp)
+
+bset :: StatusFlags -> StackPointer -> Int -> ST s (StatusFlags, Int, StackPointer)
+bset oldFlags sp s = do
+    case s of
+        0 -> return (oldFlags { carryFlag = True}, 0, sp)
+        1 -> return (oldFlags { zeroFlag = True}, 0, sp)
+        2 -> return (oldFlags { negativeFlag = True}, 0, sp)
+        3 -> return (oldFlags { overflowFlag = True}, 0, sp)
+        4 -> return (oldFlags { signFlag = True}, 0, sp)
+        5 -> return (oldFlags { halfCarryFlag = True}, 0, sp)
+        6 -> return (oldFlags { tFlag = True}, 0, sp)
+        7 -> return (oldFlags { interruptFlag = True}, 0, sp)
+        _ -> error "Cosmic particle flipped a bit"
 
 call :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Int -> Word16 -> ST s (StatusFlags, Int, StackPointer)
 call registers memory oldFlags sp relAddress returnAddress = do
