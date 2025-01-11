@@ -4,13 +4,14 @@
 
 module Parser(parseAssembly, prettyPrintErrorBundle) where
 
-import Text.Megaparsec
-import Text.Megaparsec.Char
-import qualified Data.Text as T
-import Data.Void
+import Control.Monad (when)
 import Data.Binary
 import Data.Char
+import qualified Data.Text as T
+import Data.Void
 import Numeric (readHex)
+import Text.Megaparsec
+import Text.Megaparsec.Char
 
 import Emulator
 
@@ -425,6 +426,7 @@ pLDI :: Parser Instruction
 pLDI = do
     cistring "LDI" >> space1
     rd <- pRegister
+    when (rd < 16) (fail "Can't use LDI with registers lower than R16")
     pComma
     LDI rd <$> pWord8
 
