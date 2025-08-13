@@ -167,6 +167,7 @@ pANDI :: Parser Instruction
 pANDI = do
     cistring "ANDI" >> space1
     rd <- pRegister
+    when (rd < 16) (fail "Can't use ANDI with registers lower than R16")
     pComma
     ANDI rd <$> pWord8
 
@@ -311,6 +312,7 @@ pCBR :: Parser Instruction
 pCBR = do
     cistring "CBR" >> space1
     rd <- pRegister
+    when (rd < 16) (fail "Can't use CBR with registers lower than R16")
     pComma
     CBR rd <$> pWord8
 
@@ -382,6 +384,7 @@ pCPI :: Parser Instruction
 pCPI = do
     cistring "CPI" >> space1
     rd <- pRegister
+    when (rd < 16) (fail "Can't use CPI with registers lower than R16")
     pComma
     CPI rd <$> pWord8
 
@@ -481,7 +484,9 @@ pMULS = do
     cistring "MULS" >> space1
     rd <- pRegister
     pComma
-    MULS rd <$> pRegister
+    rr <- pRegister
+    when (rd < 16 || rr < 16) (fail "Can't use MULS with registers lower than R16")
+    return (MULS rd rr)
 
 pNEG :: Parser Instruction
 pNEG = do
@@ -504,6 +509,7 @@ pORI :: Parser Instruction
 pORI = do
     cistring "ORI" >> space1
     rd <- pRegister
+    when (rd < 16) (fail "Can't use ORI with registers lower than R16")
     pComma
     ORI rd <$> pWord8
 
