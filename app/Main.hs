@@ -48,19 +48,12 @@ compileFromFile input True memorySize = do
 getVersion :: String
 getVersion = showVersion version
 
--- | Prints out the logo in the assets/logo.txt file.
-printTwenteLogo :: IO ()
-printTwenteLogo = do
-    let filename = "assets/logo.txt"
-    content <- readFile filename
-    putStrLn content
-
 entryFunction :: Options -> IO ()
 -- | Has opion "-v" but no file was given
 entryFunction (Options _ _ _ _ True Nothing) = do
-    printTwenteLogo
     putStrLn ("avr-emulator v" ++ getVersion)
     putStrLn "license: MIT"
+    putStrLn "email: a.fluturel@proton.me"
     putStrLn "website: github.com/Flu/avr-emulator"
 
 -- | Has option "-v" but a file was given, ignore the file and just print the version
