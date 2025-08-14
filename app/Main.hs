@@ -50,13 +50,17 @@ getVersion = showVersion version
 
 entryFunction :: Options -> IO ()
 -- | Has opion "-v" but no file was given
-entryFunction (Options _ _ _ _ True Nothing) = putStrLn ("avr-emulator v" ++ getVersion)
+entryFunction (Options _ _ _ _ True Nothing) = do
+    putStrLn ("avr-emulator v" ++ getVersion)
+    putStrLn "license: MIT"
+    putStrLn "email: a.fluturel@proton.me"
+    putStrLn "website: github.com/Flu/avr-emulator"
 
 -- | Has option "-v" but a file was given, ignore the file and just print the version
-entryFunction (Options _ _ _ _ True (Just _)) = putStrLn ("avr-emulator v" ++ getVersion)
+entryFunction (Options _ _ _ _ True (Just _)) = entryFunction (Options False False 0 False True Nothing)
 
 -- | Supplied arguments but did not provide a file, return error
-entryFunction (Options _ _ _ _ False Nothing) = error "You did not supply a file. Exiting."
+entryFunction (Options _ _ _ _ False Nothing) = putStrLn "You did not supply a file. Exiting."
 
 -- | Supplied file, does not dump memory to stdout
 entryFunction (Options False dmpIR memorySize False _ (Just filepath)) = do
