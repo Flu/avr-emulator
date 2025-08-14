@@ -870,7 +870,7 @@ testLd :: EmulatorState -> IO ()
 testLd state = do
     -- Registers
     let regValue = registers state ! 0
-    regValue `shouldBe`  0x05
+    regValue `shouldBe` 0x05
 
     let regValue = registers state ! 1
     regValue `shouldBe` 0x05
@@ -879,7 +879,7 @@ testLd state = do
     regValue `shouldBe` 0x06
 
     let regValue = registers state ! 4
-    regValue `shouldBe`  0x15
+    regValue `shouldBe` 0x15
 
     let regValue = registers state ! 5
     regValue `shouldBe` 0x15
@@ -888,7 +888,7 @@ testLd state = do
     regValue `shouldBe` 0x16
 
     let regValue = registers state ! 8
-    regValue `shouldBe`  0x25
+    regValue `shouldBe` 0x25
 
     let regValue = registers state ! 9
     regValue `shouldBe` 0x25
@@ -959,14 +959,14 @@ testMul state = do
     let regValue = registers state ! 0
     regValue `shouldBe` 0xc
 
-    let regValue = registers state ! 5
-    regValue `shouldBe` 0x2
-
-    let regValue = registers state ! 6
-    regValue `shouldBe` 0x6
-
     let regValue = registers state ! 16
     regValue `shouldBe` 0x15
+
+    let regValue = registers state ! 20
+    regValue `shouldBe` 0x2
+
+    let regValue = registers state ! 21
+    regValue `shouldBe` 0x6
 
     let regValue = registers state ! 17
     regValue `shouldBe` 0x1c
@@ -1079,16 +1079,16 @@ testRolRor state = do
 testSbc :: EmulatorState -> IO ()
 testSbc state = do
     -- Registers
-    let regValue = registers state ! 0
+    let regValue = registers state ! 16
     regValue `shouldBe` 0x3
 
-    let regValue = registers state ! 1
+    let regValue = registers state ! 17
     regValue `shouldBe` 0x11
 
-    let regValue = registers state ! 2
+    let regValue = registers state ! 18
     regValue `shouldBe` 0x38
 
-    let regValue = registers state ! 3
+    let regValue = registers state ! 19
     regValue `shouldBe` 0xcc
 
     -- Program counter

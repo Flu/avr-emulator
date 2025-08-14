@@ -1,8 +1,8 @@
-    LDI R0, 0x3
-    LDI R1, 0x11
+    LDI R16, 0x3
+    LDI R17, 0x11
 
-    LDI R3, 0xdd
-    LDI R2, 0x3b
+    LDI R19, 0xdd
+    LDI R18, 0x3b
 
-    sub r2, r0
-    sbc r3, r1
+    sub r18, r16
+    sbc r19, r17

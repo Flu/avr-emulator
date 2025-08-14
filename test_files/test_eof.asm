@@ -8,8 +8,8 @@ loop:
     LSR R18
     BRNE loop
 
-    LDI R5, 0x02
-    LDI R6, 0x6
-    MULS R5, R6
+    LDI R20, 0x02
+    LDI R21, 0x6
+    MULS R20, R21
     ;; Comment
     

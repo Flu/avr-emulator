@@ -90,7 +90,7 @@ INNER_LOOP:
     ST X, R16      ; Store R16 in place of the next element
     ST -X, R17     ; Store R17 in place of the current element
 
-    LDI R0, 0x0    ; Increment R27:R26 with 1
+    CLR R0         ; Increment R27:R26 with 1
     INC R26        ; Move X forward to point to the next element
     ADC R27, R0
     

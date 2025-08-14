@@ -1,4 +1,6 @@
-    LDI R15, 0xe
+    LDI R16, 0xe
+    MOV R15, R16
+    CLR R16
     LDI R17, 0x0  ; F(n-2)
     LDI R18, 0x1  ; F(n-1)
     STS 0x16, R15

@@ -3,32 +3,40 @@
     ;; MIT License
 
     clr r27
-    ldi r26, 0x80               ; Point X register to 0x0080
-    ldi r0, 0x05                ; Set r0 to 0x27
-    st X+, r0                   ; Load 0x27 into memory address 0x0005
-    ldi r0, 0x06
+    ldi r26, 0x80               ; X -> 0x0080
+    ldi r16, 0x05               ; temp high reg
+    mov r0, r16                 ; r0 = 0x05
+    st X+, r0                   ; store 0x05 at 0x80
+
+    ldi r16, 0x06
+    mov r0, r16                 ; r0 = 0x06
     st X, r0
-    clr r0                      ; Set r0 to 0x00
-    ld r0,-X                    ; Load 0x27 into r0 (pre decrement of the pointer at X)
-    ld r1, X+                   ; Load 0x27 into r2 (post increment of the pointer at X)
-    ld r2, X                    ; Load 0x27 into r1
+
+    clr r0
+    ld r0, -X                   ; pre-decrement, load from 0x80 -> r0 = 0x05
+    ld r1, X+                   ; r1 = 0x05 (from 0x80 again)
+    ld r2, X                    ; r2 = 0x06 (0x81)
 
     clr r29
     ldi r28, 0x90
-    ldi r3, 0x15
+    ldi r17, 0x15
+    mov r3, r17
     st Y+, r3
-    ldi r3, 0x16
+    ldi r17, 0x16
+    mov r3, r17
     st Y, r3
     clr r3
-    ld r4,-Y
+    ld r4, -Y
     ld r5, Y+
     ld r6, Y
 
     clr r31
     ldi r30, 0x25
-    ldi r7, 0x25
+    ldi r18, 0x25
+    mov r7, r18
     st Z+, r7
-    ldi r7, 0x26
+    ldi r18, 0x26
+    mov r7, r18
     st Z, r7
     clr r7
     ld r8, -Z
