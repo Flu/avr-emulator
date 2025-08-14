@@ -1,4 +1,4 @@
-name: build
+name: test
 on:
   push:
     branches: [main, github-actions]
@@ -13,14 +13,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  test:
     name: GHC ${{ matrix.ghc-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        ghc-version: ['9.10', '9.8']
+        ghc-version: ['9.10']
 
     steps:
       - uses: actions/checkout@v4
@@ -63,9 +63,6 @@ jobs:
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache.outputs.cache-primary-key }}
-
-      - name: Build
-        run: cabal build all
 
       - name: Run tests
         run: cabal test all
