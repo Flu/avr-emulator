@@ -29,6 +29,8 @@ Verify the installation with:
 avr-emulator --version
 ```
 
+Alternatively you can just download the latest release binary for your operating system and run it that way.
+
 ### Test the Emulator
 
 1. Clone the repository and navigate to the project folder.

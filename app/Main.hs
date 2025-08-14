@@ -60,7 +60,7 @@ entryFunction (Options _ _ _ _ True Nothing) = do
 entryFunction (Options _ _ _ _ True (Just _)) = entryFunction (Options False False 0 False True Nothing)
 
 -- | Supplied arguments but did not provide a file, return error
-entryFunction (Options _ _ _ _ False Nothing) = putStrLn "You did not supply a file. Exiting."
+entryFunction (Options _ _ _ _ False Nothing) = putStrLn "You did not supply a file. Use '--help' for a list of options."
 
 -- | Supplied file, does not dump memory to stdout
 entryFunction (Options False dmpIR memorySize False _ (Just filepath)) = do
