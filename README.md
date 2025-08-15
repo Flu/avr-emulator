@@ -137,6 +137,7 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - `ROL` – Rotate left through carry.
   - `ROR` – Rotate right through carry.
   - `SBC` – Subtract one register value from another with carry.
+  - `SBR` – Set bits in register with a mask, equivalent to ORI.
   - `SBRC` – Skip next instruction if bit in register is cleared.
   - `SBRS` – Skip next instruction if bit in register is set.
   - `SEC` – Set the Carry flag.
