@@ -5,12 +5,12 @@
 
 This project is an AVR emulator written in Haskell, utilizing CABAL for building and managing dependencies. The emulator simulates a basic AVR microcontroller environment with a 2KB memory space starting from address `0x0000`. The emulator currently supports a subset of AVR instructions, and you can load and execute assembly programs to test its functionality.
 
-## How to Build and Run
+## How to Build and run
 
 ### Prerequisites
 You need to have `Cabal` and `GHC` installed to build and run the emulator. We recommend using `ghcup` to install these tools. To install `ghcup`, follow the instructions at [https://www.haskell.org/ghcup/](https://www.haskell.org/ghcup/).
 
-### Build the Emulator
+### Build the emulator
 
 1. Clone the repository and navigate to the project folder.
 2. Run the following command to build the project:
@@ -32,7 +32,7 @@ avr-emulator --version
 
 Alternatively you can just download the latest release binary for your operating system and run it that way.
 
-### Test the Emulator
+### Test the emulator
 
 1. Clone the repository and navigate to the project folder.
 2. Run the following command to run the unit tests for the project:
