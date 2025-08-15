@@ -559,6 +559,14 @@ pSBRS = do
     pComma
     SBRS rd <$> pDecimal
 
+pSBR :: Parser Instruction
+pSBR = do
+    cistring "SBR" >> space1
+    rd <- pRegister
+    when (rd < 16) (fail "Can't use SBR with registers lower than R16")
+    pComma
+    SBR rd <$> pWord8
+
 pSEC :: Parser Instruction
 pSEC = do
     cistring "SEC" >> (space1 <|> eof)
@@ -726,6 +734,7 @@ instructionParser = do
         pSBC,
         pSBRC,
         pSBRS,
+        pSBR,
         pSEC,
         pSEH,
         pSEI,

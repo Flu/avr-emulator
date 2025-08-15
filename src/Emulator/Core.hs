@@ -81,6 +81,7 @@ executeInstruction mutRegisters mutMemory flags pc sp instruction = do
         ROL rd -> rol mutRegisters mutMemory flags sp rd
         ROR rd -> ror mutRegisters mutMemory flags sp rd
         SBC rd rr -> sbc mutRegisters mutMemory flags sp rd rr
+        SBR rd k -> sbr mutRegisters mutMemory flags sp rd k
         SBRC rd b -> sbrc mutRegisters flags sp rd b
         SBRS rd b -> sbrs mutRegisters flags sp rd b
         SEC -> sec flags sp

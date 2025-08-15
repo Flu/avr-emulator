@@ -109,6 +109,7 @@ data Instruction
     | ROL Register
     | ROR Register
     | SBC Register Register
+    | SBR Register Word8
     | SBRC Register Word8
     | SBRS Register Word8
     | SEC
@@ -913,6 +914,21 @@ sbc registers memory oldFlags sp op1 op2 = do
         negativeFlag = testBit result 7,
         zeroFlag = result == 0 && zeroFlag oldFlags,
         carryFlag = not (testBit rd 7) && testBit rr 7 || testBit rr 7 && testBit result 7 || testBit result 7 && not (testBit rd 7),
+        signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
+    }
+    return (updatedFlags, 0, sp)
+
+sbr :: MutRegisters s -> MutMemory s -> StatusFlags -> StackPointer -> Register -> Word8 -> ST s (StatusFlags, Int, StackPointer)
+sbr registers memory oldFlags sp op1 immediate = do
+    let rdIndex = fromIntegral op1
+    rd <- getRegister registers rdIndex
+    let k = immediate
+    let result = rd .|. k
+    setRegister registers memory rdIndex result
+    let updatedFlags = oldFlags {
+        overflowFlag = False,
+        negativeFlag = testBit result 7,
+        zeroFlag = result == 0,
         signFlag = xor (negativeFlag updatedFlags) (overflowFlag updatedFlags)
     }
     return (updatedFlags, 0, sp)
