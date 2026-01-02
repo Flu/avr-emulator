@@ -56,7 +56,7 @@ The emulator will automatically end when there are no more instructions to execu
 
 ### Interactive session
 
-If you prefer to use the emulator interactively rather than letting it execute your porgram all at once (for debugging purposes for example), you might be interested in the REPL. To bring it up for an assembly file:
+If you prefer to use the emulator interactively rather than letting it execute your program all at once (for debugging purposes for example), you might be interested in the REPL. To bring it up for an assembly file:
 ```bash
 cabal run exes -- /path/to/assembly/file.asm -i
 ```
@@ -109,7 +109,7 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - `CLT` – Clear T flag.
   - `CLV` – Clear Overflow flag.
   - `CLZ` – Clear Zero flag.
-  - `COM` – Take one's complement of register.
+  - `COM` – Take ones' complement of register.
   - `CP` – Compare two registers.
   - `CPC` – Compare with carry between two registers.
   - `CPI` – Compare a register with an immediate value.
