@@ -71,80 +71,80 @@ You can find test assembly programs in the `test_files/` directory in the root o
 - **Memory**: 2KB by default, starting from `0x0000`.
 - **Stack**: Starts from the last memory address and grows towards lower addresses.
 - **Supported Instructions**:
-  - `ADC` – Add with carry between two registers.
+  - `ADC` – Add with carry between two register values.
   - `ADD` – Add two register values and store the result in one of the registers.
   - `ADIW` – Add an immediate word to a register pair.
-  - `AND` – Perform a bitwise AND between two registers.
-  - `ANDI` – Perform a bitwise AND between a register and an immediate value.
-  - `ASR` – Arithmetic shift to the right.
-  - `BCLR` – Bit clears a flag in SREG given a value from 0 to 7.
-  - `BLD` – Sets a bit in a registry equal to the T flag.
-  - `BRCC` – Branch if carry flag is cleared.
-  - `BRCS` – Branch if carry flag is set.
+  - `AND` – Perform a bitwise AND between two register values.
+  - `ANDI` – Perform a bitwise AND between a register value and an immediate value.
+  - `ASR` – Perform an arithmetic shift to the right.
+  - `BCLR` – Bit clear a flag in SREG given a value from 0 to 7.
+  - `BLD` – Set a bit in a registry equal to the T flag.
+  - `BRCC` – Branch if the Carry flag is cleared.
+  - `BRCS` – Branch if the Carry flag is set.
   - `BREQ` – Branch if equal to zero.
   - `BRGE` – Branch if greater (signed).
-  - `BRHC` – Branch if half carry flag is cleared.
-  - `BRHS` – Branch if half carry flag is set.
-  - `BRID` – Branch if global interrupt flag is cleared.
-  - `BRIE` – Branch if global interrupt flag is set.
+  - `BRHC` – Branch if the Half Carry flag is cleared.
+  - `BRHS` – Branch if the Half Carry flag is set.
+  - `BRID` – Branch if the Global Interrupt flag is cleared.
+  - `BRIE` – Branch if the Global Interrupt flag is set.
   - `BRLO` – Branch if lower (unsigned).
   - `BRLT` – Branch if less than (signed).
   - `BRMI` – Branch if minus.
   - `BRNE` – Branch if not equal to zero.
   - `BRPL` – Branch if positive.
   - `BRSH` – Branch if same or higher (unsigned).
-  - `BRTC` – Branch if T flag is cleared.
-  - `BRTS` – Branch if T flag is set.
-  - `BRVC` – Branch if overflow flag is cleared.
-  - `BRVS` – Branch if overflow flag is set.
-  - `BSET` – Sets a single flag or bit in SREG.
-  - `CALL` – Direct call to a subroutine with the return address pushed on the stack.
-  - `CBR` – Clears specific bits of a register based on the argument provided.
+  - `BRTC` – Branch if the T flag is cleared.
+  - `BRTS` – Branch if the T flag is set.
+  - `BRVC` – Branch if the Overflow flag is cleared.
+  - `BRVS` – Branch if the Overflow flag is set.
+  - `BSET` – Set a single flag or bit in SREG.
+  - `CALL` – Directly call a subroutine with the return address pushed onto the stack.
+  - `CBR` – Clear specific bits of a register based on the argument provided.
   - `CLC` – Clear the Carry flag.
   - `CLH` – Clear the Half Carry flag.
   - `CLI` – Clear the Global Interrupt flag.
   - `CLN` – Clear the Negative flag.
-  - `CLR` – Sets register to `0x00`.
-  - `CLS` – Clear Signed flag.
-  - `CLT` – Clear T flag.
-  - `CLV` – Clear Overflow flag.
-  - `CLZ` – Clear Zero flag.
-  - `COM` – Take one's complement of register.
+  - `CLR` – Set a register to `0x00`.
+  - `CLS` – Clear the Signed flag.
+  - `CLT` – Clear the T flag.
+  - `CLV` – Clear the Overflow flag.
+  - `CLZ` – Clear the Zero flag.
+  - `COM` – Take the ones' complement of a register value.
   - `CP` – Compare two registers.
   - `CPC` – Compare with carry between two registers.
-  - `CPI` – Compare a register with an immediate value.
+  - `CPI` – Compare a register value with an immediate value.
   - `CPSE` – Compare and skip if equal.
   - `DEC` – Decrement a register.
-  - `EOR` – Perform bitwise exclusive OR between two registers.
+  - `EOR` – Perform a bitwise exclusive OR between two registers.
   - `INC` – Increment a register.
   - `JMP` – Jump to a label.
   - `LD` – Load indirect from data space using an indirect address.
   - `LDI` – Load an immediate value into a register.
   - `LDS` – Load a direct value from data space.
-  - `LSL` – Logical shift left.
-  - `LSR` – Logical shift right.
+  - `LSL` – Perform a logical shift to the left.
+  - `LSR` – Perform a logical shift to the right.
   - `MOV` – Move the value from one register to another.
   - `MOVW` – Move a word from a pair of registers to the other.
-  - `MUL` – Multiply two registers.
-  - `MULS` – Multiply signed values in two registers.
-  - `NEG` – Take two's complement of register.
+  - `MUL` – Multiply two register values.
+  - `MULS` – Multiply two signed register values.
+  - `NEG` – Take the two's complement of a register value.
   - `NOP` – No operation.
-  - `OR` – Perform a bitwise OR between two registers.
-  - `ORI` – Perform a bitwise OR between a register and an immediate value.
-  - `POP` – Pops an element from the stack into a register.
-  - `PUSH` – Pushes an element from a register onto the stack.
-  - `RET` – Return from subroutine.
+  - `OR` – Perform a bitwise OR between two register values.
+  - `ORI` – Perform a bitwise OR between a register value and an immediate value.
+  - `POP` – Pop an element from the stack into a register.
+  - `PUSH` – Push an element from a register onto the stack.
+  - `RET` – Return from a subroutine.
   - `ROL` – Rotate left through carry.
   - `ROR` – Rotate right through carry.
   - `SBC` – Subtract one register value from another with carry.
-  - `SBR` – Set bits in register with a mask, equivalent to ORI.
-  - `SBRC` – Skip next instruction if bit in register is cleared.
-  - `SBRS` – Skip next instruction if bit in register is set.
+  - `SBR` – Set bits in a register with a mask, equivalent to ORI.
+  - `SBRC` – Skip next instruction if a bit in a register is cleared.
+  - `SBRS` – Skip next instruction if a bit in a register is set.
   - `SEC` – Set the Carry flag.
   - `SEH` – Set the Half Carry flag.
   - `SEI` – Set the Global Interrupt flag.
   - `SEN` – Set the Negative flag.
-  - `SER` – Sets all bits in a register.
+  - `SER` – Set all bits in a register.
   - `SES` – Set Signed flag.
   - `SET` – Set T flag.
   - `SEV` – Set Overflow flag.
@@ -152,10 +152,10 @@ You can find test assembly programs in the `test_files/` directory in the root o
   - `ST` – Store indirect to data space using an indirect address.
   - `STS` – Store direct to data space.
   - `SUB` – Subtract one register value from another.
-  - `SUBI` – Subtract an immediate value from a register.
+  - `SUBI` – Subtract an immediate value from a register value.
   - `SWAP` – Swap nibbles of register.
-  - `TST` – Test if a register is zero or negative.
-  - `XCH` – Exchanges one byte indirect between the register and data space.
+  - `TST` – Test if the value in a register is zero or negative.
+  - `XCH` – Exchange one byte indirect between the register and data space.
   
 ## Roadmap
   - [x] Configurable memory size through command line arguments.
